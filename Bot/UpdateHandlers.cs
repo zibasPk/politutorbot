@@ -1,3 +1,4 @@
+using System.Collections;
 using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
@@ -87,27 +88,46 @@ public static class UpdateHandlers
                 "/start" => SendSchoolKeyboard(botClient, message),
                 _ => SendEcho(botClient, message)
             },
-            State.School => command switch
-            {
-                "3I" => SendYearKeyboard(botClient, message, School.TreI),
-                "ICAT" => SendYearKeyboard(botClient, message, School.Icat),
-                "AUIC" => SendYearKeyboard(botClient, message, School.Auic),
-                "Design" => SendYearKeyboard(botClient, message, School.Design)
-            },
-            State.Year => command switch
-            {
-                "Y1" => SendCourseKeyboard(botClient, message, Year.Y1),
-                "Y2" => SendCourseKeyboard(botClient, message, Year.Y1),
-                "Y3" => SendCourseKeyboard(botClient, message, Year.Y1)
-            },
-            State.Course => SendEcho(botClient, message)
+            State.School => SendCourseKeyboard(botClient, message, command),
+            State.Course => SendYearKeyboard(botClient, message, command),
+            State.Year => SendSubjectKeyboard(botClient, message, command),
+            
         };
+
+        Task SendSubjectKeyboard(ITelegramBotClient telegramBotClient, Message message1, string s)
+        {
+            throw new NotImplementedException();
+        }
 
         await action;
 
-        static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, Year year)
+        static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, string school)
         {
-            throw new NotImplementedException();
+            ReplyKeyboardMarkup? replyKeyboardMarkup = Navigator.GenerateCourseKeyboard(school);
+            
+            if (school != "ICAT")
+            {
+                Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
+            }
+            // Check if school is valid
+            if (replyKeyboardMarkup == null)
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: "Inserisci una scuola valida");
+            
+            // Change conversation state to Course
+            _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+            conversation!.State = State.Course;
+            // Show typing action to client
+            await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+            // Simulate longer running task
+            // await Task.Delay(500)
+            
+            Log.Debug("Sending Course inline keyboard for school {school} to chat: {id}.",school, message.Chat.Id);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Scegli il tuo corso di studi",
+                replyMarkup: replyKeyboardMarkup);
         }
 
 
@@ -121,7 +141,7 @@ public static class UpdateHandlers
             // Show typing action to client
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
             // Simulate longer running task
-            // await Task.Delay(500);
+            // await Task.Delay(500)
 
             ReplyKeyboardMarkup replyKeyboardMarkup = new(
                 new[]
@@ -138,18 +158,12 @@ public static class UpdateHandlers
                 replyMarkup: replyKeyboardMarkup);
         }
 
-        static async Task<Message> SendYearKeyboard(ITelegramBotClient botClient, Message message, School school)
+        static async Task<Message> SendYearKeyboard(ITelegramBotClient botClient, Message message, string course)
         {
-            if (school != School.Icat)
-            {
-                Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
-                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
-                ;
-            }
-
             _idToConversation.TryGetValue(message.From.Id, out var conversation);
             conversation.State = State.Year;
+            
+            
             Log.Debug("Sending Year inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
