@@ -91,51 +91,15 @@ public static class UpdateHandlers
             State.School => SendCourseKeyboard(botClient, message, command),
             State.Course => SendYearKeyboard(botClient, message, command),
             State.Year => SendSubjectKeyboard(botClient, message, command),
-            
         };
 
-        Task SendSubjectKeyboard(ITelegramBotClient telegramBotClient, Message message1, string s)
-        {
-            throw new NotImplementedException();
-        }
-
         await action;
-
-        static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, string school)
-        {
-            ReplyKeyboardMarkup? replyKeyboardMarkup = Navigator.GenerateCourseKeyboard(school);
-            
-            if (school != "ICAT")
-            {
-                Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
-                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
-            }
-            // Check if school is valid
-            if (replyKeyboardMarkup == null)
-                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Inserisci una scuola valida");
-            
-            // Change conversation state to Course
-            _idToConversation.TryGetValue(message.From!.Id, out var conversation);
-            conversation!.State = State.Course;
-            // Show typing action to client
-            await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-            // Simulate longer running task
-            // await Task.Delay(500)
-            
-            Log.Debug("Sending Course inline keyboard for school {school} to chat: {id}.",school, message.Chat.Id);
-            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Scegli il tuo corso di studi",
-                replyMarkup: replyKeyboardMarkup);
-        }
-
 
         static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)
         {
             // Change conversation state
-            _idToConversation.TryGetValue(message.From.Id, out var conversation);
-            conversation.State = State.School;
+            _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+            conversation!.State = State.School;
 
             Log.Debug("Sending School inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
@@ -157,13 +121,54 @@ public static class UpdateHandlers
                 text: "Scegli la tua scuola",
                 replyMarkup: replyKeyboardMarkup);
         }
+        
+        static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, string school)
+        {
+            ReplyKeyboardMarkup? replyKeyboardMarkup = Navigator.GenerateCourseKeyboard(school);
 
+            if (school != "ICAT")
+            {
+                Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
+            }
+
+            // Check if school is valid
+            if (replyKeyboardMarkup == null)
+            {
+                Log.Debug("Invalid school {school} chosen in chat {id}.", school, message.Chat.Id);
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: "Inserisci una scuola valida");
+            }
+
+            // Change conversation state to Course and save chosen school
+            _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+            conversation!.State = State.Course;
+            conversation.School = school;
+            // Show typing action to client
+            await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+            // Simulate longer running task
+            // await Task.Delay(500)
+
+            Log.Debug("Sending Course inline keyboard for school {school} to chat: {id}.", school, message.Chat.Id);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Scegli il tuo corso di studi",
+                replyMarkup: replyKeyboardMarkup);
+        }
+        
         static async Task<Message> SendYearKeyboard(ITelegramBotClient botClient, Message message, string course)
         {
-            _idToConversation.TryGetValue(message.From.Id, out var conversation);
+            _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+            // Check course validity
+            if (!Navigator.IsCourseInSchool(course, conversation!.School!))
+            {
+                Log.Debug("Invalid {course} chosen in chat {id}.", course, message.Chat.Id);
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: "Inserisci un corso valido"); 
+            }
+            // Change conversation state to Year and save chosen course
             conversation.State = State.Year;
-            
-            
+            conversation.Course = course;
             Log.Debug("Sending Year inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
@@ -185,6 +190,30 @@ public static class UpdateHandlers
                 replyMarkup: replyKeyboardMarkup);
         }
 
+        static async Task<Message> SendSubjectKeyboard(ITelegramBotClient botClient, Message message, string year)
+        {
+            _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+            // Check course validity
+            ReplyKeyboardMarkup replyKeyboardMarkup = Navigator.GenerateSubjectKeyboard(conversation!.Course!);
+            if (replyKeyboardMarkup == null)
+            {
+                Log.Debug("Invalid {year} chosen in chat {id}.", year, message.Chat.Id);
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: "Inserisci un anno valido"); 
+            }
+            // Change conversation state to Subject and save chosen year
+            conversation.State = State.Subject;
+            conversation.Year = year;
+            
+            Log.Debug("Sending Year inline keyboard to chat: {id}.", message.Chat.Id);
+            // Show typing action to client
+            await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+            
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Scegli la materia per cui ti serve un tutoraggio",
+                replyMarkup: replyKeyboardMarkup);
+        }
+        
         static async Task<Message> SendEcho(ITelegramBotClient botClient, Message message)
         {
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
