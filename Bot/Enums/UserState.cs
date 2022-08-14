@@ -1,6 +1,6 @@
 namespace Bot.Enums;
 
-public enum State
+public enum UserState
 {
     Start = 0,
     School = 1,
@@ -9,24 +9,24 @@ public enum State
     Exam = 4
 }
 
-public static class StateMethods
+public static class UserStateMethods
 {
     /// <summary>
     /// Looks for the state preceding currentState
     /// </summary>
-    /// <param name="currentState">The state for which it searches the previous</param>
+    /// <param name="currentUserState">The state for which it searches the previous</param>
     /// <returns>previous state if found; otherwise current state.</returns>
-public static State GetPreviousState(this State currentState)
+public static UserState GetPreviousState(this UserState currentUserState)
 {
-    var states = Enum.GetValues<State>();
+    var states = Enum.GetValues<UserState>();
     
     foreach (var state in states)
     {
-        if (state == currentState - 1)
+        if (state == currentUserState - 1)
             return state;
     }
 
-    return currentState;
+    return currentUserState;
 }
 
 }

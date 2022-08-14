@@ -52,6 +52,7 @@ public static class Navigator
             buttons.Add(row);
             row = new List<KeyboardButton>();
         }
+        buttons.Add(new List<KeyboardButton>(){ new ("indietro")});
         return new ReplyKeyboardMarkup(buttons);
     }
 
@@ -76,6 +77,7 @@ public static class Navigator
             row = new List<KeyboardButton>();
         }
         
+        buttons.Add(new List<KeyboardButton>(){ new ("indietro")});
         return new ReplyKeyboardMarkup(buttons);
     }
     public static ReplyKeyboardMarkup? GenerateYearKeyboard(string course)

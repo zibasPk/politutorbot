@@ -81,16 +81,24 @@ public static class UpdateHandlers
         }
 
         var command = message.Text.Split(' ')[0];
+        if (command == "indietro")
+        {
+            conversation.GoToPreviousState();
+            conversation.GoToPreviousState();
+            command = conversation.GetCurrentTopic();
+        }
+
         var action = conversation!.State switch
         {
-            State.Start => command switch
+            UserState.Start => command switch
             {
                 "/start" => SendSchoolKeyboard(botClient, message),
                 _ => SendEcho(botClient, message)
             },
-            State.School => SendCourseKeyboard(botClient, message, command),
-            State.Course => SendYearKeyboard(botClient, message, command),
-            State.Year => SendExamKeyboard(botClient, message, command),
+            UserState.School => SendCourseKeyboard(botClient, message, command),
+            UserState.Course => SendYearKeyboard(botClient, message, command),
+            UserState.Year => SendExamKeyboard(botClient, message, command),
+            _ => SendEcho(botClient, message)
         };
 
         await action;
@@ -99,7 +107,7 @@ public static class UpdateHandlers
         {
             // Change conversation state
             _idToConversation.TryGetValue(message.From!.Id, out var conversation);
-            conversation!.State = State.School;
+            conversation!.State = UserState.School;
 
             Log.Debug("Sending School inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
@@ -111,7 +119,7 @@ public static class UpdateHandlers
                 new[]
                 {
                     new KeyboardButton[] { "3I", "ICAT" },
-                    new KeyboardButton[] { "AUIC", "Design" },
+                    new KeyboardButton[] { "AUIC", "Design" }
                 })
             {
                 ResizeKeyboard = true
@@ -121,7 +129,7 @@ public static class UpdateHandlers
                 text: "Scegli la tua scuola",
                 replyMarkup: replyKeyboardMarkup);
         }
-        
+
         static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, string school)
         {
             ReplyKeyboardMarkup? replyKeyboardMarkup = Navigator.GenerateCourseKeyboard(school);
@@ -143,7 +151,7 @@ public static class UpdateHandlers
 
             // Change conversation state to Course and save chosen school
             _idToConversation.TryGetValue(message.From!.Id, out var conversation);
-            conversation!.State = State.Course;
+            conversation!.State = UserState.Course;
             conversation.School = school;
             // Show typing action to client
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
@@ -155,7 +163,7 @@ public static class UpdateHandlers
                 text: "Scegli il tuo corso di studi",
                 replyMarkup: replyKeyboardMarkup);
         }
-        
+
         static async Task<Message> SendYearKeyboard(ITelegramBotClient botClient, Message message, string course)
         {
             _idToConversation.TryGetValue(message.From!.Id, out var conversation);
@@ -164,10 +172,11 @@ public static class UpdateHandlers
             {
                 Log.Debug("Invalid {course} chosen in chat {id}.", course, message.Chat.Id);
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Inserisci un corso valido"); 
+                    text: "Inserisci un corso valido");
             }
+
             // Change conversation state to Year and save chosen course
-            conversation.State = State.Year;
+            conversation.State = UserState.Year;
             conversation.Course = course;
             Log.Debug("Sending Year inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
@@ -180,6 +189,7 @@ public static class UpdateHandlers
                 {
                     new KeyboardButton[] { "Y1", "Y2" },
                     new KeyboardButton[] { "Y3" },
+                    new KeyboardButton[] {"indietro"}
                 })
             {
                 ResizeKeyboard = true
@@ -199,21 +209,22 @@ public static class UpdateHandlers
             {
                 Log.Debug("Invalid {year} chosen in chat {id}.", year, message.Chat.Id);
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Inserisci un anno valido"); 
+                    text: "Inserisci un anno valido");
             }
+
             // Change conversation state to Subject and save chosen year
-            conversation.State = State.Exam;
+            conversation.State = UserState.Exam;
             conversation.Year = year;
-            
+
             Log.Debug("Sending Exam inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-            
+
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Scegli la materia per cui ti serve un tutoraggio",
                 replyMarkup: replyKeyboardMarkup);
         }
-        
+
         static async Task<Message> SendEcho(ITelegramBotClient botClient, Message message)
         {
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
