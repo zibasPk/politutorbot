@@ -90,7 +90,7 @@ public static class UpdateHandlers
             },
             State.School => SendCourseKeyboard(botClient, message, command),
             State.Course => SendYearKeyboard(botClient, message, command),
-            State.Year => SendSubjectKeyboard(botClient, message, command),
+            State.Year => SendExamKeyboard(botClient, message, command),
         };
 
         await action;
@@ -190,11 +190,11 @@ public static class UpdateHandlers
                 replyMarkup: replyKeyboardMarkup);
         }
 
-        static async Task<Message> SendSubjectKeyboard(ITelegramBotClient botClient, Message message, string year)
+        static async Task<Message> SendExamKeyboard(ITelegramBotClient botClient, Message message, string year)
         {
             _idToConversation.TryGetValue(message.From!.Id, out var conversation);
             // Check course validity
-            ReplyKeyboardMarkup replyKeyboardMarkup = Navigator.GenerateSubjectKeyboard(conversation!.Course!);
+            var replyKeyboardMarkup = Navigator.GenerateSubjectKeyboard(conversation!.Course!, year);
             if (replyKeyboardMarkup == null)
             {
                 Log.Debug("Invalid {year} chosen in chat {id}.", year, message.Chat.Id);
@@ -202,10 +202,10 @@ public static class UpdateHandlers
                     text: "Inserisci un anno valido"); 
             }
             // Change conversation state to Subject and save chosen year
-            conversation.State = State.Subject;
+            conversation.State = State.Exam;
             conversation.Year = year;
             
-            Log.Debug("Sending Year inline keyboard to chat: {id}.", message.Chat.Id);
+            Log.Debug("Sending Exam inline keyboard to chat: {id}.", message.Chat.Id);
             // Show typing action to client
             await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
             

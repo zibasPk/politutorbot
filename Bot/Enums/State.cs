@@ -6,5 +6,5 @@ public enum State
     School,
     Course,
     Year,
-    Subject
+    Exam
 }

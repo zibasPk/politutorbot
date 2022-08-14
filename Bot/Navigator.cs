@@ -1,4 +1,6 @@
 using System.Collections;
+using Bot.Database;
+using Bot.Database.Dao;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -42,14 +44,13 @@ public static class Navigator
             return null;
         var buttons = new List<List<KeyboardButton>>();
         var row = new List<KeyboardButton>();
-        for (int i = 0; i < courses.Length; i++)
+        for (var i = 0; i < courses.Length; i++)
         {
             row.Add(new KeyboardButton(courses[i]));
-            if ((i + 1) % 3 == 0 || i == courses.Length - 1)
-            {
-                buttons.Add(row);
-                row = new List<KeyboardButton>();
-            }
+            if ((i + 1) % 3 != 0 && i != courses.Length - 1) 
+                continue;
+            buttons.Add(row);
+            row = new List<KeyboardButton>();
         }
         return new ReplyKeyboardMarkup(buttons);
     }
@@ -59,9 +60,23 @@ public static class Navigator
     /// </summary>
     /// <param name="course">The course for which it generates the keyboard</param>  
     /// <returns>null if course doesn't exist </returns>
-    public static ReplyKeyboardMarkup GenerateSubjectKeyboard(string course)
+    public static ReplyKeyboardMarkup? GenerateSubjectKeyboard(string course, string year)
     {
-        throw new NotImplementedException();
+        var examService = new ExamDAO(DbConnection.GetMySqlConnection());
+        var exams = examService.FindExamsInYear(course, year);
+        if (exams.Count == 0)
+            return null;
+        var buttons = new List<List<KeyboardButton>>();
+        var row = new List<KeyboardButton>();
+        for (var i = 0; i < exams.Count; i++)
+        {
+            row.Add(new KeyboardButton(exams[i]));
+            if ((i + 1) % 3 != 0 && i != exams.Count - 1) continue;
+            buttons.Add(row);
+            row = new List<KeyboardButton>();
+        }
+        
+        return new ReplyKeyboardMarkup(buttons);
     }
     public static ReplyKeyboardMarkup? GenerateYearKeyboard(string course)
     {
