@@ -7,8 +7,10 @@ namespace Bot.configs;
 public class DbConfig
 {
     public string Host = "";
+    public string Port = "";
     public string User = "";
     public string Password = "";
+    public string DbName = ""; 
     
     public static void InitializeConfig()
     {
@@ -32,5 +34,11 @@ public class DbConfig
         GlobalConfig.DbConfig = new DbConfig();
         var x = JsonConvert.SerializeObject(GlobalConfig.DbConfig);
         File.WriteAllText(Paths.DbConfig, x);
+    }
+
+    public string GetConnectionString()
+    {
+        return @"server=" + Host + "; port=" + Port +
+               "; userid=" + User + "; password=" + Password + "; database=" + DbName;
     }
 }

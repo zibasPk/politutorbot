@@ -1,4 +1,6 @@
 ﻿using Bot.configs;
+using Bot.Database;
+using Bot.Database.Dao;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -10,8 +12,6 @@ namespace Bot;
 
 internal static class Program
 {
-    public static Dictionary<long, Conversation> dict = new Dictionary<long, Conversation>();
-
     private static async Task Main(String[] args)
     {
         var levelSwitch = new LoggingLevelSwitch();
@@ -21,10 +21,15 @@ internal static class Program
             .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
         
+        // initialize config Classes
         GlobalConfig.InitConfigs();
         levelSwitch.MinimumLevel = GlobalConfig.GetLogLevel();
         Log.Information("Logger started on {level} level", levelSwitch.MinimumLevel);
         
+        //Db connection initialization
+        DbConnection.GetMySqlConnection();
+        
+        // Bot initialization
         var botClient = new TelegramBotClient(GlobalConfig.BotConfig!.BotToken);
         var me = await botClient.GetMeAsync();
         using var cts = new CancellationTokenSource();
