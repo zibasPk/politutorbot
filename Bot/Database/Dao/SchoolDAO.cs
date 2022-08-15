@@ -5,7 +5,7 @@ namespace Bot.Database.Dao;
 
 public class SchoolDAO
 {
-    private MySqlConnection _connection;
+    private readonly MySqlConnection _connection;
 
     public SchoolDAO(MySqlConnection connection)
     {
@@ -14,11 +14,12 @@ public class SchoolDAO
 
     public List<string> FindSchools()
     {
+        _connection.Open();
         const string query = "SELECT * from school";
         var command = new MySqlCommand(query, _connection);
 
         var schools = new List<string>();
-        MySqlDataReader reader;
+        MySqlDataReader? reader = null;
         try
         {
             reader = command.ExecuteReader();
@@ -26,20 +27,18 @@ public class SchoolDAO
         catch (Exception e)
         {
             Log.Error(e.Message);
-            return schools;
         }
 
-        if (!reader.HasRows)
+        if (reader != null)
         {
-            Log.Debug("No schools found for in db");
-            return schools;
-        }
+            if (!reader.HasRows)
+                Log.Debug("No schools found for in db");
 
-        while (reader.Read())
-        {
-            schools.Add(reader.GetString("name"));
+            while (reader.Read())
+                schools.Add(reader.GetString("name"));
         }
-
+        
+        _connection.Close();
         return schools;
     }
 

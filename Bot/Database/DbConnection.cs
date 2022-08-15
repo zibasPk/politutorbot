@@ -6,20 +6,21 @@ namespace Bot.Database;
 
 public static class DbConnection
 {
-    private static MySqlConnection? _mySqlConnection;
-
+    private static bool firstConnection = true;
     /// <summary>
-    /// Opens connection with MySqlDatabase
+    /// Connects to MySql Database 
     /// </summary>
-    /// <returns>Saved connection; If none is present returns a new connection</returns>
+    /// <returns>Connection from connection Pool</returns>
     public static MySqlConnection GetMySqlConnection()
     {
-        if (_mySqlConnection != null)
-            return _mySqlConnection;
-
-        _mySqlConnection = new MySqlConnection(GlobalConfig.DbConfig!.GetConnectionString());
-        _mySqlConnection.Open();
-        Log.Information($"MySQL version : {_mySqlConnection.ServerVersion}");
-        return _mySqlConnection;
+        var mySqlConnection = new MySqlConnection(GlobalConfig.DbConfig!.GetConnectionString());
+        if (firstConnection)
+        {
+            mySqlConnection.Open();
+            Log.Information($"MySQL version : {mySqlConnection.ServerVersion}");
+            firstConnection = false;
+            mySqlConnection.Close();
+        }
+        return mySqlConnection;
     }
 }
