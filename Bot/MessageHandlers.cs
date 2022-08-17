@@ -6,12 +6,13 @@ using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Bot;
 
 public static class MessageHandlers
 {
-    private static Dictionary<long, Conversation> _idToConversation = new();
+    private static readonly Dictionary<long, Conversation> IdToConversation = new();
 
     public static async Task HandleMessage(ITelegramBotClient botClient, Message message)
     {
@@ -30,10 +31,10 @@ public static class MessageHandlers
 
         var userId = message.From.Id;
         Log.Information("Received message '{text}' in chat {chatId}", message.Text, chatId);
-        if (!_idToConversation.TryGetValue(userId, out var conversation))
+        if (!IdToConversation.TryGetValue(userId, out var conversation))
         {
             conversation = new Conversation();
-            _idToConversation.Add(userId, conversation);
+            IdToConversation.Add(userId, conversation);
         }
 
         var command = message.Text;
@@ -61,7 +62,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)
     {
-        _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
 
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (!Monitor.TryEnter(conversation!.ConvLock))
@@ -95,7 +96,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, string school)
     {
-        _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
@@ -133,7 +134,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendYearKeyboard(ITelegramBotClient botClient, Message message, string course)
     {
-        _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
@@ -169,7 +170,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendExamKeyboard(ITelegramBotClient botClient, Message message, string year)
     {
-        _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
@@ -199,7 +200,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendSaveUserData(ITelegramBotClient botClient, Message message, string exam)
     {
-        _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
@@ -218,7 +219,8 @@ public static class MessageHandlers
         var studentNumber = userService.FindUserStudentNumber(userId);
         if (studentNumber == null)
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Inserisci il tuo codice matricola:");
+                text: "Inserisci il tuo codice matricola:",
+                replyMarkup: new ReplyKeyboardRemove());
 
         conversation.StudentNumber = studentNumber.Value;
         conversation.State = UserState.ReLink;
@@ -237,7 +239,7 @@ public static class MessageHandlers
     private static async Task<Message> ReadYesOrNo(ITelegramBotClient botClient, Message message, string command)
     {
         var userId = message.From!.Id;
-        _idToConversation.TryGetValue(userId, out var conversation);
+        IdToConversation.TryGetValue(userId, out var conversation);
 
         var studentNumber = conversation!.StudentNumber;
         switch (command)
@@ -258,7 +260,8 @@ public static class MessageHandlers
                 // Release lock from conversation
                 Monitor.Exit(conversation.ConvLock);
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Associazione rimossa. \nReinserisci il tuo codice matricola:");
+                    text: "Associazione rimossa. \nReinserisci il tuo codice matricola:",
+                    replyMarkup: new ReplyKeyboardRemove());
             case "No":
             case "no":
             case "NO":
@@ -274,7 +277,7 @@ public static class MessageHandlers
     private static async Task<Message> ReadStudentNumber(ITelegramBotClient botClient, Message message,
         string studentNumberStr)
     {
-        _idToConversation.TryGetValue(message.From!.Id, out var conversation);
+        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
