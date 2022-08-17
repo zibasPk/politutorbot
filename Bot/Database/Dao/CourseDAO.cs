@@ -75,7 +75,10 @@ public class CourseDAO
             {
                 var foundSchool = reader.GetString("school");
                 if (foundSchool == school)
+                {
+                    _connection.Close();
                     return true;
+                }
                 Log.Debug("Course {course} is of School {foundSchool} not {school}."
                     , course, foundSchool, school);
             }

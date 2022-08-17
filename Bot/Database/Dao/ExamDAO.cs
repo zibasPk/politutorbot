@@ -50,4 +50,38 @@ public class ExamDAO
         _connection.Close();
         return exams;
     }
+
+    public bool IsExamInCourse(string exam, string course, string year)
+    {
+        _connection.Open();
+        const string query = "SELECT * from exam WHERE name=@name and course=@course and year=@year";
+        var command = new MySqlCommand(query, _connection);
+        command.Parameters.AddWithValue("@name", exam);
+        command.Parameters.AddWithValue("@course", course);
+        command.Parameters.AddWithValue("@year", year);
+        command.Prepare();
+
+        MySqlDataReader? reader = null;
+        try
+        {
+            reader = command.ExecuteReader();
+        }
+        catch (Exception e)
+        {
+            Log.Error(e.Message);
+        }
+
+        if (reader != null)
+        {
+            if (reader.Read())
+            {
+                _connection.Close();
+                return true;
+            }
+            Log.Debug("{exam} {course} {year} doesn't exist", exam, course, year);
+        }
+
+        _connection.Close();
+        return false; 
+    }
 }

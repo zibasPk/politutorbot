@@ -49,13 +49,23 @@ public static class KeyboardGenerator
 
     public static ReplyKeyboardMarkup GenerateYearKeyboard()
     {
-        return new(
+        return new ReplyKeyboardMarkup(
             new[]
             {
                 new KeyboardButton[] { "Y1", "Y2" },
                 new KeyboardButton[] { "Y3" },
                 new KeyboardButton[] { "indietro" }
             })
+        {
+            ResizeKeyboard = true
+        };
+    }
+
+    public static ReplyKeyboardMarkup GenerateYesOrNoKeyboard()
+    {
+        return new ReplyKeyboardMarkup(
+            new KeyboardButton[] { "Si", "No" }
+        )
         {
             ResizeKeyboard = true
         };

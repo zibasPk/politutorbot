@@ -6,7 +6,9 @@ public enum UserState
     School = 1,
     Course = 2,
     Year = 3,
-    Exam = 4
+    Exam = 4,
+    Link = 5,
+    ReLink = 999,
 }
 
 public static class UserStateMethods
