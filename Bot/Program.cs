@@ -21,14 +21,12 @@ internal static class Program
             .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
         
-        // initialize config Classes
-        GlobalConfig.InitConfigs();
         levelSwitch.MinimumLevel = GlobalConfig.GetLogLevel();
         Log.Information("Logger started on {level} level", levelSwitch.MinimumLevel);
         
         //Db connection initialization
         DbConnection.GetMySqlConnection();
-        
+
         // Bot initialization
         var botClient = new TelegramBotClient(GlobalConfig.BotConfig!.BotToken);
         var me = await botClient.GetMeAsync();

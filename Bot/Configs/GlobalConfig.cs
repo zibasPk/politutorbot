@@ -4,15 +4,13 @@ namespace Bot.configs;
 
 public static class GlobalConfig
 {
+    static GlobalConfig()
+    {
+        InitConfigs();
+    } 
     public static BotConfig? BotConfig { get; set; }
     public static DbConfig? DbConfig { get; set; }
-
-    public static void InitConfigs()
-    {
-        BotConfig.InitializeConfig();
-        DbConfig.InitializeConfig();
-    }
-
+    
     public static LogEventLevel GetLogLevel()
     {
         if (BotConfig == null)
@@ -28,5 +26,11 @@ public static class GlobalConfig
             6 => LogEventLevel.Debug,
             _ => LogEventLevel.Information
         };
+    }
+    
+    private static void InitConfigs()
+    {
+        BotConfig.InitializeConfig();
+        DbConfig.InitializeConfig();
     }
 }
