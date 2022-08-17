@@ -30,7 +30,7 @@ public static UserState GetPreviousState(this UserState currentUserState)
 
     return currentUserState;
 }
-
+    
 }
 
 

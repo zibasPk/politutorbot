@@ -10,6 +10,7 @@ public class BotConfig
 {
     public string BotToken = "";
     public int LogLevel;
+    public int UserTimeOut;
 
     public BotConfig()
     {

@@ -1,20 +1,42 @@
-using Bot.Database.Dao;
+using System.Timers;
+using Bot.configs;
 using Bot.Enums;
+using Serilog;
+using Timer = System.Timers.Timer;
 
 namespace Bot;
 
 public class Conversation
 {
-    public UserState State { get; set; }
+    public readonly object ConvLock = new();
+    private readonly Timer _conversationTimer;
+    private UserState _state;
+
+    public UserState State
+    {
+        get => _state;
+        set
+        {
+            if (value != UserState.Start)
+                _conversationTimer.Interval = GlobalConfig.BotConfig!.UserTimeOut;
+            _state = value;
+        }
+    }
+
     public string? School { get; set; }
     public string? Course { get; set; }
     public string? Year { get; set; }
     public string? Exam { get; set; }
 
     public int StudentNumber { get; set; }
+
     public Conversation()
     {
-        this.State = UserState.Start;
+        State = UserState.Start;
+        _conversationTimer = new Timer(GlobalConfig.BotConfig!.UserTimeOut);
+        _conversationTimer.Elapsed += ResetConversation;
+        _conversationTimer.AutoReset = false;
+        _conversationTimer.Start();
     }
 
     public void GoToPreviousState()
@@ -43,22 +65,39 @@ public class Conversation
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         State = State.GetPreviousState();
     }
 
-    public string GetCurrentTopic()
+    /// <returns>The topic attaining to the current State;<br/>null if topic hasn't been set</returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public string? GetCurrentTopic()
     {
         return State switch
         {
             UserState.Start => "/start",
-            UserState.School => School!,
-            UserState.Course => Course!,
-            UserState.Year => Year!,
-            UserState.Exam => Exam!,
-            UserState.Link => StudentNumber.ToString(),
-            UserState.ReLink => StudentNumber.ToString(),
+            UserState.School => School,
+            UserState.Course => Course,
+            UserState.Year => Year,
+            UserState.Exam => Exam,
+            UserState.Link => StudentNumber != 0 ? StudentNumber.ToString() : null,
+            UserState.ReLink => StudentNumber != 0 ? StudentNumber.ToString() : null,
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    private void ResetConversation(object? source, ElapsedEventArgs e)
+    {
+        if (!Monitor.TryEnter(ConvLock))
+            return;
+        Log.Debug("Resetting conversation in state {state}", State);
+        State = UserState.Start;
+        School = null;
+        Course = null;
+        Year = null;
+        Exam = null;
+        StudentNumber = 0;
+        
+        Monitor.Exit(ConvLock);
     }
 }
