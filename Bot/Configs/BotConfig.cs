@@ -9,13 +9,13 @@ namespace Bot.configs;
 public class BotConfig
 {
     public string BotToken = "";
-    public int LogLevel;
+    public int BotLogLevel;
     public int UserTimeOut;
 
     public BotConfig()
     {
-        // default log level 3: information
-        LogLevel = 3;
+        // Default log level 3: information
+        BotLogLevel = 3;
     }
 
     public static void InitializeConfig()

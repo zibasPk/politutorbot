@@ -281,7 +281,7 @@ public static class MessageHandlers
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
-        if (!Regex.IsMatch(studentNumberStr, "^[1-9][0-9]{5}"))
+        if (!Regex.IsMatch(studentNumberStr, "^[1-9][0-9]{5}$"))
         {
             Log.Debug("Invalid student number {studentNumber} typed in chat {id}.", studentNumberStr, message.Chat.Id);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,

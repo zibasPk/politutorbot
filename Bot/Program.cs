@@ -1,6 +1,7 @@
 ﻿using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.WebApi;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -18,11 +19,11 @@ internal static class Program
         var logConfig = new LoggerConfiguration().MinimumLevel.ControlledBy(levelSwitch);
         levelSwitch.MinimumLevel = LogEventLevel.Information;
         Log.Logger = logConfig.WriteTo.Console()
-            .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File("logs/botlog.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
         
-        levelSwitch.MinimumLevel = GlobalConfig.GetLogLevel();
-        Log.Information("Logger started on {level} level", levelSwitch.MinimumLevel);
+        levelSwitch.MinimumLevel = GlobalConfig.GetBotLogLevel();
+        Log.Information("Bot logger started on {level} level", levelSwitch.MinimumLevel);
         
         //Db connection initialization
         DbConnection.GetMySqlConnection();
@@ -41,8 +42,10 @@ internal static class Program
             receiverOptions: receiverOptions,
             cancellationToken: cts.Token
         );
-
+        
         Log.Information("Start listening for " + me.Username);
+
+        WebServer.Init();
         Console.ReadLine();
         // Send cancellation request to stop bot
         cts.Cancel();
