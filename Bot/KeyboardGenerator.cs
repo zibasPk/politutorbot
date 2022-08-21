@@ -10,7 +10,7 @@ public static class KeyboardGenerator
     /// Generate a keyboard containing available schools
     /// </summary>
     /// <returns>null if no School is found </returns>
-    public static ReplyKeyboardMarkup? GenerateSchoolKeyboard()
+    public static ReplyKeyboardMarkup? SchoolKeyboard()
     {
         var schoolService = new SchoolDAO(DbConnection.GetMySqlConnection());
         var schools = schoolService.FindSchools();
@@ -24,7 +24,7 @@ public static class KeyboardGenerator
     /// </summary>
     /// <param name="school">The School for which it generates the keyboard</param>  
     /// <returns>null if no course is found </returns>
-    public static ReplyKeyboardMarkup? GenerateCourseKeyboard(string school)
+    public static ReplyKeyboardMarkup? CourseKeyboard(string school)
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
         var courses = courseService.FindCoursesInSchool(school);
@@ -38,7 +38,7 @@ public static class KeyboardGenerator
     /// </summary>
     /// <param name="course">The course for which it generates the keyboard</param>  
     /// <returns>null if course doesn't exist </returns>
-    public static ReplyKeyboardMarkup? GenerateSubjectKeyboard(string course, string year)
+    public static ReplyKeyboardMarkup? SubjectKeyboard(string course, string year)
     {
         var examService = new ExamDAO(DbConnection.GetMySqlConnection());
         var exams = examService.FindExamsInYear(course, year);
@@ -47,7 +47,7 @@ public static class KeyboardGenerator
         return GenerateKeyboardMarkup(exams, 3, true);
     }
 
-    public static ReplyKeyboardMarkup GenerateYearKeyboard()
+    public static ReplyKeyboardMarkup YearKeyboard()
     {
         return new ReplyKeyboardMarkup(
             new[]
@@ -61,7 +61,7 @@ public static class KeyboardGenerator
         };
     }
 
-    public static ReplyKeyboardMarkup GenerateYesOrNoKeyboard()
+    public static ReplyKeyboardMarkup YesOrNoKeyboard()
     {
         return new ReplyKeyboardMarkup(
             new KeyboardButton[] { "Si", "No" }
@@ -70,6 +70,17 @@ public static class KeyboardGenerator
             ResizeKeyboard = true
         };
     }
+
+    public static ReplyKeyboardMarkup BackKeyboard()
+    {
+        return new ReplyKeyboardMarkup(new KeyboardButton("indietro"));
+    }
+    private static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, bool hasBackButton)
+    {
+        // TODO: create algorithm that identifies the optimal elements per row for each row
+        throw new NotImplementedException();
+    }
+    
 
     private static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, int itemsPerRow, bool hasBackButton)
     {

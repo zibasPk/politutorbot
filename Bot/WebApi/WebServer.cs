@@ -48,6 +48,9 @@ public static class WebServer
                     return;
                 }
                 
+                //TODO: insert into db
+                MessageHandlers.OnApiCall(int.Parse(pair.UserId));
+
             }
             catch (Exception e)
             {

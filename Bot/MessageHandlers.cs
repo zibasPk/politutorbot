@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Enums;
@@ -7,12 +8,13 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using static Bot.AsyncResponseHandler;
 
 namespace Bot;
 
 public static class MessageHandlers
 {
-    private static readonly Dictionary<long, Conversation> IdToConversation = new();
+    private static readonly Dictionary<long, Conversation> UserIdToConversation = new();
 
     public static async Task HandleMessage(ITelegramBotClient botClient, Message message)
     {
@@ -31,15 +33,17 @@ public static class MessageHandlers
 
         var userId = message.From.Id;
         Log.Information("Received message '{text}' in chat {chatId}", message.Text, chatId);
-        if (!IdToConversation.TryGetValue(userId, out var conversation))
+        if (!UserIdToConversation.TryGetValue(userId, out var conversation))
         {
-            conversation = new Conversation();
-            IdToConversation.Add(userId, conversation);
+            conversation = new Conversation(chatId);
+            UserIdToConversation.Add(userId, conversation);
         }
 
         var command = message.Text;
         if (command == "indietro")
         {
+            if (conversation.WaitingForApiCall)
+                conversation.WaitingForApiCall = false;
             conversation.GoToPreviousState();
             conversation.GoToPreviousState();
             command = conversation.GetCurrentTopic();
@@ -60,21 +64,26 @@ public static class MessageHandlers
         await action;
     }
 
+
     private static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)
     {
-        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
 
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (!Monitor.TryEnter(conversation!.ConvLock))
         {
             Log.Debug("locked conv rip");
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await SendEcho(botClient, message);
         }
 
-        var replyKeyboardMarkup = KeyboardGenerator.GenerateSchoolKeyboard();
+        var replyKeyboardMarkup = KeyboardGenerator.SchoolKeyboard();
         if (replyKeyboardMarkup == null)
         {
             Log.Error("No schools found!.");
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Errore Interno al Bot");
         }
@@ -96,15 +105,17 @@ public static class MessageHandlers
 
     private static async Task<Message> SendCourseKeyboard(ITelegramBotClient botClient, Message message, string school)
     {
-        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
 
-        var replyKeyboardMarkup = KeyboardGenerator.GenerateCourseKeyboard(school);
+        var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
         if (school != "ICAT")
         {
             Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
         }
@@ -113,6 +124,8 @@ public static class MessageHandlers
         if (replyKeyboardMarkup == null)
         {
             Log.Debug("Invalid school {school} chosen in chat {id}.", school, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci una scuola valida");
         }
@@ -134,7 +147,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendYearKeyboard(ITelegramBotClient botClient, Message message, string course)
     {
-        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
@@ -144,6 +157,8 @@ public static class MessageHandlers
         if (!courseService.IsCourseInSchool(course, conversation!.School!))
         {
             Log.Debug("Invalid {course} chosen in chat {id}.", course, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci un corso valido");
         }
@@ -157,11 +172,8 @@ public static class MessageHandlers
         Log.Debug("Sending Year inline keyboard to chat: {id}.", message.Chat.Id);
         // Show typing action to client
         await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-        // Simulate longer running task
-        // await Task.Delay(500);
 
-        //TODO: generate keyboard dynamically and check if null
-        var replyKeyboardMarkup = KeyboardGenerator.GenerateYearKeyboard();
+        var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard();
 
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
             text: "Scegli il tuo anno",
@@ -170,15 +182,17 @@ public static class MessageHandlers
 
     private static async Task<Message> SendExamKeyboard(ITelegramBotClient botClient, Message message, string year)
     {
-        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
         // Check course validity
-        var replyKeyboardMarkup = KeyboardGenerator.GenerateSubjectKeyboard(conversation!.Course!, year);
+        var replyKeyboardMarkup = KeyboardGenerator.SubjectKeyboard(conversation!.Course!, year);
         if (replyKeyboardMarkup == null)
         {
             Log.Debug("Invalid {year} chosen in chat {id}.", year, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci un anno valido");
         }
@@ -200,7 +214,7 @@ public static class MessageHandlers
 
     private static async Task<Message> SendSaveUserData(ITelegramBotClient botClient, Message message, string exam)
     {
-        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
@@ -209,6 +223,8 @@ public static class MessageHandlers
         if (!examService.IsExamInCourse(exam, conversation!.Course!, conversation.Year!))
         {
             Log.Debug("Invalid Exam {exam} chosen in chat {id}.", exam, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci una materia valida");
         }
@@ -218,9 +234,24 @@ public static class MessageHandlers
         var userId = message.From.Id;
         var studentNumber = userService.FindUserStudentNumber(userId);
         if (studentNumber == null)
+        {
+            // Check if Online Authentication is active
+            if (GlobalConfig.WebConfig!.IsActive)
+            {
+                conversation.WaitingForApiCall = true;
+                Monitor.Exit(conversation.ConvLock);
+                var text = "Login Aunica: " + GlobalConfig.WebConfig.LoginLink;
+                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                    text: text,
+                    replyMarkup: KeyboardGenerator.BackKeyboard());
+            }
+
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci il tuo codice matricola:",
                 replyMarkup: new ReplyKeyboardRemove());
+        }
 
         conversation.StudentNumber = studentNumber.Value;
         conversation.State = UserState.ReLink;
@@ -228,7 +259,7 @@ public static class MessageHandlers
         Monitor.Exit(conversation.ConvLock);
 
         Log.Debug("User {userId} already linked to person code {studentNumber}.", userId, studentNumber);
-        var replyKeyboardMarkup = KeyboardGenerator.GenerateYesOrNoKeyboard();
+        var replyKeyboardMarkup = KeyboardGenerator.YesOrNoKeyboard();
         return await
             botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: $"Il tuo id telegram è già associato al codice matricola {studentNumber}.\n" +
@@ -239,7 +270,7 @@ public static class MessageHandlers
     private static async Task<Message> ReadYesOrNo(ITelegramBotClient botClient, Message message, string command)
     {
         var userId = message.From!.Id;
-        IdToConversation.TryGetValue(userId, out var conversation);
+        UserIdToConversation.TryGetValue(userId, out var conversation);
 
         var studentNumber = conversation!.StudentNumber;
         switch (command)
@@ -258,10 +289,22 @@ public static class MessageHandlers
                 conversation.StudentNumber = 0;
                 conversation.State = UserState.Link;
                 // Release lock from conversation
+
+                // Check if Online Authentication is active
+                if (!GlobalConfig.WebConfig!.IsActive)
+                {
+                    Monitor.Exit(conversation.ConvLock);
+                    return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                        text: "Associazione rimossa. \nReinserisci il tuo codice matricola:",
+                        replyMarkup: new ReplyKeyboardRemove());
+                }
+
+                conversation.WaitingForApiCall = true;
                 Monitor.Exit(conversation.ConvLock);
+                var text = "Login Aunica: " + GlobalConfig.WebConfig.LoginLink;
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Associazione rimossa. \nReinserisci il tuo codice matricola:",
-                    replyMarkup: new ReplyKeyboardRemove());
+                    text: text,
+                    replyMarkup: KeyboardGenerator.BackKeyboard());
             case "No":
             case "no":
             case "NO":
@@ -277,15 +320,36 @@ public static class MessageHandlers
     private static async Task<Message> ReadStudentNumber(ITelegramBotClient botClient, Message message,
         string studentNumberStr)
     {
-        IdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
+
+        // Check if Online Authentication is active
+        if (conversation.WaitingForApiCall)
+        {
+            Monitor.Exit(conversation.ConvLock);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Accedi ad Aunica per continuare.");
+        }
+
         if (!Regex.IsMatch(studentNumberStr, "^[1-9][0-9]{5}$"))
         {
             Log.Debug("Invalid student number {studentNumber} typed in chat {id}.", studentNumberStr, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci un codice matricola valido");
+        }
+
+        var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
+        if (!studentService.IsStudentEnabled(int.Parse(studentNumberStr)))
+        {
+            Log.Debug("Invalid student number {studentNumber} typed in chat {id}.", studentNumberStr, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Spiacente non sei abilitato ai tutoraggi peer to peer.");
         }
 
         var studentNumber = int.Parse(studentNumberStr);
@@ -304,5 +368,57 @@ public static class MessageHandlers
     {
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
             text: message.Text!);
+    }
+
+    public static async void OnApiCall(int userId)
+    {
+        UserIdToConversation.TryGetValue(userId, out var conversation);
+        if (conversation == null)
+        {
+            Log.Warning("Received api call from user: {userId} with no active conversation", userId);
+            return;
+        }
+
+        if (!conversation.WaitingForApiCall)
+        {
+            Log.Warning("Received api call from conversation with user: {userId} " +
+                        "that wasn't waiting for an api call", userId);
+            return;  
+        }
+
+        Log.Debug("Received api call from user: {userId}",userId);
+        lock (conversation.ConvLock)
+        {
+            conversation.WaitingForApiCall = false;
+            // TODO: change to next state
+        }
+        await SendMessage(conversation.ChatId, "Identità confermata con successo");
+    }
+}
+
+public static class AsyncResponseHandler
+{
+    private static ITelegramBotClient? _botClient;
+
+    public static void Init(ITelegramBotClient botClient)
+    {
+        _botClient = botClient;
+    }
+
+    public static async Task SendMessage(long chatId, string text)
+    {
+        if (_botClient == null)
+            throw new InvalidOperationException("AsyncResponder class was not initialized. " +
+                                                "Call the Init() to initialize static botClient.");
+        await _botClient.SendTextMessageAsync(chatId: chatId,
+            text: text,
+            replyMarkup: new ReplyKeyboardRemove());
+    }
+
+    public static async Task SendMessage(long chatId, string text, ITelegramBotClient botClient)
+    {
+        await botClient.SendTextMessageAsync(chatId: chatId,
+            text: text,
+            replyMarkup: new ReplyKeyboardRemove());
     }
 }

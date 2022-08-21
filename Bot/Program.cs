@@ -15,6 +15,7 @@ internal static class Program
 {
     private static async Task Main(String[] args)
     {
+       // Global logger configuration
         var levelSwitch = new LoggingLevelSwitch();
         var logConfig = new LoggerConfiguration().MinimumLevel.ControlledBy(levelSwitch);
         levelSwitch.MinimumLevel = LogEventLevel.Information;
@@ -42,10 +43,11 @@ internal static class Program
             receiverOptions: receiverOptions,
             cancellationToken: cts.Token
         );
+        AsyncResponseHandler.Init(botClient);
         
         Log.Information("Start listening for " + me.Username);
-
-        WebServer.Init();
+        if (GlobalConfig.WebConfig!.IsActive)
+            WebServer.Init();
         Console.ReadLine();
         // Send cancellation request to stop bot
         cts.Cancel();

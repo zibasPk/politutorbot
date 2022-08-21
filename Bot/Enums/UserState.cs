@@ -2,35 +2,47 @@ namespace Bot.Enums;
 
 public enum UserState
 {
-    Start = 0,
-    School = 1,
-    Course = 2,
-    Year = 3,
-    Exam = 4,
-    Link = 5,
-    ReLink = 999,
+    Start,
+    School,
+    Course,
+    Year,
+    Exam,
+    Link,
+    ReLink,
 }
 
 public static class UserStateMethods
 {
+    private static int GetValue(this UserState currentUserState)
+    {
+        return currentUserState switch
+        {
+            UserState.Start => 0,
+            UserState.School => 1,
+            UserState.Course => 2,
+            UserState.Year => 3,
+            UserState.Exam => 4,
+            UserState.Link => 5,
+            UserState.ReLink => 99,
+            _ => throw new ArgumentOutOfRangeException(nameof(currentUserState), currentUserState, null)
+        };
+    }
+
     /// <summary>
     /// Looks for the state preceding currentState
     /// </summary>
     /// <param name="currentUserState">The state for which it searches the previous</param>
     /// <returns>previous state if found; otherwise current state.</returns>
-public static UserState GetPreviousState(this UserState currentUserState)
-{
-    var states = Enum.GetValues<UserState>();
-    
-    foreach (var state in states)
+    public static UserState GetPreviousState(this UserState currentUserState)
     {
-        if (state == currentUserState - 1)
-            return state;
+        var states = Enum.GetValues<UserState>();
+
+        foreach (var state in states)
+        {
+            if (state.GetValue() == currentUserState.GetValue() - 1)
+                return state;
+        }
+
+        return currentUserState;
     }
-
-    return currentUserState;
 }
-    
-}
-
-

@@ -8,15 +8,21 @@ namespace Bot.configs;
 [JsonObject(MemberSerialization.Fields)]
 public class WebAppConfig
 {
+    public bool IsActive;
     public int Port;
     public int WebLogLevel;
+    public string LoginLink;
 
     public WebAppConfig()
     {
+        // default start option
+        IsActive = false;
         // default log level 3: information
         WebLogLevel = 3;
-        // default port 3000
+        // default port
         Port = 3000;
+        // default link
+        LoginLink = "www.example.com";
     }
 
     public static void InitializeConfig()

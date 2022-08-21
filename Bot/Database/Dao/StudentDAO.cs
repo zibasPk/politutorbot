@@ -3,20 +3,22 @@ using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class SchoolDAO
+public class StudentDAO
 {
     private readonly MySqlConnection _connection;
 
-    public SchoolDAO(MySqlConnection connection)
+    public StudentDAO(MySqlConnection connection)
     {
         _connection = connection;
     }
 
-    public List<string> FindSchools()
+    public bool IsStudentEnabled(int studentCode)
     {
         _connection.Open();
-        const string query = "SELECT * from school";
+        const string query = "SELECT * from enabled_student WHERE code=@code";
         var command = new MySqlCommand(query, _connection);
+        command.Parameters.AddWithValue("@code", studentCode);
+        command.Prepare();
 
         var schools = new List<string>();
         MySqlDataReader? reader = null;
@@ -30,17 +32,15 @@ public class SchoolDAO
             throw;
         }
 
-        if (reader != null)
+        if (reader is { HasRows: true })
         {
-            if (!reader.HasRows)
-                Log.Debug("No schools found for in db");
-
-            while (reader.Read())
-                schools.Add(reader.GetString("name"));
+            _connection.Close();
+            return true;
         }
         
+        Log.Debug("Student {code} not found in DB", studentCode);
         _connection.Close();
-        return schools;
+        return false;
     }
 
 }

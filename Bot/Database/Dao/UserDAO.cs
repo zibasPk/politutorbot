@@ -5,12 +5,13 @@ namespace Bot.Database.Dao;
 
 public class UserDAO
 {
+    // todo: riscrivere meglio le condizioni di return dei dao almeno i try catch
     private readonly MySqlConnection _connection;
     public UserDAO(MySqlConnection connection)
     {
         _connection = connection;
     }
-    //TODO: reinserimento codice persona e conseguente rimozione dal database
+    
     /// <summary>
     /// Removes a row of 
     /// </summary>

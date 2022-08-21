@@ -8,7 +8,9 @@ namespace Bot;
 
 public class Conversation
 {
+    public bool WaitingForApiCall = false;
     public readonly object ConvLock = new();
+
     private readonly Timer _conversationTimer;
     private UserState _state;
 
@@ -23,6 +25,7 @@ public class Conversation
         }
     }
 
+    public long ChatId { get; set; }
     public string? School { get; set; }
     public string? Course { get; set; }
     public string? Year { get; set; }
@@ -30,8 +33,9 @@ public class Conversation
 
     public int StudentNumber { get; set; }
 
-    public Conversation()
+    public Conversation(long chatId)
     {
+        ChatId = chatId;
         State = UserState.Start;
         _conversationTimer = new Timer(GlobalConfig.BotConfig!.UserTimeOut);
         _conversationTimer.Elapsed += ResetConversation;
@@ -97,7 +101,7 @@ public class Conversation
         Year = null;
         Exam = null;
         StudentNumber = 0;
-        
+
         Monitor.Exit(ConvLock);
     }
 }
