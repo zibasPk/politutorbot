@@ -26,13 +26,14 @@ public static class KeyboardGenerator
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
         var courses = courseService.FindCoursesInSchool(school);
-        return courses.Count == 0 ? null : GenerateKeyboardMarkup(courses, 3, true);
+        return courses.Count == 0 ? null : GenerateKeyboardMarkup(courses, true);
     }
 
     /// <summary>
     /// Generate a keyboard containing Subjects for a specific course in a year
     /// </summary>
-    /// <param name="course">The course for which it generates the keyboard</param>  
+    /// <param name="course">The course for which it generates the keyboard</param>
+    /// <param name="year">The year for which to look for exams</param>
     /// <returns>null if course doesn't exist </returns>
     public static ReplyKeyboardMarkup? SubjectKeyboard(string course, string year)
     {
@@ -40,40 +41,29 @@ public static class KeyboardGenerator
         var exams = examService.FindExamsInYear(course, year);
         if (exams.Count == 0)
             return null;
-        return GenerateKeyboardMarkup(exams, 3, true);
+        return GenerateKeyboardMarkup(exams, true);
     }
 
     public static ReplyKeyboardMarkup YearKeyboard()
     {
-        return new ReplyKeyboardMarkup(
-            new[]
-            {
-                new KeyboardButton[] { "Y1", "Y2" },
-                new KeyboardButton[] { "Y3" },
-                new KeyboardButton[] { "indietro" }
-            })
-        {
-            ResizeKeyboard = true
-        };
+        var items = new List<string>() { "Y1", "Y2", "Y3" };
+        return GenerateKeyboardMarkup(items, 2, true);
     }
 
     public static ReplyKeyboardMarkup YesOrNoKeyboard()
     {
-        return new ReplyKeyboardMarkup(
-            new KeyboardButton[] { "Si", "No" }
-        )
-        {
-            ResizeKeyboard = true
-        };
+        var items = new List<string>() { "Si", "No" };
+        return GenerateKeyboardMarkup(items, 2, true);
     }
 
     public static ReplyKeyboardMarkup BackKeyboard()
     {
-        return new ReplyKeyboardMarkup(new KeyboardButton("indietro"));
+        return GenerateKeyboardMarkup(new List<string>(), true);
     }
-    
+
     /// <summary>
-    /// Generates a ReplyKeyboardMarkup dynamically by having a maximum of characters per row
+    /// Generates a ReplyKeyboardMarkup dynamically by having a maximum of characters per row.
+    /// <br/> The maximum items per row are 3.
     /// </summary>
     /// <param name="items">List of texts to put in buttons</param>
     /// <param name="hasBackButton">true if markup needs to generate a back button; otherwise false</param>
@@ -92,20 +82,23 @@ public static class KeyboardGenerator
             {
                 buttons.Add(row);
                 characterCount = items[i].Length;
-                row = new List<KeyboardButton> { new (items[i]) };
+                row = new List<KeyboardButton> { new(items[i]) };
             }
             else
             {
-              row.Add(new KeyboardButton(items[i]));
+                row.Add(new KeyboardButton(items[i]));
             }
-            
+
             if (i == items.Count - 1)
                 buttons.Add(row);
         }
-        
+
         if (hasBackButton)
             buttons.Add(new List<KeyboardButton>() { new("indietro") });
-        return new ReplyKeyboardMarkup(buttons);
+        return new ReplyKeyboardMarkup(buttons)
+        {
+            ResizeKeyboard = true
+        };
     }
 
     /// <summary>
@@ -130,6 +123,9 @@ public static class KeyboardGenerator
 
         if (hasBackButton)
             buttons.Add(new List<KeyboardButton>() { new("indietro") });
-        return new ReplyKeyboardMarkup(buttons);
+        return new ReplyKeyboardMarkup(buttons)
+        {
+            ResizeKeyboard = true
+        };
     }
 }
