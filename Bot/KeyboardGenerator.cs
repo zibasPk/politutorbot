@@ -14,9 +14,7 @@ public static class KeyboardGenerator
     {
         var schoolService = new SchoolDAO(DbConnection.GetMySqlConnection());
         var schools = schoolService.FindSchools();
-        if (schools.Count == 0)
-            return null;
-        return GenerateKeyboardMarkup(schools, 2, false);
+        return schools.Count == 0 ? null : GenerateKeyboardMarkup(schools, 2, false);
     }
 
     /// <summary>
@@ -28,9 +26,7 @@ public static class KeyboardGenerator
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
         var courses = courseService.FindCoursesInSchool(school);
-        if (courses.Count == 0)
-            return null;
-        return GenerateKeyboardMarkup(courses, 3, true);
+        return courses.Count == 0 ? null : GenerateKeyboardMarkup(courses, 3, true);
     }
 
     /// <summary>
@@ -75,14 +71,38 @@ public static class KeyboardGenerator
     {
         return new ReplyKeyboardMarkup(new KeyboardButton("indietro"));
     }
-    private static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, bool hasBackButton)
+    public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, bool hasBackButton)
     {
-        // TODO: create algorithm that identifies the optimal elements per row for each row
-        throw new NotImplementedException();
+        const int maxCharsPerRow = 87;
+        const int maxItemsPerRow = 3;
+        var buttons = new List<List<KeyboardButton>>();
+        var row = new List<KeyboardButton>();
+        var characterCount = 0;
+        for (var i = 0; i < items.Count; i++)
+        {
+            characterCount += items[i].Length;
+            if (characterCount > maxCharsPerRow || row.Count >= maxItemsPerRow)
+            {
+                buttons.Add(row);
+                characterCount = items[i].Length;
+                row = new List<KeyboardButton> { new (items[i]) };
+            }
+            else
+            {
+              row.Add(new KeyboardButton(items[i]));
+            }
+            
+            if (i == items.Count - 1)
+                buttons.Add(row);
+        }
+        
+        if (hasBackButton)
+            buttons.Add(new List<KeyboardButton>() { new("indietro") });
+        return new ReplyKeyboardMarkup(buttons);
     }
     
 
-    private static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, int itemsPerRow, bool hasBackButton)
+    public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, int itemsPerRow, bool hasBackButton)
     {
         var buttons = new List<List<KeyboardButton>>();
         var row = new List<KeyboardButton>();
