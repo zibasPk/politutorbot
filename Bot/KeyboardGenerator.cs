@@ -71,6 +71,13 @@ public static class KeyboardGenerator
     {
         return new ReplyKeyboardMarkup(new KeyboardButton("indietro"));
     }
+    
+    /// <summary>
+    /// Generates a ReplyKeyboardMarkup dynamically by having a maximum of characters per row
+    /// </summary>
+    /// <param name="items">List of texts to put in buttons</param>
+    /// <param name="hasBackButton">true if markup needs to generate a back button; otherwise false</param>
+    /// <returns>Generated ReplyKeyboardMarkup</returns>
     public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, bool hasBackButton)
     {
         const int maxCharsPerRow = 87;
@@ -100,8 +107,14 @@ public static class KeyboardGenerator
             buttons.Add(new List<KeyboardButton>() { new("indietro") });
         return new ReplyKeyboardMarkup(buttons);
     }
-    
 
+    /// <summary>
+    /// Generates a ReplyKeyboardMarkUp with the requested amount of items per row
+    /// </summary>
+    /// <param name="items">List of texts to put in buttons</param>
+    /// <param name="itemsPerRow">Max amount of items in one row</param>
+    /// <param name="hasBackButton">true if markup needs to generate a back button; otherwise false</param>
+    /// <returns>Generated ReplyKeyboardMarkup</returns>
     public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, int itemsPerRow, bool hasBackButton)
     {
         var buttons = new List<List<KeyboardButton>>();
