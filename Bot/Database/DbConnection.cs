@@ -6,7 +6,7 @@ namespace Bot.Database;
 
 public static class DbConnection
 {
-    private static bool firstConnection = true;
+    private static bool _firstConnection = true;
     /// <summary>
     /// Connects to MySql Database 
     /// </summary>
@@ -14,11 +14,11 @@ public static class DbConnection
     public static MySqlConnection GetMySqlConnection()
     {
         var mySqlConnection = new MySqlConnection(GlobalConfig.DbConfig!.GetConnectionString());
-        if (firstConnection)
+        if (_firstConnection)
         {
             mySqlConnection.Open();
             Log.Information($"MySQL version : {mySqlConnection.ServerVersion}");
-            firstConnection = false;
+            _firstConnection = false;
             mySqlConnection.Close();
         }
         return mySqlConnection;

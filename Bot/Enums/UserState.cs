@@ -9,6 +9,7 @@ public enum UserState
     Exam,
     Link,
     ReLink,
+    Tutor
 }
 
 public static class UserStateMethods
@@ -23,7 +24,8 @@ public static class UserStateMethods
             UserState.Year => 3,
             UserState.Exam => 4,
             UserState.Link => 5,
-            UserState.ReLink => 99,
+            UserState.ReLink => 5,
+            UserState.Tutor => 6,
             _ => throw new ArgumentOutOfRangeException(nameof(currentUserState), currentUserState, null)
         };
     }

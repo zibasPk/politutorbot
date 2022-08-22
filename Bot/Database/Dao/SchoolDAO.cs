@@ -33,7 +33,7 @@ public class SchoolDAO
         if (reader != null)
         {
             if (!reader.HasRows)
-                Log.Debug("No schools found for in db");
+                Log.Debug("No schools found in db");
 
             while (reader.Read())
                 schools.Add(reader.GetString("name"));

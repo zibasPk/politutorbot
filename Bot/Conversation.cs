@@ -66,6 +66,8 @@ public class Conversation
                 break;
             case UserState.ReLink:
                 break;
+            case UserState.Tutor:
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -86,6 +88,7 @@ public class Conversation
             UserState.Exam => Exam,
             UserState.Link => StudentNumber != 0 ? StudentNumber.ToString() : null,
             UserState.ReLink => StudentNumber != 0 ? StudentNumber.ToString() : null,
+            UserState.Tutor => null,
             _ => throw new ArgumentOutOfRangeException()
         };
     }

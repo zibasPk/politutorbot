@@ -1,5 +1,6 @@
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Entity;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Bot;
@@ -59,6 +60,12 @@ public static class KeyboardGenerator
     public static ReplyKeyboardMarkup BackKeyboard()
     {
         return GenerateKeyboardMarkup(new List<string>(), true);
+    }
+
+    public static ReplyKeyboardMarkup TutorKeyboard(List<Tutor> tutors)
+    {
+        var names = tutors.Select(t => t.name).ToList();
+        return GenerateKeyboardMarkup(names, true);
     }
 
     /// <summary>

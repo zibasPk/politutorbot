@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Entity;
 using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
@@ -15,6 +16,32 @@ namespace Bot;
 public static class MessageHandlers
 {
     private static readonly Dictionary<long, Conversation> UserIdToConversation = new();
+
+    public static async void OnApiCall(int userId)
+    {
+        UserIdToConversation.TryGetValue(userId, out var conversation);
+        if (conversation == null)
+        {
+            Log.Warning("Received api call from user: {userId} with no active conversation", userId);
+            return;
+        }
+
+        if (!conversation.WaitingForApiCall)
+        {
+            Log.Warning("Received api call from conversation with user: {userId} " +
+                        "that wasn't waiting for an api call", userId);
+            return;
+        }
+
+        Log.Debug("Received api call from user: {userId}", userId);
+        lock (conversation.ConvLock)
+        {
+            conversation.WaitingForApiCall = false;
+            // TODO: change to next state
+        }
+
+        await SendMessage(conversation.ChatId, "Identità confermata con successo");
+    }
 
     public static async Task HandleMessage(ITelegramBotClient botClient, Message message)
     {
@@ -63,7 +90,6 @@ public static class MessageHandlers
 
         await action;
     }
-
 
     private static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)
     {
@@ -229,6 +255,7 @@ public static class MessageHandlers
                 text: "Inserisci una materia valida");
         }
 
+        conversation.Exam = exam;
         conversation.State = UserState.Link;
         var userService = new UserDAO(connection);
         var userId = message.From.Id;
@@ -308,8 +335,13 @@ public static class MessageHandlers
             case "No":
             case "no":
             case "NO":
-                return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                    text: "Codice persona confermato");
+                // Check if conversation has been reset or is locked by a reset if not acquire lock
+                if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
+                    return await SendEcho(botClient, message);
+                conversation.State = UserState.Tutor;
+                // Release lock from conversation
+                Monitor.Exit(conversation.ConvLock);
+                return await SendTutorsKeyboard(botClient, message);
             default:
                 Log.Debug("Invalid {studentNumber} chosen in chat {id}.", studentNumber, message.Chat.Id);
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -323,7 +355,10 @@ public static class MessageHandlers
         UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
+        {
+            Log.Debug("user {id} tried to access a locked conversation", message.From.Id);
             return await SendEcho(botClient, message);
+        }
 
         // Check if Online Authentication is active
         if (conversation.WaitingForApiCall)
@@ -356,12 +391,10 @@ public static class MessageHandlers
         var userId = message.From!.Id;
         var userService = new UserDAO(DbConnection.GetMySqlConnection());
         userService.SaveUserLink(userId, studentNumber);
-        //TODO: ask what's next
-
+        conversation.State = UserState.Tutor;
         // Release lock from conversation
         Monitor.Exit(conversation.ConvLock);
-        return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Codice matricola salvato!");
+        return await SendTutorsKeyboard(botClient, message);
     }
 
     private static async Task<Message> SendEcho(ITelegramBotClient botClient, Message message)
@@ -370,29 +403,30 @@ public static class MessageHandlers
             text: message.Text!);
     }
 
-    public static async void OnApiCall(int userId)
+    private static async Task<Message> SendTutorsKeyboard(ITelegramBotClient botClient, Message message)
     {
-        UserIdToConversation.TryGetValue(userId, out var conversation);
-        if (conversation == null)
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        // Check if conversation has been reset or is locked by a reset if not acquire lock
+        if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
         {
-            Log.Warning("Received api call from user: {userId} with no active conversation", userId);
-            return;
+            Log.Debug("user {id} tried to access a locked conversation", message.From.Id);
+            return await SendEcho(botClient, message);
         }
 
-        if (!conversation.WaitingForApiCall)
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        var tutors = tutorService.FindTutorsForExam(conversation.Exam!);
+        var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
+        var tutorsTexts = tutors.Select(x => x.name + " corso: " + x.course + "\n \n").ToList();
+        var text = $"Scegli uno dei tutor disponibili per {conversation.Exam}:\n \n";
+        foreach (var tutorsText in tutorsTexts)
         {
-            Log.Warning("Received api call from conversation with user: {userId} " +
-                        "that wasn't waiting for an api call", userId);
-            return;  
+            text += tutorsText;
         }
 
-        Log.Debug("Received api call from user: {userId}",userId);
-        lock (conversation.ConvLock)
-        {
-            conversation.WaitingForApiCall = false;
-            // TODO: change to next state
-        }
-        await SendMessage(conversation.ChatId, "Identità confermata con successo");
+        Monitor.Exit(conversation.ConvLock);
+        return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+            text: text,
+            replyMarkup: keyboardMarkup);
     }
 }
 
