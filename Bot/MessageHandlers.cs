@@ -39,7 +39,6 @@ public static class MessageHandlers
             conversation.WaitingForApiCall = false;
             // TODO: change to next state
         }
-
         await SendMessage(conversation.ChatId, "Identità confermata con successo");
     }
 
@@ -85,10 +84,28 @@ public static class MessageHandlers
             UserState.Exam => SendSaveUserData(botClient, message, command!),
             UserState.Link => ReadStudentNumber(botClient, message, command!),
             UserState.ReLink => ReadYesOrNo(botClient, message, command!),
+            UserState.Tutor => ReadTutor(botClient, message, command!),
             _ => SendEcho(botClient, message)
         };
 
         await action;
+    }
+
+    private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutor)
+    {
+        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        if (!tutorService.IsTutorForExam(tutor, conversation!.Exam!))
+        {
+            Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Inserisci un tutor della lista");
+        }
+
+        // TODO: time out requests for user
+        return await botClient.SendTextMessageAsync(chatId: message.Chat.Id, 
+            text: "Tutor selezionato riceverai una mail di conferma dalla segreteria.",
+            replyMarkup: new ReplyKeyboardRemove());
     }
 
     private static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)

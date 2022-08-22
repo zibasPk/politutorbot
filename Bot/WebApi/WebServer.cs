@@ -48,7 +48,7 @@ public static class WebServer
                     return;
                 }
                 
-                //TODO: insert into db
+                //TODO: insert person code into db
                 MessageHandlers.OnApiCall(int.Parse(pair.UserId));
 
             }

@@ -19,6 +19,7 @@ public class Conversation
         get => _state;
         set
         {
+            // Reset timer on state change
             if (value != UserState.Start)
                 _conversationTimer.Interval = GlobalConfig.BotConfig!.UserTimeOut;
             _state = value;
@@ -30,8 +31,9 @@ public class Conversation
     public string? Course { get; set; }
     public string? Year { get; set; }
     public string? Exam { get; set; }
-
     public int StudentNumber { get; set; }
+    
+    public string? Tutor { get; set; }
 
     public Conversation(long chatId)
     {
@@ -67,6 +69,7 @@ public class Conversation
             case UserState.ReLink:
                 break;
             case UserState.Tutor:
+                Tutor = null;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -88,7 +91,7 @@ public class Conversation
             UserState.Exam => Exam,
             UserState.Link => StudentNumber != 0 ? StudentNumber.ToString() : null,
             UserState.ReLink => StudentNumber != 0 ? StudentNumber.ToString() : null,
-            UserState.Tutor => null,
+            UserState.Tutor => Tutor,
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -104,7 +107,7 @@ public class Conversation
         Year = null;
         Exam = null;
         StudentNumber = 0;
-
+        Tutor = null;
         Monitor.Exit(ConvLock);
     }
 }

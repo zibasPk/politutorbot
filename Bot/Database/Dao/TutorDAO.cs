@@ -35,7 +35,7 @@ public class TutorDAO
         if (reader != null)
         {
             if (!reader.HasRows)
-                Log.Debug("No tutors found for {exam} db",exam);
+                Log.Debug("No tutors found for {exam} in db",exam);
 
             while (reader.Read())
             {
@@ -51,5 +51,39 @@ public class TutorDAO
         }
         _connection.Close();
         return tutors;
+    }
+
+    public bool IsTutorForExam(string tutor, string exam)
+    {
+        _connection.Open();
+        const string query = "SELECT * from tutor WHERE name=@tutor";
+        var command = new MySqlCommand(query, _connection);
+        command.Parameters.AddWithValue("@tutor", tutor);
+        command.Prepare();
+        
+        MySqlDataReader? reader = null;
+        try
+        {
+            reader = command.ExecuteReader();
+        }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+        if (reader != null)
+        {
+            
+            if (reader.HasRows)
+            {
+                reader.Read();
+                var foundExam = reader.GetString("exam");
+                _connection.Close();
+                return exam.Equals(foundExam);
+            }
+            Log.Debug("Tutor {tutor} not found found in db", tutor);
+        }
+        _connection.Close();
+        return false;
     }
 }
