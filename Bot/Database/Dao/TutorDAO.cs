@@ -20,22 +20,15 @@ public class TutorDAO
         var command = new MySqlCommand(query, _connection);
         command.Parameters.AddWithValue("@exam", exam);
         command.Prepare();
-        
+
         var tutors = new List<Tutor>();
         MySqlDataReader? reader = null;
         try
         {
             reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            _connection.Close();
-            throw;
-        }
-        if (reader != null)
-        {
+
             if (!reader.HasRows)
-                Log.Debug("No tutors found for {exam} in db",exam);
+                Log.Debug("No tutors found for {exam} in db", exam);
 
             while (reader.Read())
             {
@@ -49,6 +42,12 @@ public class TutorDAO
                 tutors.Add(tutor);
             }
         }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+
         _connection.Close();
         return tutors;
     }
@@ -60,20 +59,12 @@ public class TutorDAO
         var command = new MySqlCommand(query, _connection);
         command.Parameters.AddWithValue("@tutor", tutor);
         command.Prepare();
-        
+
         MySqlDataReader? reader = null;
         try
         {
             reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            _connection.Close();
-            throw;
-        }
-        if (reader != null)
-        {
-            
+
             if (reader.HasRows)
             {
                 reader.Read();
@@ -81,8 +72,15 @@ public class TutorDAO
                 _connection.Close();
                 return exam.Equals(foundExam);
             }
+
             Log.Debug("Tutor {tutor} not found found in db", tutor);
         }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+
         _connection.Close();
         return false;
     }

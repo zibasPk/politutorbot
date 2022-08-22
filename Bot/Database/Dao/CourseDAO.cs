@@ -25,20 +25,17 @@ public class CourseDAO
         try
         {
             reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+                Log.Debug("No courses found for school {school}", school);
+
+            while (reader.Read())
+                courses.Add(reader.GetString("name"));
         }
         catch (Exception e)
         {
             _connection.Close();
-            Log.Error(e.Message);
-        }
-
-        if (reader != null)
-        {
-            if (!reader.HasRows)
-                Log.Debug("No courses found for school {school}", school);
-            
-            while (reader.Read())
-                courses.Add(reader.GetString("name"));
+            throw;
         }
 
         _connection.Close();
@@ -59,18 +56,10 @@ public class CourseDAO
         command.Parameters.AddWithValue("@name", course);
         command.Prepare();
 
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.Message);
-        }
+            var reader = command.ExecuteReader();
 
-        if (reader != null)
-        {
             if (reader.Read())
             {
                 var foundSchool = reader.GetString("school");
@@ -79,6 +68,7 @@ public class CourseDAO
                     _connection.Close();
                     return true;
                 }
+                
                 Log.Debug("Course {course} is of School {foundSchool} not {school}."
                     , course, foundSchool, school);
             }
@@ -87,7 +77,12 @@ public class CourseDAO
                 Log.Debug("No courses found for school {school}", school);
             }
         }
-
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+        
         _connection.Close();
         return false;
     }

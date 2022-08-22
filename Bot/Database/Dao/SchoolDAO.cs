@@ -23,6 +23,12 @@ public class SchoolDAO
         try
         {
             reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+                Log.Debug("No schools found in db");
+
+            while (reader.Read())
+                schools.Add(reader.GetString("name"));
         }
         catch (Exception e)
         {
@@ -30,17 +36,7 @@ public class SchoolDAO
             throw;
         }
 
-        if (reader != null)
-        {
-            if (!reader.HasRows)
-                Log.Debug("No schools found in db");
-
-            while (reader.Read())
-                schools.Add(reader.GetString("name"));
-        }
-        
         _connection.Close();
         return schools;
     }
-
 }

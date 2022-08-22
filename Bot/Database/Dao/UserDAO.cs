@@ -7,11 +7,12 @@ public class UserDAO
 {
     // todo: riscrivere meglio le condizioni di return dei dao almeno i try catch
     private readonly MySqlConnection _connection;
+
     public UserDAO(MySqlConnection connection)
     {
         _connection = connection;
     }
-    
+
     /// <summary>
     /// Removes a row of 
     /// </summary>
@@ -33,9 +34,11 @@ public class UserDAO
             _connection.Close();
             throw;
         }
+
         _connection.Close();
         return true;
     }
+
     /// <summary>
     /// Checks if user has already a saved personal code
     /// </summary>
@@ -48,32 +51,30 @@ public class UserDAO
         var command = new MySqlCommand(query, _connection);
         command.Parameters.AddWithValue("@userID", userId);
         command.Prepare();
-        
-        var schools = new List<string>();
+
         MySqlDataReader? reader = null;
         try
         {
             reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.Message);
-        }
 
-        if (reader != null)
-        {
             if (reader.HasRows)
-            { 
+            {
                 _connection.Close();
                 return true;
             }
+
             Log.Debug("User {user} not found for in db", userId);
         }
-        
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+
         _connection.Close();
         return false;
     }
-    
+
     public int? FindUserStudentNumber(long userId)
     {
         _connection.Open();
@@ -81,32 +82,29 @@ public class UserDAO
         var command = new MySqlCommand(query, _connection);
         command.Parameters.AddWithValue("@userID", userId);
         command.Prepare();
-        
+
         MySqlDataReader? reader = null;
         try
         {
             reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.Message);
-        }
-
-        if (reader != null)
-        {
             if (reader.Read())
             {
                 var result = reader.GetInt32("student_number");
                 _connection.Close();
                 return result;
             }
+
             Log.Debug("User {user} not found for in db", userId);
         }
-        
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
         _connection.Close();
         return null;
     }
-    
+
     /// <summary>
     /// Saves a userId-studentNumber pair in DataBase
     /// </summary>

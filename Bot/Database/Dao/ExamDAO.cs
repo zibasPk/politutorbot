@@ -32,19 +32,17 @@ public class ExamDAO
         try
         {
             reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.Message);
-        }
 
-        if (reader != null)
-        {
             if (!reader.HasRows)
                 Log.Debug("No exams found for {course} in year {year}", course, year);
 
             while (reader.Read())
                 exams.Add(reader.GetString("name"));
+        }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
         }
 
         _connection.Close();
@@ -65,23 +63,22 @@ public class ExamDAO
         try
         {
             reader = command.ExecuteReader();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.Message);
-        }
-
-        if (reader != null)
-        {
+            
             if (reader.Read())
             {
                 _connection.Close();
                 return true;
             }
+
             Log.Debug("{exam} {course} {year} doesn't exist", exam, course, year);
+        }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
         }
 
         _connection.Close();
-        return false; 
+        return false;
     }
 }

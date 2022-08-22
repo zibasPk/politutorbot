@@ -25,6 +25,14 @@ public class StudentDAO
         try
         {
             reader = command.ExecuteReader();
+            
+            if (reader is { HasRows: true })
+            {
+                _connection.Close();
+                return true;
+            }
+
+            Log.Debug("Student {code} not found in DB", studentCode);
         }
         catch (Exception e)
         {
@@ -32,15 +40,7 @@ public class StudentDAO
             throw;
         }
 
-        if (reader is { HasRows: true })
-        {
-            _connection.Close();
-            return true;
-        }
-        
-        Log.Debug("Student {code} not found in DB", studentCode);
         _connection.Close();
         return false;
     }
-
 }

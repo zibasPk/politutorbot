@@ -73,7 +73,7 @@ public static class KeyboardGenerator
     /// <br/> The maximum items per row are 3.
     /// </summary>
     /// <param name="items">List of texts to put in buttons</param>
-    /// <param name="hasBackButton">true if markup needs to generate a back button; otherwise false</param>
+    /// <param name="hasBackButton">true if markup needs to be generated with a back button; otherwise false</param>
     /// <returns>Generated ReplyKeyboardMarkup</returns>
     public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, bool hasBackButton)
     {
@@ -113,7 +113,7 @@ public static class KeyboardGenerator
     /// </summary>
     /// <param name="items">List of texts to put in buttons</param>
     /// <param name="itemsPerRow">Max amount of items in one row</param>
-    /// <param name="hasBackButton">true if markup needs to generate a back button; otherwise false</param>
+    /// <param name="hasBackButton">true if markup needs to be generated with a back button; otherwise false</param>
     /// <returns>Generated ReplyKeyboardMarkup</returns>
     public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, int itemsPerRow, bool hasBackButton)
     {
