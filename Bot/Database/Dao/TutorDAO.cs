@@ -23,16 +23,15 @@ public class TutorDAO
     {
         _connection.Open();
         const string query = "SELECT * FROM tutor WHERE exam=@exam AND lock_timestamp <= NOW() - INTERVAL @hours HOUR";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@exam", exam);
-        command.Parameters.AddWithValue("@hours", hoursSinceLock);
-        command.Prepare();
-
         var tutors = new List<Tutor>();
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@exam", exam);
+            command.Parameters.AddWithValue("@hours", hoursSinceLock);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
                 Log.Debug("No tutors found for {exam} in db", exam);
@@ -65,14 +64,13 @@ public class TutorDAO
     {
         _connection.Open();
         const string query = "SELECT * from tutor WHERE name=@tutor";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@tutor", tutor);
-        command.Prepare();
-
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@tutor", tutor);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
 
             if (reader.HasRows)
             {
@@ -102,12 +100,12 @@ public class TutorDAO
     {
         _connection.Open();
         const string query = "UPDATE tutor SET lock_timestamp = NOW() WHERE name=@tutor";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@tutor", tutor);
-        command.Prepare();
-
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@tutor", tutor);
+            command.Prepare();
+
             command.ExecuteNonQuery();
             Log.Debug("Tutor {tutor} was locked", tutor);
         }
@@ -116,9 +114,10 @@ public class TutorDAO
             _connection.Close();
             throw;
         }
+
         _connection.Close();
     }
-    
+
     /// <summary>
     /// Updates the lock_timestamp of the given tutor to the 0000-00-00 00:00:00 DEFAULT timestamp.
     /// </summary>
@@ -127,12 +126,12 @@ public class TutorDAO
     {
         _connection.Open();
         const string query = "UPDATE tutor SET lock_timestamp = DEFAULT WHERE name=@tutor";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@tutor", tutor);
-        command.Prepare();
-
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@tutor", tutor);
+            command.Prepare();
+
             command.ExecuteNonQuery();
             Log.Debug("Tutor {tutor} was unlocked", tutor);
         }
@@ -141,6 +140,7 @@ public class TutorDAO
             _connection.Close();
             throw;
         }
+
         _connection.Close();
     }
 }

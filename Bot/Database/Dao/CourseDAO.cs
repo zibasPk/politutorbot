@@ -16,15 +16,14 @@ public class CourseDAO
     {
         _connection.Open();
         const string query = "SELECT * from course WHERE school=@school";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@school", school);
-        command.Prepare();
-
         var courses = new List<string>();
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@school", school);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
                 Log.Debug("No courses found for school {school}", school);
@@ -52,12 +51,12 @@ public class CourseDAO
     {
         _connection.Open();
         const string query = "SELECT * from course WHERE name=@name";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@name", course);
-        command.Prepare();
-
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@name", course);
+            command.Prepare();
+
             var reader = command.ExecuteReader();
 
             if (reader.Read())
@@ -68,7 +67,7 @@ public class CourseDAO
                     _connection.Close();
                     return true;
                 }
-                
+
                 Log.Debug("Course {course} is of School {foundSchool} not {school}."
                     , course, foundSchool, school);
             }
@@ -82,7 +81,7 @@ public class CourseDAO
             _connection.Close();
             throw;
         }
-        
+
         _connection.Close();
         return false;
     }

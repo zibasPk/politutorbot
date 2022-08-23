@@ -22,14 +22,14 @@ public class UserDAO
     {
         _connection.Open();
         const string query = "DELETE FROM telegram_user WHERE userID=@userID";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@userID", userId);
-        command.Prepare();
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userID", userId);
+            command.Prepare();
             command.ExecuteNonQuery();
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             _connection.Close();
             throw;
@@ -48,14 +48,13 @@ public class UserDAO
     {
         _connection.Open();
         const string query = "SELECT * from telegram_user WHERE userID=@userID";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@userID", userId);
-        command.Prepare();
-
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userID", userId);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
 
             if (reader.HasRows)
             {
@@ -79,14 +78,13 @@ public class UserDAO
     {
         _connection.Open();
         const string query = "SELECT * from telegram_user WHERE userID=@userID";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@userID", userId);
-        command.Prepare();
-
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userID", userId);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
             if (reader.Read())
             {
                 var result = reader.GetInt32("student_number");
@@ -116,15 +114,15 @@ public class UserDAO
     {
         _connection.Open();
         const string query = "INSERT INTO telegram_user VALUES(@userID, @studentNumber, DEFAULT)";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@userID", userId);
-        command.Parameters.AddWithValue("@studentNumber", studentNumber);
-        command.Prepare();
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userID", userId);
+            command.Parameters.AddWithValue("@studentNumber", studentNumber);
+            command.Prepare();
             command.ExecuteNonQuery();
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Log.Error(e.Message);
             _connection.Close();
@@ -142,12 +140,12 @@ public class UserDAO
     {
         _connection.Open();
         const string query = "UPDATE telegram_user SET lock_timestamp = NOW() WHERE userID=@userId";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@userId", userId);
-        command.Prepare();
-
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Prepare();
+
             command.ExecuteNonQuery();
             Log.Debug("User {user} was locked", userId);
         }
@@ -168,12 +166,12 @@ public class UserDAO
     {
         _connection.Open();
         const string query = "UPDATE telegram_user SET lock_timestamp = DEFAULT WHERE userID=@userId";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@userId", userId);
-        command.Prepare();
-
         try
         {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Prepare();
+
             command.ExecuteNonQuery();
             Log.Debug("User {user} was unlocked", userId);
         }
@@ -203,7 +201,7 @@ public class UserDAO
             command.Parameters.AddWithValue("@userId", userId);
             command.Parameters.AddWithValue("@hours", hoursSinceLock);
             command.Prepare();
-            
+
             var reader = command.ExecuteReader();
 
             if (!reader.HasRows)

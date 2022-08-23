@@ -16,15 +16,14 @@ public class StudentDAO
     {
         _connection.Open();
         const string query = "SELECT * from enabled_student WHERE code=@code";
-        var command = new MySqlCommand(query, _connection);
-        command.Parameters.AddWithValue("@code", studentCode);
-        command.Prepare();
-        
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
-            
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@code", studentCode);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+
             if (reader is { HasRows: true })
             {
                 _connection.Close();

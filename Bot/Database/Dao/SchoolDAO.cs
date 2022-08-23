@@ -16,13 +16,12 @@ public class SchoolDAO
     {
         _connection.Open();
         const string query = "SELECT * from school";
-        var command = new MySqlCommand(query, _connection);
-
         var schools = new List<string>();
-        MySqlDataReader? reader = null;
         try
         {
-            reader = command.ExecuteReader();
+            var command = new MySqlCommand(query, _connection);
+
+            var reader = command.ExecuteReader();
 
             if (!reader.HasRows)
                 Log.Debug("No schools found in db");
