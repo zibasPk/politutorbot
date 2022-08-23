@@ -19,8 +19,7 @@ public class StudentDAO
         var command = new MySqlCommand(query, _connection);
         command.Parameters.AddWithValue("@code", studentCode);
         command.Prepare();
-
-        var schools = new List<string>();
+        
         MySqlDataReader? reader = null;
         try
         {

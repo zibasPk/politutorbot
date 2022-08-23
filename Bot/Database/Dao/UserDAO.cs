@@ -42,7 +42,7 @@ public class UserDAO
     /// <summary>
     /// Checks if user has already a saved personal code
     /// </summary>
-    /// <param name="userId">Id of user for which to check</param>
+    /// <param name="userId">Telegram userId of user for which to check</param>
     /// <returns>true user has a saved personal code; otherwise false.</returns>
     public bool IsUserLinked(long userId)
     {
@@ -101,6 +101,7 @@ public class UserDAO
             _connection.Close();
             throw;
         }
+
         _connection.Close();
         return null;
     }
@@ -114,7 +115,7 @@ public class UserDAO
     public void SaveUserLink(long userId, int studentNumber)
     {
         _connection.Open();
-        const string query = "INSERT INTO telegram_user VALUES(@userID,@studentNumber)";
+        const string query = "INSERT INTO telegram_user VALUES(@userID, @studentNumber, DEFAULT)";
         var command = new MySqlCommand(query, _connection);
         command.Parameters.AddWithValue("@userID", userId);
         command.Parameters.AddWithValue("@studentNumber", studentNumber);
@@ -129,6 +130,96 @@ public class UserDAO
             _connection.Close();
             throw;
         }
+
         _connection.Close();
+    }
+
+    /// <summary>
+    /// Updates the lock_timestamp of the given user to the current time.
+    /// </summary>
+    /// <param name="userId">Telegram userId of user that needs to be updated.</param>
+    public void LockUser(long userId)
+    {
+        _connection.Open();
+        const string query = "UPDATE telegram_user SET lock_timestamp = NOW() WHERE userID=@userId";
+        var command = new MySqlCommand(query, _connection);
+        command.Parameters.AddWithValue("@userId", userId);
+        command.Prepare();
+
+        try
+        {
+            command.ExecuteNonQuery();
+            Log.Debug("User {user} was locked", userId);
+        }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+    }
+
+    /// <summary>
+    /// Updates the lock_timestamp of the given user to the 0000-00-00 00:00:00 DEFAULT timestamp.
+    /// </summary>
+    /// <param name="userId">Telegram userId of user that needs to be updated.</param>
+    public void UnlockUser(long userId)
+    {
+        _connection.Open();
+        const string query = "UPDATE telegram_user SET lock_timestamp = DEFAULT WHERE userID=@userId";
+        var command = new MySqlCommand(query, _connection);
+        command.Parameters.AddWithValue("@userId", userId);
+        command.Prepare();
+
+        try
+        {
+            command.ExecuteNonQuery();
+            Log.Debug("User {user} was unlocked", userId);
+        }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+    }
+
+    /// <summary>
+    /// Checks if the given user is locked.
+    /// </summary>
+    /// <param name="userId">Telegram userId to check.</param>
+    /// <param name="hoursSinceLock">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
+    /// <returns>true if user is locked; otherwise false.</returns>
+    public bool IsUserLocked(long userId, int hoursSinceLock)
+    {
+        _connection.Open();
+        const string query =
+            "SELECT * FROM telegram_user WHERE userID=@userId AND lock_timestamp <= NOW() - INTERVAL @hours HOUR";
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Parameters.AddWithValue("@hours", hoursSinceLock);
+            command.Prepare();
+            
+            var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+            {
+                Log.Debug("User {user} is currently locked", userId);
+                _connection.Close();
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return false;
     }
 }

@@ -39,6 +39,6 @@ public class DbConfig
     public string GetConnectionString()
     {
         return @"server=" + Host + "; port=" + Port +
-               "; userid=" + User + "; password=" + Password + "; database=" + DbName;
+               "; userid=" + User + "; password=" + Password + "; database=" + DbName + "; convert zero datetime=True";
     }
 }

@@ -11,6 +11,7 @@ public class BotConfig
     public string BotToken = "";
     public int BotLogLevel;
     public int UserTimeOut;
+    public int TutorLockHours;
 
     public BotConfig()
     {
