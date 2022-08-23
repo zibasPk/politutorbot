@@ -433,7 +433,7 @@ public static class MessageHandlers
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         var tutors = tutorService.FindTutorsForExam(conversation.Exam!);
         var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
-        var tutorsTexts = tutors.Select(x => x.name + " corso: " + x.course + "\n \n").ToList();
+        var tutorsTexts = tutors.Select(x => x.Name + " corso: " + x.Course + "\n \n").ToList();
         var text = $"Scegli uno dei tutor disponibili per {conversation.Exam}:\n \n";
         foreach (var tutorsText in tutorsTexts)
         {

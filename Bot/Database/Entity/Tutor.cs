@@ -1,3 +1,3 @@
 namespace Bot.Database.Entity;
 
-public record struct Tutor(string name, string exam, string course, string school);
+public record struct Tutor(string Name, string Exam, string Course, string School);

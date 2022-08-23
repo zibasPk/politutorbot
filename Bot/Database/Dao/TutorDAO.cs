@@ -34,10 +34,10 @@ public class TutorDAO
             {
                 var tutor = new Tutor
                 {
-                    name = reader.GetString("name"),
-                    exam = reader.GetString("exam"),
-                    course = reader.GetString("course"),
-                    school = reader.GetString("school")
+                    Name = reader.GetString("name"),
+                    Exam = reader.GetString("exam"),
+                    Course = reader.GetString("course"),
+                    School = reader.GetString("school")
                 };
                 tutors.Add(tutor);
             }
