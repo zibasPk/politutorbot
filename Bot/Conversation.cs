@@ -6,6 +6,10 @@ using Timer = System.Timers.Timer;
 
 namespace Bot;
 
+/// <summary>
+/// Class containing data and useful methods
+/// related to a conversation between the bot and a user.
+/// </summary>
 public class Conversation
 {
     public bool WaitingForApiCall = false;
@@ -45,6 +49,9 @@ public class Conversation
         _conversationTimer.Start();
     }
 
+    /// <summary>
+    /// Changes State to previous and erases the data related to that state.
+    /// </summary>
     public void GoToPreviousState()
     {
         switch (State)
@@ -79,7 +86,6 @@ public class Conversation
     }
 
     /// <returns>The topic attaining to the current State;<br/>null if topic hasn't been set</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public string? GetCurrentTopic()
     {
         return State switch
@@ -96,6 +102,9 @@ public class Conversation
         };
     }
 
+    /// <summary>
+    /// Resets a conversation by erasing all data but the chatId. 
+    /// </summary>
     private void ResetConversation(object? source, ElapsedEventArgs e)
     {
         if (!Monitor.TryEnter(ConvLock))

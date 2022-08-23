@@ -4,6 +4,9 @@ using Serilog;
 
 namespace Bot.configs;
 
+/// <summary>
+/// Contains config information for telegram bot back end.
+/// </summary>
 [Serializable]
 [JsonObject(MemberSerialization.Fields)]
 public class BotConfig
@@ -19,6 +22,10 @@ public class BotConfig
         BotLogLevel = 3;
     }
 
+    /// <summary>
+    /// Initializes the bot configuration class in <see cref="T:Bot.configs.GlobalConfig" />
+    /// by loading the config data from json file. If no file exists it generates an empty one.
+    /// </summary>
     public static void InitializeConfig()
     {
         try
@@ -28,14 +35,16 @@ public class BotConfig
             var botConfig = JsonConvert.DeserializeObject<BotConfig>(text);
             GlobalConfig.BotConfig = botConfig;
         }
-        catch(FileNotFoundException e)
+        catch (FileNotFoundException e)
         {
             Log.Warning("No BotConfig json found, generating template file in Bot/Data/");
             GenerateEmptyConfig();
         }
-
     }
 
+    /// <summary>
+    /// Generates an empty config json.
+    /// </summary>
     private static void GenerateEmptyConfig()
     {
         GlobalConfig.BotConfig = new BotConfig();

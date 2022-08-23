@@ -8,9 +8,9 @@ namespace Bot;
 public static class KeyboardGenerator
 {
     /// <summary>
-    /// Generate a keyboard containing available schools
+    /// Generate a keyboard containing available schools.
     /// </summary>
-    /// <returns>null if no School is found </returns>
+    /// <returns>null if no School is found.</returns>
     public static ReplyKeyboardMarkup? SchoolKeyboard()
     {
         var schoolService = new SchoolDAO(DbConnection.GetMySqlConnection());
@@ -19,10 +19,10 @@ public static class KeyboardGenerator
     }
 
     /// <summary>
-    /// Generate a keyboard containing courses for a specific school
+    /// Generate a keyboard containing courses for a specific school.
     /// </summary>
-    /// <param name="school">The School for which it generates the keyboard</param>  
-    /// <returns>null if no course is found </returns>
+    /// <param name="school">The School for which it generates the keyboard.</param>  
+    /// <returns>null if no course is found.</returns>
     public static ReplyKeyboardMarkup? CourseKeyboard(string school)
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
@@ -31,11 +31,11 @@ public static class KeyboardGenerator
     }
 
     /// <summary>
-    /// Generate a keyboard containing Subjects for a specific course in a year
+    /// Generate a keyboard containing Subjects for a specific course in a year.
     /// </summary>
-    /// <param name="course">The course for which it generates the keyboard</param>
-    /// <param name="year">The year for which to look for exams</param>
-    /// <returns>null if course doesn't exist </returns>
+    /// <param name="course">The course for which it generates the keyboard.</param>
+    /// <param name="year">The year for which to look for exams.</param>
+    /// <returns>null if course doesn't exist.</returns>
     public static ReplyKeyboardMarkup? SubjectKeyboard(string course, string year)
     {
         var examService = new ExamDAO(DbConnection.GetMySqlConnection());
@@ -72,9 +72,9 @@ public static class KeyboardGenerator
     /// Generates a ReplyKeyboardMarkup dynamically by having a maximum of characters per row.
     /// <br/> The maximum items per row are 3.
     /// </summary>
-    /// <param name="items">List of texts to put in buttons</param>
-    /// <param name="hasBackButton">true if markup needs to be generated with a back button; otherwise false</param>
-    /// <returns>Generated ReplyKeyboardMarkup</returns>
+    /// <param name="items">List of texts to put in buttons.</param>
+    /// <param name="hasBackButton">true if markup needs to be generated with a back button; otherwise false.</param>
+    /// <returns>Generated ReplyKeyboardMarkup.</returns>
     public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, bool hasBackButton)
     {
         const int maxCharsPerRow = 87;
@@ -109,12 +109,12 @@ public static class KeyboardGenerator
     }
 
     /// <summary>
-    /// Generates a ReplyKeyboardMarkUp with the requested amount of items per row
+    /// Generates a ReplyKeyboardMarkUp with the requested amount of items per row.
     /// </summary>
-    /// <param name="items">List of texts to put in buttons</param>
-    /// <param name="itemsPerRow">Max amount of items in one row</param>
-    /// <param name="hasBackButton">true if markup needs to be generated with a back button; otherwise false</param>
-    /// <returns>Generated ReplyKeyboardMarkup</returns>
+    /// <param name="items">List of texts to put in buttons.</param>
+    /// <param name="itemsPerRow">Max amount of items in one row.</param>
+    /// <param name="hasBackButton">true if markup needs to be generated with a back button; otherwise false.</param>
+    /// <returns>Generated ReplyKeyboardMarkup.</returns>
     public static ReplyKeyboardMarkup GenerateKeyboardMarkup(List<string> items, int itemsPerRow, bool hasBackButton)
     {
         var buttons = new List<List<KeyboardButton>>();

@@ -12,6 +12,10 @@ public class DbConfig
     public string Password = "";
     public string DbName = ""; 
     
+    /// <summary>
+    /// Initializes the database configuration class in <see cref="T:Bot.configs.GlobalConfig" />
+    /// by loading the config data from json file. If no file exists it generates an empty one.
+    /// </summary>
     public static void InitializeConfig()
     {
         try
@@ -29,6 +33,9 @@ public class DbConfig
 
     }
 
+    /// <summary>
+    /// Generates an empty config json.
+    /// </summary>
     private static void GenerateEmptyConfig()
     {
         GlobalConfig.DbConfig = new DbConfig();
@@ -36,6 +43,10 @@ public class DbConfig
         File.WriteAllText(Paths.DbConfig, x);
     }
 
+    /// <summary>
+    /// Generates a connection string for a MySql database.
+    /// </summary>
+    /// <returns>Generated connection string.</returns>
     public string GetConnectionString()
     {
         return @"server=" + Host + "; port=" + Port +

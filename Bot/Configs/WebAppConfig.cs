@@ -4,6 +4,9 @@ using Serilog;
 
 namespace Bot.configs;
 
+/// <summary>
+/// A class containing configuration data for the web app attached to the telegram bot.
+/// </summary>
 [Serializable]
 [JsonObject(MemberSerialization.Fields)]
 public class WebAppConfig
@@ -25,6 +28,10 @@ public class WebAppConfig
         LoginLink = "www.example.com";
     }
 
+    /// <summary>
+    /// Initializes the web config in <see cref="T:Bot.configs.GlobalConfig" />
+    /// by loading config data from json fila. If no file exists it generates an empty one.
+    /// </summary>
     public static void InitializeConfig()
     {
         try
@@ -42,6 +49,9 @@ public class WebAppConfig
 
     }
 
+    /// <summary>
+    /// Generates an empty config json.
+    /// </summary>
     private static void GenerateEmptyConfig()
     {
         GlobalConfig.WebConfig = new WebAppConfig();

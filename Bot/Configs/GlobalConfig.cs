@@ -2,6 +2,9 @@ using Serilog.Events;
 
 namespace Bot.configs;
 
+/// <summary>
+/// Static class containing all config classes and useful methods.
+/// </summary>
 public static class GlobalConfig
 {
     static GlobalConfig()
@@ -12,6 +15,7 @@ public static class GlobalConfig
     public static DbConfig? DbConfig { get; set; }
     public static WebAppConfig? WebConfig { get; set; }
     
+    /// <returns>Returns the configured log level for the telegram bot.</returns>
     public static LogEventLevel GetBotLogLevel()
     {
         if (BotConfig == null)
@@ -29,6 +33,7 @@ public static class GlobalConfig
         };
     }
     
+    /// <returns>Returns the configured log level for the web app.</returns>
     public static LogEventLevel GetWebLogLevel()
     {
         if (WebConfig == null)
@@ -46,6 +51,9 @@ public static class GlobalConfig
         };
     }
     
+    /// <summary>
+    /// Initializes needed configs.
+    /// </summary>
     private static void InitConfigs()
     {
         BotConfig.InitializeConfig();

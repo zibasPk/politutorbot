@@ -32,7 +32,7 @@ public static class UpdateHandlers
     public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
-        // Check the received message type and start a handler
+        // Check the received message type and give it to a handler
         var handler = update.Type switch
         {
             UpdateType.Message => MessageHandlers.HandleMessage(botClient, update.Message!),

@@ -8,9 +8,9 @@ public static class DbConnection
 {
     private static bool _firstConnection = true;
     /// <summary>
-    /// Connects to MySql Database 
+    /// Connects to MySql Database. 
     /// </summary>
-    /// <returns>Connection from connection Pool</returns>
+    /// <returns>Connection to MySQL Server database. </returns>
     public static MySqlConnection GetMySqlConnection()
     {
         var mySqlConnection = new MySqlConnection(GlobalConfig.DbConfig!.GetConnectionString());
