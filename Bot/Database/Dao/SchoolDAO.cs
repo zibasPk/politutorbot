@@ -33,7 +33,7 @@ public class SchoolDAO
             while (reader.Read())
                 schools.Add(reader.GetString("name"));
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;

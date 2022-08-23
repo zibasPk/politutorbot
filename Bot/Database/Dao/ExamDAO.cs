@@ -38,7 +38,7 @@ public class ExamDAO
             while (reader.Read())
                 exams.Add(reader.GetString("name"));
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -77,7 +77,7 @@ public class ExamDAO
 
             Log.Debug("{exam} {course} {year} doesn't exist", exam, course, year);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;

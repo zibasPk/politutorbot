@@ -29,7 +29,7 @@ public class UserDAO
             command.Prepare();
             command.ExecuteNonQuery();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -64,7 +64,7 @@ public class UserDAO
 
             Log.Debug("User {user} not found for in db", userId);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -99,7 +99,7 @@ public class UserDAO
 
             Log.Debug("User {user} not found for in db", userId);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -153,7 +153,7 @@ public class UserDAO
             command.ExecuteNonQuery();
             Log.Debug("User {user} was locked", userId);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -179,7 +179,7 @@ public class UserDAO
             command.ExecuteNonQuery();
             Log.Debug("User {user} was unlocked", userId);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -215,7 +215,7 @@ public class UserDAO
                 return true;
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;

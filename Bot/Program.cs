@@ -1,6 +1,5 @@
 ﻿using Bot.configs;
 using Bot.Database;
-using Bot.Database.Dao;
 using Bot.WebApi;
 using Serilog;
 using Serilog.Core;
@@ -13,7 +12,7 @@ namespace Bot;
 
 internal static class Program
 {
-    private static async Task Main(String[] args)
+    private static async Task Main()
     {
        // Global logger configuration
         var levelSwitch = new LoggingLevelSwitch();

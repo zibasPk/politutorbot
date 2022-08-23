@@ -50,7 +50,7 @@ public class TutorDAO
                 tutors.Add(tutor);
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -88,7 +88,7 @@ public class TutorDAO
 
             Log.Debug("Tutor {tutor} not found found in db", tutor);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -115,7 +115,7 @@ public class TutorDAO
             command.ExecuteNonQuery();
             Log.Debug("Tutor {tutor} was locked", tutor);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -141,7 +141,7 @@ public class TutorDAO
             command.ExecuteNonQuery();
             Log.Debug("Tutor {tutor} was unlocked", tutor);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;

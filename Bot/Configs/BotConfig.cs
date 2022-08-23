@@ -35,7 +35,7 @@ public class BotConfig
             var botConfig = JsonConvert.DeserializeObject<BotConfig>(text);
             GlobalConfig.BotConfig = botConfig;
         }
-        catch (FileNotFoundException e)
+        catch (FileNotFoundException)
         {
             Log.Warning("No BotConfig json found, generating template file in Bot/Data/");
             GenerateEmptyConfig();

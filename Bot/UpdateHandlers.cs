@@ -1,19 +1,13 @@
-using System.Collections;
-using Bot.Database;
-using Bot.Database.Dao;
-using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Bot;
 
 public static class UpdateHandlers
 {
-    private static Dictionary<long, Conversation> _idToConversation = new();
 
     public static Task PollingErrorHandler(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken)

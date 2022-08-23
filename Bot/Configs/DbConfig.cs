@@ -25,7 +25,7 @@ public class DbConfig
             var dbConfig = JsonConvert.DeserializeObject<DbConfig>(text);
             GlobalConfig.DbConfig = dbConfig;
         }
-        catch(FileNotFoundException e)
+        catch(FileNotFoundException)
         {
             Log.Warning("No DbConfig json found, generating template file in Bot/Data/");
             GenerateEmptyConfig();

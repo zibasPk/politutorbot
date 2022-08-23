@@ -36,7 +36,7 @@ public class CourseDAO
             while (reader.Read())
                 courses.Add(reader.GetString("name"));
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;
@@ -81,7 +81,7 @@ public class CourseDAO
                 Log.Debug("No courses found for school {school}", school);
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _connection.Close();
             throw;

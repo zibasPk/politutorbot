@@ -41,7 +41,7 @@ public class WebAppConfig
             var webAppConfig = JsonConvert.DeserializeObject<WebAppConfig>(text);
             GlobalConfig.WebConfig = webAppConfig;
         }
-        catch(FileNotFoundException e)
+        catch(FileNotFoundException)
         {
             Log.Warning("No web app config json found, generating template file in Bot/Data/");
             GenerateEmptyConfig();
