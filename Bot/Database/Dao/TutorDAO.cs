@@ -59,7 +59,13 @@ public class TutorDAO
         _connection.Close();
         return tutors;
     }
-
+    
+    /// <summary>
+    /// Checks if if a tutor teaches a given exam.
+    /// </summary>
+    /// <param name="tutor">The tutor for which to check.</param>
+    /// <param name="exam">The exam to check.</param>
+    /// <returns>true if the tutor teaches the exam; otherwise false.</returns>
     public bool IsTutorForExam(string tutor, string exam)
     {
         _connection.Open();

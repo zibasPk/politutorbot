@@ -14,10 +14,10 @@ public class UserDAO
     }
 
     /// <summary>
-    /// Removes a row of 
+    /// Removes given user from DB.
     /// </summary>
-    /// <param name="userId"></param>
-    /// <returns>true removal is a success; otherwise false</returns>
+    /// <param name="userId">Telegram Id of user to remove.</param>
+    /// <returns>true if removal is a success; otherwise false.</returns>
     public bool RemoveUser(long userId)
     {
         _connection.Open();
@@ -40,9 +40,9 @@ public class UserDAO
     }
 
     /// <summary>
-    /// Checks if user has already a saved personal code
+    /// Checks if user has already a saved personal code.
     /// </summary>
-    /// <param name="userId">Telegram userId of user for which to check</param>
+    /// <param name="userId">Telegram userId of user for which to check.</param>
     /// <returns>true user has a saved personal code; otherwise false.</returns>
     public bool IsUserLinked(long userId)
     {
@@ -74,6 +74,11 @@ public class UserDAO
         return false;
     }
 
+    /// <summary>
+    /// Finds student number of user.
+    /// </summary>
+    /// <param name="userId">Telegram Id of user.</param>
+    /// <returns>Student number if found; otherwise null.</returns>
     public int? FindUserStudentNumber(long userId)
     {
         _connection.Open();
@@ -105,11 +110,10 @@ public class UserDAO
     }
 
     /// <summary>
-    /// Saves a userId-studentNumber pair in DataBase
+    /// Saves a userId-studentNumber pair in DataBase.
     /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="studentNumber"></param>
-    /// <returns>false if insert fails; Otherwise true</returns>
+    /// <param name="userId">UserId to save.</param>
+    /// <param name="studentNumber">Student number to save.</param>
     public void SaveUserLink(long userId, int studentNumber)
     {
         _connection.Open();
@@ -159,7 +163,7 @@ public class UserDAO
     }
 
     /// <summary>
-    /// Updates the lock_timestamp of the given user to the 0000-00-00 00:00:00 DEFAULT timestamp.
+    /// Updates the lock_timestamp of the given user to the DEFAULT (0000-00-00 00:00:00) timestamp.
     /// </summary>
     /// <param name="userId">Telegram userId of user that needs to be updated.</param>
     public void UnlockUser(long userId)

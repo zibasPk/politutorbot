@@ -12,6 +12,11 @@ public class CourseDAO
         _connection = connection;
     }
 
+    /// <summary>
+    /// Finds courses in given school.
+    /// </summary>
+    /// <param name="school">The school in which to search.</param>
+    /// <returns>List of courses in given school.</returns>
     public List<string> FindCoursesInSchool(string school)
     {
         _connection.Open();

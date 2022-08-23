@@ -12,6 +12,11 @@ public class StudentDAO
         _connection = connection;
     }
 
+    /// <summary>
+    /// Checks if the given student is enabled for tutoring.
+    /// </summary>
+    /// <param name="studentCode">Student Code of the student for which to check.</param>
+    /// <returns>true if student is enabled; otherwise false.</returns>
     public bool IsStudentEnabled(int studentCode)
     {
         _connection.Open();

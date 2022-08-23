@@ -12,6 +12,10 @@ public class SchoolDAO
         _connection = connection;
     }
 
+    /// <summary>
+    /// Finds schools. 
+    /// </summary>
+    /// <returns>List of schools.</returns>
     public List<string> FindSchools()
     {
         _connection.Open();

@@ -15,8 +15,8 @@ public class ExamDAO
     /// <summary>
     /// Finds exams of a course from a specific year.
     /// </summary>
-    /// <param name="course"></param>
-    /// <param name="year"></param>
+    /// <param name="course">The course for which to search.</param>
+    /// <param name="year">The year for which to search.</param>
     /// <returns>List of exams of a course from a specific year.</returns>
     public List<string> FindExamsInYear(string course, string year)
     {
@@ -48,6 +48,13 @@ public class ExamDAO
         return exams;
     }
 
+    /// <summary>
+    /// Checks if the given exam is in the given course and given year.
+    /// </summary>
+    /// <param name="exam">The exam for which to check.</param>
+    /// <param name="course">The course for which to check.</param>
+    /// <param name="year">The year for which to check.</param>
+    /// <returns>true if exam is in course in year; otherwise false.</returns>
     public bool IsExamInCourse(string exam, string course, string year)
     {
         _connection.Open();
