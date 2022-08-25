@@ -137,7 +137,7 @@ CREATE TABLE `telegram_user` (
 
 LOCK TABLES `telegram_user` WRITE;
 /*!40000 ALTER TABLE `telegram_user` DISABLE KEYS */;
-INSERT INTO `telegram_user` VALUES (123,123,'0000-00-00 00:00:00'),(321,321,'0000-00-00 00:00:00'),(107050697,111111,'0000-00-00 00:00:00'),(1089557436,111111,'2022-08-23 15:58:19');
+INSERT INTO `telegram_user` VALUES (107050697,111111,'0000-00-00 00:00:00'),(1089557436,111111,'0000-00-00 00:00:00');
 /*!40000 ALTER TABLE `telegram_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -149,18 +149,15 @@ DROP TABLE IF EXISTS `tutor`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tutor` (
-  `name` varchar(60) NOT NULL,
-  `exam` varchar(300) NOT NULL,
+  `name` varchar(300) NOT NULL,
   `course` varchar(300) NOT NULL,
   `school` varchar(300) NOT NULL,
   `ranking` int NOT NULL,
   `lock_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`name`),
-  KEY `fk_tutor_exam_name_idx` (`exam`),
-  KEY `fk_tutor_course_name_idx` (`course`),
   KEY `fk_tutor_school_name_idx` (`school`),
+  KEY `h_idx` (`course`),
   CONSTRAINT `fk_tutor_course_name` FOREIGN KEY (`course`) REFERENCES `course` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_tutor_exam_name` FOREIGN KEY (`exam`) REFERENCES `exam` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_tutor_school_name` FOREIGN KEY (`school`) REFERENCES `school` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -171,8 +168,35 @@ CREATE TABLE `tutor` (
 
 LOCK TABLES `tutor` WRITE;
 /*!40000 ALTER TABLE `tutor` DISABLE KEYS */;
-INSERT INTO `tutor` VALUES ('franceso marini','analisi 1','Ingegneria Informatica','3I',1,'2022-08-23 15:58:19'),('mario baresi','analisi 1','Ingegneria Fisica','3I',2,'0000-00-00 00:00:00'),('milo bontesi','analisi 1','Ingegneria Civile','ICAT',3,'0000-00-00 00:00:00');
+INSERT INTO `tutor` VALUES ('franceso marini','Ingegneria Aerospaziale','3I',1,'2022-08-25 12:52:19'),('mario baresi','Ingegneria Elettronica','3I',2,'0000-00-00 00:00:00'),('milo bontesi','Ingegneria Informatica','ICAT',3,'0000-00-00 00:00:00');
 /*!40000 ALTER TABLE `tutor` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tutor_to_exam`
+--
+
+DROP TABLE IF EXISTS `tutor_to_exam`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tutor_to_exam` (
+  `tutor` varchar(300) NOT NULL,
+  `exam` varchar(300) NOT NULL,
+  PRIMARY KEY (`tutor`,`exam`),
+  KEY `exam` (`exam`),
+  CONSTRAINT `tutor_to_exam_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `tutor_to_exam_ibfk_2` FOREIGN KEY (`exam`) REFERENCES `exam` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tutor_to_exam`
+--
+
+LOCK TABLES `tutor_to_exam` WRITE;
+/*!40000 ALTER TABLE `tutor_to_exam` DISABLE KEYS */;
+INSERT INTO `tutor_to_exam` VALUES ('franceso marini','analisi 1'),('mario baresi','analisi 1'),('milo bontesi','analisi 1'),('milo bontesi','analisi 2');
+/*!40000 ALTER TABLE `tutor_to_exam` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -188,4 +212,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-08-23 18:06:55
+-- Dump completed on 2022-08-25 14:59:45

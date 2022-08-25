@@ -22,7 +22,8 @@ public class TutorDAO
     public List<Tutor> FindTutorsForExam(string exam, int hoursSinceLock)
     {
         _connection.Open();
-        const string query = "SELECT * FROM tutor WHERE exam=@exam AND lock_timestamp <= NOW() - INTERVAL @hours HOUR";
+        const string query = "SELECT * FROM tutor_to_exam join tutor on name=tutor " +
+                             "WHERE exam=@exam AND lock_timestamp <= NOW() - INTERVAL @hours HOUR";
         var tutors = new List<Tutor>();
         try
         {
