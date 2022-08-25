@@ -36,7 +36,7 @@ public static class MessageHandlers
         lock (conversation.ConvLock)
         {
             conversation.WaitingForApiCall = false;
-            // TODO: change to next state
+            // TODO: change db and application logic for person code
         }
 
         await SendMessage(conversation.ChatId, "Identità confermata con successo");
@@ -66,12 +66,13 @@ public static class MessageHandlers
         if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
         {
             await botClient.SendTextMessageAsync(chatId: chatId,
-                text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} ore " +
-                      $"o fino a che la segreteria avrà elaborato la tua precedente richiesta.",
+                text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
+                      $"ore dalla tua precedente richiesta " +
+                      $"o fino a che la segreteria non l'avrà elaborata.",
                 replyMarkup: new ReplyKeyboardRemove());
             return;
         }
-        
+
         if (!UserIdToConversation.TryGetValue(userId, out var conversation))
         {
             conversation = new Conversation(chatId);
@@ -102,28 +103,6 @@ public static class MessageHandlers
         };
 
         await action;
-    }
-
-    private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutor)
-    {
-        var userId = message.From!.Id;
-        UserIdToConversation.TryGetValue(userId, out var conversation);
-        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        if (!tutorService.IsTutorForExam(tutor, conversation!.Exam!))
-        {
-            Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
-            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Inserisci un tutor della lista");
-        }
-
-        var userService = new UserDAO(DbConnection.GetMySqlConnection());
-        // lock tutor until email arrives
-        tutorService.LockTutor(tutor);
-        userService.LockUser(userId);
-        // TODO: send mail to segreteria
-        return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Tutor selezionato riceverai una mail di conferma dalla segreteria.",
-            replyMarkup: new ReplyKeyboardRemove());
     }
 
     private static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)
@@ -462,6 +441,28 @@ public static class MessageHandlers
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
             text: text,
             replyMarkup: keyboardMarkup);
+    }
+
+    private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutor)
+    {
+        var userId = message.From!.Id;
+        UserIdToConversation.TryGetValue(userId, out var conversation);
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        if (!tutorService.IsTutorForExam(tutor, conversation!.Exam!))
+        {
+            Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Inserisci un tutor della lista");
+        }
+
+        var userService = new UserDAO(DbConnection.GetMySqlConnection());
+        // lock tutor until email arrives
+        tutorService.LockTutor(tutor);
+        userService.LockUser(userId);
+        // TODO: send mail to segreteria
+        return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+            text: "Tutor selezionato riceverai una mail di conferma dalla segreteria.",
+            replyMarkup: new ReplyKeyboardRemove());
     }
 }
 

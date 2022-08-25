@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Bot;
+using static NUnit.Framework.Assert;
 
 namespace Tests;
 
@@ -19,9 +19,9 @@ public class KeyboardGeneratorTests
         };
         var markup = KeyboardGenerator.GenerateKeyboardMarkup(items,false);
 
-        Assert.That(markup.Keyboard.ElementAt(0).Count(), Is.EqualTo(3));
-        Assert.That(markup.Keyboard.ElementAt(1).Count(), Is.EqualTo(2));
-        Assert.That(markup.Keyboard.ElementAt(2).Count(), Is.EqualTo(1));
+        That(markup.Keyboard.ElementAt(0).Count(), Is.EqualTo(3));
+        That(markup.Keyboard.ElementAt(1).Count(), Is.EqualTo(2));
+        That(markup.Keyboard.ElementAt(2).Count(), Is.EqualTo(1));
     }
     
     [Test]
@@ -42,9 +42,9 @@ public class KeyboardGeneratorTests
         };
         var markup = KeyboardGenerator.GenerateKeyboardMarkup(items,false);
 
-        Assert.That(markup.Keyboard.ElementAt(0).Count(), Is.EqualTo(3));
-        Assert.That(markup.Keyboard.ElementAt(1).Count(), Is.EqualTo(3));
-        Assert.That(markup.Keyboard.ElementAt(2).Count(), Is.EqualTo(3));
+        That(markup.Keyboard.ElementAt(0).Count(), Is.EqualTo(3));
+        That(markup.Keyboard.ElementAt(1).Count(), Is.EqualTo(3));
+        That(markup.Keyboard.ElementAt(2).Count(), Is.EqualTo(3));
     }
     
     [Test]
@@ -62,8 +62,8 @@ public class KeyboardGeneratorTests
         };
         var markup = KeyboardGenerator.GenerateKeyboardMarkup(items,false);
 
-        Assert.That(markup.Keyboard.ElementAt(0).Count(), Is.EqualTo(2));
-        Assert.That(markup.Keyboard.ElementAt(1).Count(), Is.EqualTo(2));
-        Assert.That(markup.Keyboard.ElementAt(2).Count(), Is.EqualTo(3));
+        That(markup.Keyboard.ElementAt(0).Count(), Is.EqualTo(2));
+        That(markup.Keyboard.ElementAt(1).Count(), Is.EqualTo(2));
+        That(markup.Keyboard.ElementAt(2).Count(), Is.EqualTo(3));
     }
 }

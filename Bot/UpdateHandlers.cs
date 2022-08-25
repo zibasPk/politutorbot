@@ -30,11 +30,11 @@ public static class UpdateHandlers
         var handler = update.Type switch
         {
             UpdateType.Message => MessageHandlers.HandleMessage(botClient, update.Message!),
-            UpdateType.EditedMessage => UnknownUpdateHandlerAsync(botClient, update),
-            UpdateType.CallbackQuery => BotOnCallbackReceived(botClient, update),
-            UpdateType.InlineQuery => UnknownUpdateHandlerAsync(botClient, update),
-            UpdateType.ChosenInlineResult => UnknownUpdateHandlerAsync(botClient, update),
-            _ => UnknownUpdateHandlerAsync(botClient, update)
+            UpdateType.EditedMessage => DefaultUpdateHandlerAsync(botClient, update),
+            UpdateType.CallbackQuery => DefaultUpdateHandlerAsync(botClient, update),
+            UpdateType.InlineQuery => DefaultUpdateHandlerAsync(botClient, update),
+            UpdateType.ChosenInlineResult => DefaultUpdateHandlerAsync(botClient, update),
+            _ => DefaultUpdateHandlerAsync(botClient, update)
         };
 
         try
@@ -46,15 +46,9 @@ public static class UpdateHandlers
             await PollingErrorHandler(botClient, exception, cancellationToken);
         }
     }
-
-    private static async Task BotOnCallbackReceived(ITelegramBotClient botClient, Update update)
+    
+    private static async Task DefaultUpdateHandlerAsync(ITelegramBotClient botClient, Update update)
     {
-        //throw new NotImplementedException();
-    }
-
-    private static Task UnknownUpdateHandlerAsync(ITelegramBotClient botClient, Update update)
-    {
-        Log.Information("Unknown update type: {type}", update.Type);
-        return Task.CompletedTask;
+        Log.Information("Update type: {type} not implemented.", update.Type);
     }
 }

@@ -47,8 +47,7 @@ public static class WebServer
                     response.StatusCode = StatusCodes.Status400BadRequest;
                     return;
                 }
-                
-                //TODO: insert person code into db
+                //TODO: insert person code into db ( db needs to be changed)
                 MessageHandlers.OnApiCall(int.Parse(pair.UserId));
 
             }
