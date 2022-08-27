@@ -197,7 +197,7 @@ public class UserDAO
     {
         _connection.Open();
         const string query =
-            "SELECT * FROM telegram_user WHERE userID=@userId AND lock_timestamp <= NOW() - INTERVAL @hours HOUR";
+            "SELECT * FROM telegram_user WHERE userID=@userId AND lock_timestamp >= NOW() - INTERVAL @hours HOUR";
         try
         {
             var command = new MySqlCommand(query, _connection);
@@ -207,7 +207,7 @@ public class UserDAO
 
             var reader = command.ExecuteReader();
 
-            if (!reader.HasRows)
+            if (reader.HasRows)
             {
                 Log.Debug("User {user} is currently locked", userId);
                 _connection.Close();

@@ -457,7 +457,7 @@ public static class MessageHandlers
 
         var userService = new UserDAO(DbConnection.GetMySqlConnection());
         // lock tutor until email arrives
-        tutorService.LockTutor(tutor);
+        tutorService.LockTutor(tutor, conversation.Exam!, userId);
         userService.LockUser(userId);
         // TODO: send mail to segreteria
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
