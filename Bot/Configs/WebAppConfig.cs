@@ -15,7 +15,8 @@ public class WebAppConfig
     public int Port;
     public int WebLogLevel;
     public string LoginLink;
-
+    public string AuthUsr;
+    public string AuthPsw;
     public WebAppConfig()
     {
         // default start option
@@ -26,6 +27,9 @@ public class WebAppConfig
         Port = 3000;
         // default link
         LoginLink = "www.example.com";
+        // default Api authentication
+        AuthUsr = "admin";
+        AuthPsw = "admin";
     }
 
     /// <summary>

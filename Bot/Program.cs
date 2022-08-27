@@ -1,6 +1,5 @@
 ﻿using Bot.configs;
 using Bot.Database;
-using Bot.WebApi;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -45,9 +44,9 @@ internal static class Program
         AsyncResponseHandler.Init(botClient);
         
         Log.Information("Start listening for " + me.Username);
-        if (GlobalConfig.WebConfig!.IsActive)
-            WebServer.Init();
-        Console.ReadLine();
+        
+        WebServer.WebServer.Init();
+        
         // Send cancellation request to stop bot
         cts.Cancel();
     }
