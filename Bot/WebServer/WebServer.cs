@@ -2,16 +2,13 @@ using System.Text.RegularExpressions;
 using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Entity;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
-using Ubiety.Dns.Core.Records;
 
 namespace Bot.WebServer;
 
@@ -77,93 +74,69 @@ public static class WebServer
             }
         }).RequireAuthorization();
 
-        app.MapPost("/api/tutors", async (HttpRequest request, HttpResponse response) =>
-        {
-            var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-            var tutors = tutorService.FindTutors();
-            return tutors;
-        }).RequireAuthorization();
+        app.MapPost("/api/tutors", FetchTutors).RequireAuthorization();
+        app.MapPost("/api/delTutor", DeleteTutor).RequireAuthorization();
+        app.MapPost("/api/unlockTutor", UnlockTutor).RequireAuthorization();
 
-
-        app.MapPost("/api/delTutor", async (HttpRequest request, HttpResponse response) =>
-        {
-            string? tutor;
-            try
-            {
-                tutor = await request.ReadFromJsonAsync<string>();
-            }
-            catch (Exception e)
-            {
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                Log.Error("Error while parsing body");
-                throw;
-            }
-
-            if (string.IsNullOrEmpty(tutor))
-            {
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
-            var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-            tutorService.DeleteTutor(tutor);
-            return;
-        }).RequireAuthorization();
-        
-        app.MapPost("/api/unlockTutor", async (HttpRequest request, HttpResponse response) =>
-        {
-            string[]? tutorAndExam;
-            try
-            {
-                tutorAndExam = await request.ReadFromJsonAsync<string[]>();
-            }
-            catch (Exception e)
-            {
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                Log.Error("Error while parsing body");
-                throw;
-            }
-            
-            if (tutorAndExam == null || string.IsNullOrEmpty(tutorAndExam[0]) || string.IsNullOrEmpty(tutorAndExam[1]))
-            {
-                Log.Warning("received request with empty qualcosa");
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
-            var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-            tutorService.FindTutorLocker(tutorAndExam[0], tutorAndExam[1]);
-            var userService = new UserDAO(DbConnection.GetMySqlConnection());
-            tutorService.UnlockTutor(tutorAndExam[0], tutorAndExam[1]);
-            return;
-        }).RequireAuthorization();
-        
-        app.MapPost("/api/lockedTutors", async (HttpRequest request, HttpResponse response) =>
-        {
-            string? tutor;
-            try
-            {
-                tutor = await request.ReadFromJsonAsync<string>();
-            }
-            catch (Exception e)
-            {
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                Log.Error("Error while parsing body");
-                throw;
-            }
-
-            if (string.IsNullOrEmpty(tutor))
-            {
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
-            var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-            tutorService.DeleteTutor(tutor);
-            return;
-        }).RequireAuthorization();
-        
         var url = "http://localhost:" + GlobalConfig.WebConfig!.Port;
         app.Run(url);
+    }
+
+    private static List<Tutor> FetchTutors(HttpRequest request, HttpResponse response)
+    {
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        var tutors = tutorService.FindTutors();
+        return tutors; 
+    }
+
+    private static async void DeleteTutor(HttpRequest request, HttpResponse response)
+    {
+        string? tutor;
+        try
+        {
+            tutor = await request.ReadFromJsonAsync<string>();
+        }
+        catch (Exception e)
+        {
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            Log.Error("Error while parsing body");
+            throw;
+        }
+
+        if (string.IsNullOrEmpty(tutor))
+        {
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        tutorService.DeleteTutor(tutor);
+        return;
+    }
+    
+    private static async void UnlockTutor(HttpRequest request, HttpResponse response)
+    {
+        string[]? tutorAndExam;
+        try
+        {
+            tutorAndExam = await request.ReadFromJsonAsync<string[]>();
+        }
+        catch (Exception e)
+        {
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            Log.Error("Error while parsing body");
+            throw;
+        }
+            
+        if (tutorAndExam == null || string.IsNullOrEmpty(tutorAndExam[0]) || string.IsNullOrEmpty(tutorAndExam[1]))
+        {
+            Log.Warning("received request with empty qualcosa");
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        tutorService.UnlockTutor(tutorAndExam[0], tutorAndExam[1]);
+        return;
     }
 }
