@@ -137,7 +137,7 @@ CREATE TABLE `telegram_user` (
 
 LOCK TABLES `telegram_user` WRITE;
 /*!40000 ALTER TABLE `telegram_user` DISABLE KEYS */;
-INSERT INTO `telegram_user` VALUES (107050697,111111,'0000-00-00 00:00:00'),(1089557436,111111,'0000-00-00 00:00:00');
+INSERT INTO `telegram_user` VALUES (107050697,111111,'0000-00-00 00:00:00'),(1089557436,111111,'2022-08-27 12:23:11');
 /*!40000 ALTER TABLE `telegram_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -153,7 +153,6 @@ CREATE TABLE `tutor` (
   `course` varchar(300) NOT NULL,
   `school` varchar(300) NOT NULL,
   `ranking` int NOT NULL,
-  `lock_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`name`),
   KEY `fk_tutor_school_name_idx` (`school`),
   KEY `h_idx` (`course`),
@@ -168,7 +167,7 @@ CREATE TABLE `tutor` (
 
 LOCK TABLES `tutor` WRITE;
 /*!40000 ALTER TABLE `tutor` DISABLE KEYS */;
-INSERT INTO `tutor` VALUES ('franceso marini','Ingegneria Aerospaziale','3I',1,'2022-08-25 12:52:19'),('mario baresi','Ingegneria Elettronica','3I',2,'0000-00-00 00:00:00'),('milo bontesi','Ingegneria Informatica','ICAT',3,'0000-00-00 00:00:00');
+INSERT INTO `tutor` VALUES ('franceso marini','Ingegneria Aerospaziale','3I',1),('mario baresi','Ingegneria Elettronica','3I',2);
 /*!40000 ALTER TABLE `tutor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -182,6 +181,8 @@ DROP TABLE IF EXISTS `tutor_to_exam`;
 CREATE TABLE `tutor_to_exam` (
   `tutor` varchar(300) NOT NULL,
   `exam` varchar(300) NOT NULL,
+  `lock_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `locked_by` bigint NOT NULL,
   PRIMARY KEY (`tutor`,`exam`),
   KEY `exam` (`exam`),
   CONSTRAINT `tutor_to_exam_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -195,7 +196,7 @@ CREATE TABLE `tutor_to_exam` (
 
 LOCK TABLES `tutor_to_exam` WRITE;
 /*!40000 ALTER TABLE `tutor_to_exam` DISABLE KEYS */;
-INSERT INTO `tutor_to_exam` VALUES ('franceso marini','analisi 1'),('mario baresi','analisi 1'),('milo bontesi','analisi 1'),('milo bontesi','analisi 2');
+INSERT INTO `tutor_to_exam` VALUES ('franceso marini','analisi 1','2022-08-27 12:23:11',0),('mario baresi','analisi 1','0000-00-00 00:00:00',107050697);
 /*!40000 ALTER TABLE `tutor_to_exam` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -212,4 +213,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-08-25 14:59:45
+-- Dump completed on 2022-08-27 17:41:15
