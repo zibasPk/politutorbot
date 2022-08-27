@@ -11,7 +11,7 @@ namespace Bot.configs;
 [JsonObject(MemberSerialization.Fields)]
 public class BotConfig
 {
-    public string BotToken = "";
+    public string BotToken;
     public int BotLogLevel;
     public int UserTimeOut;
     public int TutorLockHours;
@@ -19,7 +19,10 @@ public class BotConfig
     public BotConfig()
     {
         // Default log level 3: information
+        BotToken = "";
         BotLogLevel = 3;
+        TutorLockHours = 120000;
+        TutorLockHours = 24;
     }
 
     /// <summary>
