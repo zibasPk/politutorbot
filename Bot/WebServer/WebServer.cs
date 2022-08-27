@@ -112,10 +112,10 @@ public static class WebServer
         
         app.MapPost("/api/unlockTutor", async (HttpRequest request, HttpResponse response) =>
         {
-            Tuple<string, string>? tutor;
+            string[]? tutorAndExam;
             try
             {
-                tutor = await request.ReadFromJsonAsync<Tuple<string, string>>();
+                tutorAndExam = await request.ReadFromJsonAsync<string[]>();
             }
             catch (Exception e)
             {
@@ -124,17 +124,17 @@ public static class WebServer
                 throw;
             }
             
-            if (tutor == null || string.IsNullOrEmpty(tutor.Item1) || string.IsNullOrEmpty(tutor.Item2))
+            if (tutorAndExam == null || string.IsNullOrEmpty(tutorAndExam[0]) || string.IsNullOrEmpty(tutorAndExam[1]))
             {
+                Log.Warning("received request with empty qualcosa");
                 response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
             var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-            tutorService.FindTutorLocker(tutor.Item1, tutor.Item2);
-            // todo operazione atomica per rimuovere i lock
+            tutorService.FindTutorLocker(tutorAndExam[0], tutorAndExam[1]);
             var userService = new UserDAO(DbConnection.GetMySqlConnection());
-            tutorService.UnlockTutor(tutor.Item1, tutor.Item2);
+            tutorService.UnlockTutor(tutorAndExam[0], tutorAndExam[1]);
             return;
         }).RequireAuthorization();
         

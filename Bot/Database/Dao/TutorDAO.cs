@@ -219,11 +219,12 @@ public class TutorDAO
         _connection.Open();
         // start local transaction
         var transaction = _connection.BeginTransaction();
-        const string query1 = "UPDATE telegram_user SET lock_timestamp = DEFAULT" +
+        const string query1 = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                               "WHERE userID IN " +
-                              "(select locked_by from tutor_to_exam where tutor=@tutor AND exam=@exam);";
+                              "(select locked_by from tutor_to_exam where tutor=@tutor AND exam=@exam)";
         
-        const string query2 = "UPDATE tutor_to_exam SET lock_timestamp = DEFAULT AND locked_by = DEFAULT WHERE tutor=@tutor AND exam=@exam";
+        const string query2 = "UPDATE tutor_to_exam SET lock_timestamp = DEFAULT ,locked_by = DEFAULT " +
+                              "WHERE tutor=@tutor AND exam=@exam;";
         try
         {
             var command = new MySqlCommand(query1, _connection, transaction);
@@ -233,13 +234,14 @@ public class TutorDAO
             command.ExecuteNonQuery();
 
             command.CommandText = query2;
+            command.Parameters.Clear();
             command.Parameters.AddWithValue("@tutor", tutor);
             command.Parameters.AddWithValue("@exam", exam);
             command.Prepare();
             command.ExecuteNonQuery();
             
             transaction.Commit();
-            Log.Debug("Tutor {tutor} was unlocked", tutor);
+            Log.Debug("Tutor {tutor} and gatekeeper user were unlocked", tutor);
         }
         catch (Exception)
         {
