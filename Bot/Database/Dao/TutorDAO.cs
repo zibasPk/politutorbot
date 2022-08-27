@@ -14,12 +14,12 @@ public class TutorDAO
     }
 
     ///  <summary>
-    ///  Finds userId of user that locked Tutor,
+    ///  Finds userId of user that locked a Tutor for a certain exam.
     ///  </summary>
     /// <param name="tutor">Tutor to check.</param>
     ///  <param name="exam">Exam to check.</param>
     ///  <returns>Id of user that locked</returns>
-    public long FindTutorLocker(string tutor, string exam)
+    public long FindTutorGatekeeper(string tutor, string exam)
     {
         _connection.Open();
         const string query = "SELECT * FROM tutor_to_exam WHERE tutor=@tutor AND exam=@exam";
@@ -188,11 +188,11 @@ public class TutorDAO
     public void LockTutor(string tutor, string exam, long user)
     {
         _connection.Open();
-        const string query = "UPDATE tutor_to_exam SET lock_timestamp = NOW() AND locked_by=@user WHERE tutor=@tutor AND exam=@exam";
+        const string query = "UPDATE tutor_to_exam SET lock_timestamp = NOW(), locked_by=@user WHERE tutor=@tutor AND exam=@exam";
         try
         {
             var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@user", user);
+            command.Parameters.AddWithValue("@user", user); 
             command.Parameters.AddWithValue("@tutor", tutor);
             command.Parameters.AddWithValue("@exam", exam);
             command.Prepare();
