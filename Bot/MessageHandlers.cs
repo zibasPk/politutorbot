@@ -62,16 +62,7 @@ public static class MessageHandlers
 
         // Check if user is already locked for finalizing a tutor request
         // TODO: non fare il controllo su db ogni messaggio?
-        var userService = new UserDAO(DbConnection.GetMySqlConnection());
-        if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
-        {
-            await botClient.SendTextMessageAsync(chatId: chatId,
-                text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
-                      $"ore dalla tua precedente richiesta " +
-                      $"o fino a che la segreteria non l'avrà elaborata.",
-                replyMarkup: new ReplyKeyboardRemove());
-            return;
-        }
+        
 
         if (!UserIdToConversation.TryGetValue(userId, out var conversation))
         {
@@ -107,8 +98,20 @@ public static class MessageHandlers
 
     private static async Task<Message> SendSchoolKeyboard(ITelegramBotClient botClient, Message message)
     {
-        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
+        var userId = message.From!.Id;
+        UserIdToConversation.TryGetValue(userId, out var conversation);
 
+        // Check if user is already locked for finalizing a tutor request
+        var userService = new UserDAO(DbConnection.GetMySqlConnection());
+        if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
+        {
+            return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+                text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
+                      $"ore dalla tua precedente richiesta " +
+                      $"o fino a che la segreteria non l'avrà elaborata.",
+                replyMarkup: new ReplyKeyboardRemove());
+        }
+        
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (!Monitor.TryEnter(conversation!.ConvLock))
         {
@@ -447,6 +450,18 @@ public static class MessageHandlers
     {
         var userId = message.From!.Id;
         UserIdToConversation.TryGetValue(userId, out var conversation);
+        
+        // Check if user is already locked for finalizing a tutor request
+        var userService = new UserDAO(DbConnection.GetMySqlConnection());
+        if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
+        {
+            return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+                text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
+                      $"ore dalla tua precedente richiesta " +
+                      $"o fino a che la segreteria non l'avrà elaborata.",
+                replyMarkup: new ReplyKeyboardRemove());
+        }
+        
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         if (!tutorService.IsTutorForExam(tutor, conversation!.Exam!))
         {
@@ -455,13 +470,12 @@ public static class MessageHandlers
                 text: "Inserisci un tutor della lista");
         }
 
-        var userService = new UserDAO(DbConnection.GetMySqlConnection());
         // lock tutor until email arrives
         tutorService.LockTutor(tutor, conversation.Exam!, userId);
         userService.LockUser(userId);
         // TODO: send mail to segreteria
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Tutor selezionato riceverai una mail di conferma dalla segreteria.",
+            text: $"Tutor selezionato riceverai una mail di conferma dalla segreteria entro {GlobalConfig.BotConfig!.TutorLockHours} ore.",
             replyMarkup: new ReplyKeyboardRemove());
     }
 }
