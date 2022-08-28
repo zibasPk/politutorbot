@@ -12,6 +12,38 @@ public class ExamDAO
         _connection = connection;
     }
 
+
+    public bool FindExam(string name)
+    {
+        _connection.Open();
+        const string query = "SELECT * from exam WHERE name=@name";
+        var exams = new List<string>();
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@name", name);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+            {
+                Log.Debug("Exam {name} not found in db", name);
+                _connection.Close();
+                return false;
+            }
+            
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return true;
+    }
+    
     /// <summary>
     /// Finds exams of a course from a specific year.
     /// </summary>
