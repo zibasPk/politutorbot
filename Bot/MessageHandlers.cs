@@ -280,11 +280,11 @@ public static class MessageHandlers
         if (studentNumber == null)
         {
             // Check if Online Authentication is active
-            if (GlobalConfig.WebConfig!.IsActive)
+            if (GlobalConfig.BotConfig!.HasOnlineAuth)
             {
                 conversation.WaitingForApiCall = true;
                 Monitor.Exit(conversation.ConvLock);
-                var text = "Login Aunica: " + GlobalConfig.WebConfig.LoginLink;
+                var text = "Login Aunica: " + GlobalConfig.BotConfig.AuthLink;
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                     text: text,
                     replyMarkup: KeyboardGenerator.BackKeyboard());
@@ -335,7 +335,7 @@ public static class MessageHandlers
                 // Release lock from conversation
 
                 // Check if Online Authentication is active
-                if (!GlobalConfig.WebConfig!.IsActive)
+                if (!GlobalConfig.BotConfig!.HasOnlineAuth)
                 {
                     Monitor.Exit(conversation.ConvLock);
                     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -345,7 +345,7 @@ public static class MessageHandlers
 
                 conversation.WaitingForApiCall = true;
                 Monitor.Exit(conversation.ConvLock);
-                var text = "Login Aunica: " + GlobalConfig.WebConfig.LoginLink;
+                var text = "Login Aunica: " + GlobalConfig.BotConfig.AuthLink;
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                     text: text,
                     replyMarkup: KeyboardGenerator.BackKeyboard());
@@ -431,7 +431,7 @@ public static class MessageHandlers
         }
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        var tutors = tutorService.FindTutorsForExam(conversation.Exam!, GlobalConfig.BotConfig!.TutorLockHours);
+        var tutors = tutorService.FindLockedTutors(conversation.Exam!, GlobalConfig.BotConfig!.TutorLockHours);
         var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
         var tutorsTexts = tutors.Select(x => "nome: " + x.Name + "\ncorso: " + x.Course + "\n \n").ToList();
         var text = $"Scegli uno dei tutor disponibili per {conversation.Exam}:\n \n";
@@ -471,11 +471,11 @@ public static class MessageHandlers
         }
 
         // lock tutor until email arrives
-        tutorService.LockTutor(tutor, conversation.Exam!, userId);
+        tutorService.LockTutorAndUser(tutor, conversation.Exam!, userId);
         userService.LockUser(userId);
         // TODO: send mail to segreteria
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: $"Tutor selezionato riceverai una mail di conferma dalla segreteria entro {GlobalConfig.BotConfig!.TutorLockHours} ore.",
+            text: $"Tutor selezionato riceverai una mail di conferma dalla segreteria entro {GlobalConfig.BotConfig.TutorLockHours} ore.",
             replyMarkup: new ReplyKeyboardRemove());
     }
 }

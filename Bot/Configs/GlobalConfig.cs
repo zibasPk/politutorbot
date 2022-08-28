@@ -33,7 +33,7 @@ public static class GlobalConfig
         };
     }
     
-    /// <returns>Returns the configured log level for the web app.</returns>
+    /// <returns>Returns the configured log level for the web application.</returns>
     public static LogEventLevel GetWebLogLevel()
     {
         if (WebConfig == null)

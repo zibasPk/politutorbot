@@ -15,6 +15,8 @@ public class BotConfig
     public int BotLogLevel;
     public int UserTimeOut;
     public int TutorLockHours;
+    public bool HasOnlineAuth;
+    public string AuthLink;
 
     public BotConfig()
     {
@@ -23,6 +25,9 @@ public class BotConfig
         BotLogLevel = 3;
         TutorLockHours = 120000;
         TutorLockHours = 24;
+        HasOnlineAuth = false;
+        // default link for online authentication
+        AuthLink = "www.example.com";
     }
 
     /// <summary>
