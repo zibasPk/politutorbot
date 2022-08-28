@@ -62,7 +62,7 @@ public static class KeyboardGenerator
         return GenerateKeyboardMarkup(new List<string>(), true);
     }
 
-    public static ReplyKeyboardMarkup TutorKeyboard(List<Tutor> tutors)
+    public static ReplyKeyboardMarkup TutorKeyboard(List<Tutoring> tutors)
     {
         var names = tutors.Select(t => t.Name).ToList();
         return GenerateKeyboardMarkup(names, true);

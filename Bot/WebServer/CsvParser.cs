@@ -7,17 +7,17 @@ namespace Bot.WebServer;
 
 public static class CsvParser
 {
-    public static async Task<List<Tutor>> ParseTutors(Stream cvsStream)
+    public static async Task<List<Tutoring>> ParseTutors(Stream cvsStream)
     {
         TextReader reader = new StreamReader(cvsStream);
         var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture);
         csvReader.Context.RegisterClassMap<CsvTutorMap>();
-        var tutors = csvReader.GetRecordsAsync<Tutor>();
+        var tutors = csvReader.GetRecordsAsync<Tutoring>();
         
         return await tutors.ToListAsync();
     }
 
-    private sealed class CsvTutorMap : ClassMap<Tutor>
+    private sealed class CsvTutorMap : ClassMap<Tutoring>
     {
         public CsvTutorMap()
         {
