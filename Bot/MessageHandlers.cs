@@ -422,8 +422,10 @@ public static class MessageHandlers
 
     private static async Task<Message> SendTutorsKeyboard(ITelegramBotClient botClient, Message message)
     {
-        UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
-        // Check if conversation has been reset or is locked by a reset if not acquire lock
+        var userId = message.From!.Id;
+        UserIdToConversation.TryGetValue(userId, out var conversation);
+
+        // Check if conversation has been reset or is locked by a reset, if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
         {
             Log.Debug("user {id} tried to access a locked conversation", message.From.Id);
@@ -431,7 +433,7 @@ public static class MessageHandlers
         }
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        var tutors = tutorService.FindLockedTutors(conversation.Exam!, GlobalConfig.BotConfig!.TutorLockHours);
+        var tutors = tutorService.FindUnlockedTutors(conversation.Exam!, GlobalConfig.BotConfig!.TutorLockHours);
         var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
         var tutorsTexts = tutors.Select(x => "nome: " + x.Name + "\ncorso: " + x.Course + "\n \n").ToList();
         var text = $"Scegli uno dei tutor disponibili per {conversation.Exam}:\n \n";
@@ -473,7 +475,7 @@ public static class MessageHandlers
         // lock tutor until email arrives
         tutorService.LockTutorAndUser(tutor, conversation.Exam!, userId);
         userService.LockUser(userId);
-        // TODO: send mail to segreteria
+        
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
             text: $"Tutor selezionato riceverai una mail di conferma dalla segreteria entro {GlobalConfig.BotConfig.TutorLockHours} ore.",
             replyMarkup: new ReplyKeyboardRemove());

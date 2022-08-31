@@ -295,21 +295,20 @@ public class TutorDAO
     public bool IsTutorForExam(string tutor, string exam)
     {
         _connection.Open();
-        const string query = "SELECT * from tutor join tutor_to_exam on name = tutor WHERE name=@tutor";
+        const string query = "SELECT * from tutor join tutor_to_exam on name = tutor WHERE name=@tutor AND exam=@exam";
         try
         {
             var command = new MySqlCommand(query, _connection);
             command.Parameters.AddWithValue("@tutor", tutor);
+            command.Parameters.AddWithValue("@exam", exam);
             command.Prepare();
 
             var reader = command.ExecuteReader();
 
             if (reader.HasRows)
             {
-                reader.Read();
-                var foundExam = reader.GetString("exam");
                 _connection.Close();
-                return exam.Equals(foundExam);
+                return true;
             }
 
             Log.Debug("Tutor {tutor} not found found in db", tutor);
