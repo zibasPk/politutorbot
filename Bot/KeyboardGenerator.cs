@@ -40,9 +40,8 @@ public static class KeyboardGenerator
     {
         var examService = new ExamDAO(DbConnection.GetMySqlConnection());
         var exams = examService.FindExamsInYear(course, year);
-        if (exams.Count == 0)
-            return null;
-        return GenerateKeyboardMarkup(exams, true);
+        var examsNames = exams.Select(x => x.Name).ToList();
+        return exams.Count == 0 ? null : GenerateKeyboardMarkup(examsNames, true);
     }
 
     public static ReplyKeyboardMarkup YearKeyboard()
@@ -62,9 +61,9 @@ public static class KeyboardGenerator
         return GenerateKeyboardMarkup(new List<string>(), true);
     }
 
-    public static ReplyKeyboardMarkup TutorKeyboard(List<Tutoring> tutors)
+    public static ReplyKeyboardMarkup TutorKeyboard(List<TutorToExam> tutors)
     {
-        var names = tutors.Select(t => t.Name).ToList();
+        var names = tutors.Select(t => t.Name + " " + t.Surname).ToList();
         return GenerateKeyboardMarkup(names, true);
     }
 

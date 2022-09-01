@@ -78,7 +78,7 @@ public class UserDAO
     /// </summary>
     /// <param name="userId">Telegram Id of user.</param>
     /// <returns>Student number if found; otherwise null.</returns>
-    public int? FindUserStudentNumber(long userId)
+    public int? FindUserStudentCode(long userId)
     {
         _connection.Open();
         const string query = "SELECT * from telegram_user WHERE userID=@userID";
@@ -91,7 +91,7 @@ public class UserDAO
             var reader = command.ExecuteReader();
             if (reader.Read())
             {
-                var result = reader.GetInt32("student_number");
+                var result = reader.GetInt32("student_code");
                 _connection.Close();
                 return result;
             }
@@ -109,19 +109,19 @@ public class UserDAO
     }
 
     /// <summary>
-    /// Saves a userId-studentNumber pair in DataBase.
+    /// Saves a userId-studentCode pair in DataBase.
     /// </summary>
     /// <param name="userId">UserId to save.</param>
-    /// <param name="studentNumber">Student number to save.</param>
-    public void SaveUserLink(long userId, int studentNumber)
+    /// <param name="studentCode">Student number to save.</param>
+    public void SaveUserLink(long userId, int studentCode)
     {
         _connection.Open();
-        const string query = "INSERT INTO telegram_user VALUES(@userID, @studentNumber, DEFAULT)";
+        const string query = "INSERT INTO telegram_user VALUES(@userID, @studentCode, DEFAULT)";
         try
         {
             var command = new MySqlCommand(query, _connection);
             command.Parameters.AddWithValue("@userID", userId);
-            command.Parameters.AddWithValue("@studentNumber", studentNumber);
+            command.Parameters.AddWithValue("@studentCode", studentCode);
             command.Prepare();
             command.ExecuteNonQuery();
         }

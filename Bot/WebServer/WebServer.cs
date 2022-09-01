@@ -54,7 +54,7 @@ public static class WebServer
         app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
         app.MapPost("/api/tutors/upload", async (HttpRequest request, HttpResponse response) =>
         {
-            var tutors = new List<Tutoring>();
+            var tutors = new List<TutorToExam>();
             try
             {
                 tutors = await CsvParser.ParseTutors(request.Body);
@@ -119,17 +119,17 @@ public static class WebServer
         }
     }
 
-    private static void FetchTutors(string? tutor, string? exam, HttpResponse response)
+    private static void FetchTutors(int? tutor, int? exam, HttpResponse response)
     {
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        if (string.IsNullOrEmpty(tutor))
+        if (tutor == null)
         {
             var tutors = tutorService.FindTutors();
             response.WriteAsync(JsonConvert.SerializeObject(tutors));
             return;
         }
 
-        var tutorObj = tutorService.FindTutoring(tutor);
+        var tutorObj = tutorService.FindTutoring(tutor.Value);
 
         if (tutorObj.Count == 0)
         {
@@ -137,20 +137,20 @@ public static class WebServer
             return;
         }
 
-        if (string.IsNullOrEmpty(exam))
+        if (exam == null)
         {
             response.WriteAsync(JsonConvert.SerializeObject(tutorObj));
             return;
         }
 
         var examService = new ExamDAO(DbConnection.GetMySqlConnection());
-        if (!examService.FindExam(exam))
+        if (!examService.FindExam(exam.Value))
         {
             response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
-        response.WriteAsync(tutorService.IsTutorLocked(tutor, exam, GlobalConfig.BotConfig!.TutorLockHours)
+        response.WriteAsync(tutorService.IsTutorLocked(tutor.Value, exam.Value, GlobalConfig.BotConfig!.TutorLockHours)
             ? "locked"
             : "unlocked");
     }

@@ -2,7 +2,9 @@ using System.Text.RegularExpressions;
 using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Entity;
 using Bot.Enums;
+using Org.BouncyCastle.Utilities;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -62,7 +64,7 @@ public static class MessageHandlers
 
         // Check if user is already locked for finalizing a tutor request
         // TODO: non fare il controllo su db ogni messaggio?
-        
+
 
         if (!UserIdToConversation.TryGetValue(userId, out var conversation))
         {
@@ -87,7 +89,7 @@ public static class MessageHandlers
             UserState.Course => SendYearKeyboard(botClient, message, command!),
             UserState.Year => SendExamKeyboard(botClient, message, command!),
             UserState.Exam => SendSaveUserData(botClient, message, command!),
-            UserState.Link => ReadStudentNumber(botClient, message, command!),
+            UserState.Link => ReadStudentCode(botClient, message, command!),
             UserState.ReLink => ReadYesOrNo(botClient, message, command!),
             UserState.Tutor => ReadTutor(botClient, message, command!),
             _ => SendEcho(botClient, message)
@@ -111,7 +113,7 @@ public static class MessageHandlers
                       $"o fino a che la segreteria non l'avrà elaborata.",
                 replyMarkup: new ReplyKeyboardRemove());
         }
-        
+
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (!Monitor.TryEnter(conversation!.ConvLock))
         {
@@ -255,7 +257,7 @@ public static class MessageHandlers
             replyMarkup: replyKeyboardMarkup);
     }
 
-    private static async Task<Message> SendSaveUserData(ITelegramBotClient botClient, Message message, string exam)
+    private static async Task<Message> SendSaveUserData(ITelegramBotClient botClient, Message message, string examName)
     {
         UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
@@ -263,9 +265,11 @@ public static class MessageHandlers
             return await SendEcho(botClient, message);
         var connection = DbConnection.GetMySqlConnection();
         var examService = new ExamDAO(connection);
-        if (!examService.IsExamInCourse(exam, conversation.Course!, conversation.Year!))
+        var exam = examService.FindExam(examName, conversation.Course!);
+        if (exam == null ||
+            !examService.IsExamInCourse(exam.Value.Code, conversation.Course!, conversation.Year!))
         {
-            Log.Debug("Invalid Exam {exam} chosen in chat {id}.", exam, message.Chat.Id);
+            Log.Debug("Invalid Exam {exam} chosen in chat {id}.", examName, message.Chat.Id);
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -276,8 +280,8 @@ public static class MessageHandlers
         conversation.State = UserState.Link;
         var userService = new UserDAO(connection);
         var userId = message.From.Id;
-        var studentNumber = userService.FindUserStudentNumber(userId);
-        if (studentNumber == null)
+        var studentCode = userService.FindUserStudentCode(userId);
+        if (studentCode == null)
         {
             // Check if Online Authentication is active
             if (GlobalConfig.BotConfig!.HasOnlineAuth)
@@ -297,16 +301,16 @@ public static class MessageHandlers
                 replyMarkup: new ReplyKeyboardRemove());
         }
 
-        conversation.StudentNumber = studentNumber.Value;
+        conversation.StudentCode = studentCode.Value;
         conversation.State = UserState.ReLink;
         // Release lock on conversation
         Monitor.Exit(conversation.ConvLock);
 
-        Log.Debug("User {userId} already linked to person code {studentNumber}.", userId, studentNumber);
+        Log.Debug("User {userId} already linked to person code {studentCode}.", userId, studentCode);
         var replyKeyboardMarkup = KeyboardGenerator.YesOrNoKeyboard();
         return await
             botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: $"Il tuo id telegram è già associato al codice matricola {studentNumber}.\n" +
+                text: $"Il tuo id telegram è già associato al codice matricola {studentCode}.\n" +
                       "Vuoi reinserire?",
                 replyMarkup: replyKeyboardMarkup);
     }
@@ -316,7 +320,7 @@ public static class MessageHandlers
         var userId = message.From!.Id;
         UserIdToConversation.TryGetValue(userId, out var conversation);
 
-        var studentNumber = conversation!.StudentNumber;
+        var studentCode = conversation!.StudentCode;
         switch (command)
         {
             case "Sì":
@@ -326,11 +330,11 @@ public static class MessageHandlers
                 // Check if conversation has been reset or is locked by a reset if not acquire lock
                 if (conversation.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
                     return await SendEcho(botClient, message);
-                Log.Debug("User {userId} has chosen to delete association with person code {studentNumber}"
-                    , userId, studentNumber);
+                Log.Debug("User {userId} has chosen to delete association with person code {studentCode}"
+                    , userId, studentCode);
                 var userService = new UserDAO(DbConnection.GetMySqlConnection());
                 userService.RemoveUser(userId);
-                conversation.StudentNumber = 0;
+                conversation.StudentCode = 0;
                 conversation.State = UserState.Link;
                 // Release lock from conversation
 
@@ -360,14 +364,14 @@ public static class MessageHandlers
                 Monitor.Exit(conversation.ConvLock);
                 return await SendTutorsKeyboard(botClient, message);
             default:
-                Log.Debug("Invalid {studentNumber} chosen in chat {id}.", studentNumber, message.Chat.Id);
+                Log.Debug("Invalid {studentCode} chosen in chat {id}.", studentCode, message.Chat.Id);
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                     text: "Inserisci una risposta valida");
         }
     }
 
-    private static async Task<Message> ReadStudentNumber(ITelegramBotClient botClient, Message message,
-        string studentNumberStr)
+    private static async Task<Message> ReadStudentCode(ITelegramBotClient botClient, Message message,
+        string studentCodeStr)
     {
         UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
@@ -385,9 +389,9 @@ public static class MessageHandlers
                 text: "Accedi ad Aunica per continuare.");
         }
 
-        if (!Regex.IsMatch(studentNumberStr, "^[1-9][0-9]{5}$"))
+        if (!Regex.IsMatch(studentCodeStr, "^[1-9][0-9]{5}$"))
         {
-            Log.Debug("Invalid student number {studentNumber} typed in chat {id}.", studentNumberStr, message.Chat.Id);
+            Log.Debug("Invalid student number {studentCode} typed in chat {id}.", studentCodeStr, message.Chat.Id);
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -395,19 +399,19 @@ public static class MessageHandlers
         }
 
         var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
-        if (!studentService.IsStudentEnabled(int.Parse(studentNumberStr)))
+        if (!studentService.IsStudentEnabled(int.Parse(studentCodeStr)))
         {
-            Log.Debug("Invalid student number {studentNumber} typed in chat {id}.", studentNumberStr, message.Chat.Id);
+            Log.Debug("Invalid student number {studentCode} typed in chat {id}.", studentCodeStr, message.Chat.Id);
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Spiacente non sei abilitato ai tutoraggi peer to peer.");
         }
 
-        var studentNumber = int.Parse(studentNumberStr);
+        var studentCode = int.Parse(studentCodeStr);
         var userId = message.From!.Id;
         var userService = new UserDAO(DbConnection.GetMySqlConnection());
-        userService.SaveUserLink(userId, studentNumber);
+        userService.SaveUserLink(userId, studentCode);
         conversation.State = UserState.Tutor;
         // Release lock from conversation
         Monitor.Exit(conversation.ConvLock);
@@ -433,10 +437,13 @@ public static class MessageHandlers
         }
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        var tutors = tutorService.FindUnlockedTutors(conversation.Exam!, GlobalConfig.BotConfig!.TutorLockHours);
+        var exam = conversation.Exam!.Value;
+        var tutors = tutorService.FindAvailableTutors(exam.Code, GlobalConfig.BotConfig!.TutorLockHours);
         var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
-        var tutorsTexts = tutors.Select(x => "nome: " + x.Name + "\ncorso: " + x.Course + "\n \n").ToList();
-        var text = $"Scegli uno dei tutor disponibili per {conversation.Exam}:\n \n";
+        var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course + 
+                                             "\nprof: " + x.Professor + "\n \n")
+            .ToList();
+        var text = $"Scegli uno dei tutor disponibili per {conversation.Exam.Value.Name}:\n \n";
         foreach (var tutorsText in tutorsTexts)
         {
             text += tutorsText;
@@ -452,7 +459,7 @@ public static class MessageHandlers
     {
         var userId = message.From!.Id;
         UserIdToConversation.TryGetValue(userId, out var conversation);
-        
+
         // Check if user is already locked for finalizing a tutor request
         var userService = new UserDAO(DbConnection.GetMySqlConnection());
         if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
@@ -463,21 +470,23 @@ public static class MessageHandlers
                       $"o fino a che la segreteria non l'avrà elaborata.",
                 replyMarkup: new ReplyKeyboardRemove());
         }
-        
+
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        if (!tutorService.IsTutorForExam(tutor, conversation!.Exam!))
+        var exam = conversation!.Exam!.Value;
+        var tutorCode = tutorService.FindTutor(tutor, exam.Code);
+        if (tutorCode == null || !tutorService.IsTutorForExam(tutorCode.Value, exam.Code))
         {
             Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Inserisci un tutor della lista");
         }
 
-        // lock tutor until email arrives
-        tutorService.LockTutorAndUser(tutor, conversation.Exam!, userId);
-        userService.LockUser(userId);
-        
+        // lock tutor until email arrive
+        tutorService.ReserveTutor(tutorCode.Value, exam.Code, userId, conversation.StudentCode);
+
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: $"Tutor selezionato riceverai una mail di conferma dalla segreteria entro {GlobalConfig.BotConfig.TutorLockHours} ore.",
+            text:
+            $"Tutor selezionato riceverai una mail di conferma dalla segreteria entro {GlobalConfig.BotConfig.TutorLockHours} ore.",
             replyMarkup: new ReplyKeyboardRemove());
     }
 }

@@ -1,5 +1,6 @@
 using System.Timers;
 using Bot.configs;
+using Bot.Database.Entity;
 using Bot.Enums;
 using Serilog;
 using Timer = System.Timers.Timer;
@@ -34,8 +35,8 @@ public class Conversation
     public string? School { get; set; }
     public string? Course { get; set; }
     public string? Year { get; set; }
-    public string? Exam { get; set; }
-    public int StudentNumber { get; set; }
+    public Exam? Exam { get; set; }
+    public int StudentCode { get; set; }
     
     public string? Tutor { get; set; }
 
@@ -71,7 +72,7 @@ public class Conversation
                 Exam = null;
                 break;
             case UserState.Link:
-                StudentNumber = 0;
+                StudentCode = 0;
                 break;
             case UserState.ReLink:
                 break;
@@ -94,9 +95,9 @@ public class Conversation
             UserState.School => School,
             UserState.Course => Course,
             UserState.Year => Year,
-            UserState.Exam => Exam,
-            UserState.Link => StudentNumber != 0 ? StudentNumber.ToString() : null,
-            UserState.ReLink => StudentNumber != 0 ? StudentNumber.ToString() : null,
+            UserState.Exam => Exam!.Value.Name,
+            UserState.Link => StudentCode != 0 ? StudentCode.ToString() : null,
+            UserState.ReLink => StudentCode != 0 ? StudentCode.ToString() : null,
             UserState.Tutor => Tutor,
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -115,7 +116,7 @@ public class Conversation
         Course = null;
         Year = null;
         Exam = null;
-        StudentNumber = 0;
+        StudentCode = 0;
         Tutor = null;
         Monitor.Exit(ConvLock);
     }

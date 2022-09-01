@@ -15,16 +15,16 @@ public class StudentDAO
     /// <summary>
     /// Checks if the given student is enabled for tutoring.
     /// </summary>
-    /// <param name="studentNumber">Student Code of the student for which to check.</param>
+    /// <param name="studentCode">Student Code of the student for which to check.</param>
     /// <returns>true if student is enabled; otherwise false.</returns>
-    public bool IsStudentEnabled(int studentNumber)
+    public bool IsStudentEnabled(int studentCode)
     {
         _connection.Open();
-        const string query = "SELECT * from enabled_student WHERE code=@code";
+        const string query = "SELECT * from enabled_student WHERE student_code=@code";
         try
         {
             var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@code", studentNumber);
+            command.Parameters.AddWithValue("@code", studentCode);
             command.Prepare();
 
             var reader = command.ExecuteReader();
@@ -35,7 +35,7 @@ public class StudentDAO
                 return true;
             }
 
-            Log.Debug("Student {code} not found in DB", studentNumber);
+            Log.Debug("Student {code} not found in DB", studentCode);
         }
         catch (Exception)
         {
