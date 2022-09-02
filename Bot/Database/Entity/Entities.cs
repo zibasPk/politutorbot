@@ -13,6 +13,15 @@ public record struct TutorToExam(
     int AvailableReservations
 );
 
+public record struct Reservation(
+    int Id,
+    int Tutor,
+    int Exam,
+    int Student,
+    DateTime ReservationTimestamp,
+    bool IsProcessed
+);
+
 public record struct Exam(
     int Code, 
     string Course, 

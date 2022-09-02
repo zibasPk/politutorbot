@@ -27,9 +27,9 @@ public static class WebServer
         Log.Information("Web application logger started on {level} level", levelSwitch.MinimumLevel);
 
         Log.Information("Initializing Web Server...");
+
         var builder = WebApplication.CreateBuilder();
         builder.Host.UseSerilog(serverLog);
-
         // Authorization handler
         builder.Services.AddAuthentication("BasicAuthentication")
             .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
@@ -42,46 +42,77 @@ public static class WebServer
         app.UseHttpsRedirection();
 
         //Get tutor information
-        app.MapGet("/api/tutors/{tutor?}/{exam?}", FetchTutors).RequireAuthorization();
+        app.MapGet("/api/tutoring/{tutor:int?}/{exam:int?}", FetchTutors).RequireAuthorization();
+        app.MapGet("/api/reservations/{value?}", FetchReservations).RequireAuthorization();
 
         // Update a tutors lock
-        app.MapPut("/api/tutors/{tutor}/{exam}/{action}", ChangeTutorState).RequireAuthorization();
+        //app.MapPut("/api/tutoring/{tutor:int}/{exam:int}/{student}/{action}", TutoringAction).RequireAuthorization();
+        app.MapPut("/api/reservations/{id:int}/{action}", HandleReservationAction).RequireAuthorization();
+        //app.MapPut("/api/tutors/{tutor}/{exam}/{action}", ChangeTutorState).RequireAuthorization();
 
         // delete a tutor
-        app.MapDelete("/api/tutors/{tutor}", DeleteTutor).RequireAuthorization();
+        //app.MapDelete("/api/tutors/{tutor}", DeleteTutor).RequireAuthorization();
 
         // Map Post requests end points
-        app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
-        app.MapPost("/api/tutors/upload", async (HttpRequest request, HttpResponse response) =>
-        {
-            var tutors = new List<TutorToExam>();
-            try
-            {
-                tutors = await CsvParser.ParseTutors(request.Body);
-            }
-            catch (CsvHelper.MissingFieldException e)
-            {
-                Log.Warning(e.Message);
-                response.StatusCode = StatusCodes.Status422UnprocessableEntity;
-            }
-
-            var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-
-            foreach (var tutor in tutors)
-            {
-                if (tutorService.CheckTutorInsertValidity(tutor))
-                    continue;
-                Log.Warning("Line {i} has invalid values", tutors.IndexOf(tutor));
-                response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
-            tutors.ForEach(tutor => tutorService.InsertNewTutor(tutor));
-        }).RequireAuthorization();
-
+        // app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
 
         var url = "https://localhost:" + GlobalConfig.WebConfig!.Port;
         app.Run(url);
+    }
+
+   
+
+    private static void HandleReservationAction(int id, string action, HttpResponse response)
+    {
+        if (action != "confirm")
+        {
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
+        // Checks if the exam corresponding to the reservation has any available reservations
+        if (!reservationService.IsReservationAllowed(id))
+        {
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            response.WriteAsync($"reservation {id} hasn't enough available reservations.");
+            return;
+        }
+
+        tutorService.ActivateTutoring(id);
+
+        return;
+    }
+
+    private static void FetchReservations(string? value, HttpResponse response)
+    {
+        var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
+
+        string returnObject = "";
+        switch (value)
+        {
+            case null:
+                returnObject = JsonConvert.SerializeObject(reservationService.FindReservations());
+                break;
+            case "not-processed":
+                returnObject = JsonConvert.SerializeObject(reservationService.FindReservations(false));
+                break;
+            case "processed":
+                returnObject = JsonConvert.SerializeObject(reservationService.FindReservations(true));
+                break;
+            default:
+                if (int.TryParse(value, out var reservationId))
+                {
+                    var reservation = reservationService.FindReservation(reservationId);
+                    if (reservation.HasValue)
+                        returnObject = JsonConvert.SerializeObject(reservation);
+                }
+
+                break;
+        }
+
+        response.WriteAsync(returnObject);
     }
 
     private static async void SavePersonCode(HttpRequest request, HttpResponse response)
@@ -124,14 +155,14 @@ public static class WebServer
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         if (tutor == null)
         {
-            var tutors = tutorService.FindTutors();
+            var tutors = tutorService.FindTutorings();
             response.WriteAsync(JsonConvert.SerializeObject(tutors));
             return;
         }
 
-        var tutorObj = tutorService.FindTutoring(tutor.Value);
+        var tutoringList = tutorService.FindTutorings(tutor.Value);
 
-        if (tutorObj.Count == 0)
+        if (tutoringList.Count == 0)
         {
             response.StatusCode = StatusCodes.Status400BadRequest;
             return;
@@ -139,7 +170,7 @@ public static class WebServer
 
         if (exam == null)
         {
-            response.WriteAsync(JsonConvert.SerializeObject(tutorObj));
+            response.WriteAsync(JsonConvert.SerializeObject(tutoringList));
             return;
         }
 
@@ -150,9 +181,9 @@ public static class WebServer
             return;
         }
 
-        response.WriteAsync(tutorService.IsTutorLocked(tutor.Value, exam.Value, GlobalConfig.BotConfig!.TutorLockHours)
-            ? "locked"
-            : "unlocked");
+
+        var tutoring = tutorService.FindTutoring(tutor.Value, exam.Value);
+        response.WriteAsync(JsonConvert.SerializeObject(tutoring));
     }
 
     private static async void DeleteTutor(string tutor, HttpResponse response)

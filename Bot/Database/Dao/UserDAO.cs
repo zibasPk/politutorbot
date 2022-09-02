@@ -197,7 +197,9 @@ public class UserDAO
     {
         _connection.Open();
         const string query =
-            "SELECT * FROM telegram_user WHERE userID=@userId AND lock_timestamp >= NOW() - INTERVAL @hours HOUR";
+            "SELECT * FROM telegram_user " +
+            "WHERE userID=@userId AND (lock_timestamp >= NOW() - INTERVAL @hours HOUR OR " +
+            "student_code IN (select student FROM active_tutoring))";
         try
         {
             var command = new MySqlCommand(query, _connection);

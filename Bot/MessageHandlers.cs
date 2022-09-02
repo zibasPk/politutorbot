@@ -117,7 +117,7 @@ public static class MessageHandlers
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (!Monitor.TryEnter(conversation!.ConvLock))
         {
-            Log.Debug("locked conv rip");
+            Log.Debug("locked conversation");
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await SendEcho(botClient, message);
@@ -321,6 +321,7 @@ public static class MessageHandlers
         UserIdToConversation.TryGetValue(userId, out var conversation);
 
         var studentCode = conversation!.StudentCode;
+        var userService = new UserDAO(DbConnection.GetMySqlConnection());
         switch (command)
         {
             case "Sì":
@@ -332,7 +333,6 @@ public static class MessageHandlers
                     return await SendEcho(botClient, message);
                 Log.Debug("User {userId} has chosen to delete association with person code {studentCode}"
                     , userId, studentCode);
-                var userService = new UserDAO(DbConnection.GetMySqlConnection());
                 userService.RemoveUser(userId);
                 conversation.StudentCode = 0;
                 conversation.State = UserState.Link;
@@ -359,7 +359,9 @@ public static class MessageHandlers
                 // Check if conversation has been reset or is locked by a reset if not acquire lock
                 if (conversation.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
                     return await SendEcho(botClient, message);
+                
                 conversation.State = UserState.Tutor;
+                conversation.StudentCode = userService.FindUserStudentCode(userId)!.Value;
                 // Release lock from conversation
                 Monitor.Exit(conversation.ConvLock);
                 return await SendTutorsKeyboard(botClient, message);
@@ -413,6 +415,7 @@ public static class MessageHandlers
         var userService = new UserDAO(DbConnection.GetMySqlConnection());
         userService.SaveUserLink(userId, studentCode);
         conversation.State = UserState.Tutor;
+        conversation.StudentCode = studentCode;
         // Release lock from conversation
         Monitor.Exit(conversation.ConvLock);
         return await SendTutorsKeyboard(botClient, message);
@@ -473,7 +476,7 @@ public static class MessageHandlers
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         var exam = conversation!.Exam!.Value;
-        var tutorCode = tutorService.FindTutor(tutor, exam.Code);
+        var tutorCode = tutorService.FindTutorCode(tutor, exam.Code);
         if (tutorCode == null || !tutorService.IsTutorForExam(tutorCode.Value, exam.Code))
         {
             Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
