@@ -34,6 +34,7 @@ public class ReservationDAO
                     Id = reader.GetInt32("ID"),
                     Tutor = reader.GetInt32("tutor"),
                     Exam = reader.GetInt32("exam"),
+                    Student = reader.GetInt32("student"),
                     ReservationTimestamp = reader.GetDateTime("reservation_timestamp"),
                     IsProcessed = reader.GetBoolean("is_processed")
                 };  
@@ -71,6 +72,7 @@ public class ReservationDAO
                     Id = reader.GetInt32("ID"),
                     Tutor = reader.GetInt32("tutor"),
                     Exam = reader.GetInt32("exam"),
+                    Student = reader.GetInt32("student"),
                     ReservationTimestamp = reader.GetDateTime("reservation_timestamp"),
                     IsProcessed = reader.GetBoolean("is_processed")
                 };
@@ -108,6 +110,7 @@ public class ReservationDAO
                     Id = reader.GetInt32("ID"),
                     Tutor = reader.GetInt32("tutor"),
                     Exam = reader.GetInt32("exam"),
+                    Student = reader.GetInt32("student"),
                     ReservationTimestamp = reader.GetDateTime("reservation_timestamp"),
                     IsProcessed = reader.GetBoolean("is_processed")
                 };
