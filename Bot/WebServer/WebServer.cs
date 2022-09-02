@@ -46,7 +46,7 @@ public static class WebServer
         app.MapGet("/api/reservations/{value?}", FetchReservations).RequireAuthorization();
 
         // Update a tutors lock
-        //app.MapPut("/api/tutoring/{tutor:int}/{exam:int}/{student}/{action}", TutoringAction).RequireAuthorization();
+        app.MapPut("/api/tutoring/{tutor:int}/{exam:int}/{student:int}/{action}", TutoringAction).RequireAuthorization();
         app.MapPut("/api/reservations/{id:int}/{action}", HandleReservationAction).RequireAuthorization();
         //app.MapPut("/api/tutors/{tutor}/{exam}/{action}", ChangeTutorState).RequireAuthorization();
 
@@ -60,13 +60,12 @@ public static class WebServer
         app.Run(url);
     }
 
-   
 
     private static void HandleReservationAction(int id, string action, HttpResponse response)
     {
         if (action != "confirm")
         {
-            response.StatusCode = StatusCodes.Status400BadRequest;
+            response.StatusCode = StatusCodes.Status404NotFound;
             return;
         }
 
@@ -81,15 +80,28 @@ public static class WebServer
         }
 
         tutorService.ActivateTutoring(id);
+    }
 
-        return;
+    private static void TutoringAction(int tutor, int exam, int student, string action, HttpResponse response)
+    {
+        var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+        if (action != "deactivate")
+        {
+            response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+        
+        if (tutorService.DeactivateTutoring(tutor, exam, student))
+        {
+            response.StatusCode = StatusCodes.Status404NotFound;
+        }
     }
 
     private static void FetchReservations(string? value, HttpResponse response)
     {
         var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
 
-        string returnObject = "";
+        var returnObject = "";
         switch (value)
         {
             case null:

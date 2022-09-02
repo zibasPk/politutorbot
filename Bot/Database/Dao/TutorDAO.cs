@@ -435,7 +435,7 @@ public class TutorDAO
         catch (Exception e)
         {
             Log.Error("Exception while user {0} with student code {1} was reserving tutor {2} for exam {3}"
-                ,user, studentCode , tutor, exam);
+                , user, studentCode, tutor, exam);
             transaction.Rollback();
             _connection.Close();
             throw;
@@ -557,106 +557,15 @@ public class TutorDAO
         _connection.Close();
     }
 
-    /// <summary>
-    /// Checks validity of values to insert for tutor.
-    /// </summary>
-    /// <returns>true if valid; otherwise false;</returns>
-    public bool CheckTutorInsertValidity(TutorToExam tutorToExam)
-    {
-        _connection.Open();
-        try
-        {
-            var query = "SELECT * FROM course WHERE name=@course";
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@course", tutorToExam.Course);
-            command.Prepare();
-
-            var reader = command.ExecuteReader();
-            if (!reader.HasRows)
-            {
-                Log.Debug("Invalid course param");
-                _connection.Close();
-                return false;
-            }
-
-            query = "SELECT * FROM tutor WHERE ranking=@ranking";
-            command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@ranking", tutorToExam.Ranking);
-            command.Prepare();
-            if (reader.HasRows)
-            {
-                Log.Debug("Invalid ranking param");
-                _connection.Close();
-                return false;
-            }
-
-            query = "SELECT * FROM exam WHERE code=@exam";
-            command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@exam", tutorToExam.ExamCode);
-            command.Prepare();
-            if (!reader.HasRows)
-            {
-                Log.Debug("Invalid exam param");
-                _connection.Close();
-                return false;
-            }
-        }
-        catch (Exception)
-        {
-            _connection.Close();
-            throw;
-        }
-
-        _connection.Close();
-        return true;
-    }
-    
-    
-    public void InsertNewTutor(TutorToExam tutorToExam)
-    {
-        _connection.Open();
-        var transaction = _connection.BeginTransaction();
-        var query = "INSERT INTO tutor (`name`, `course`, `school`, `ranking`) " +
-                    "VALUES (@name, @course, @school, @ranking)";
-        try
-        {
-            var command = new MySqlCommand(query, _connection, transaction);
-            try
-            {
-                command.Parameters.AddWithValue("@course", tutorToExam.Course);
-                command.Parameters.AddWithValue("@ranking", tutorToExam.Ranking);
-                command.Prepare();
-                command.ExecuteNonQuery();
-            }
-            catch (MySqlException e)
-            {
-                if (e.Code != 1022)
-                    throw;
-            }
-
-            command.CommandText = "INSERT INTO tutor_to_exam (`tutor`, `exam`, `lock_timestamp`, `locked_by`) " +
-                                  "VALUES (@name, @exam, DEFAULT, DEFAULT)";
-            command.Prepare();
-            command.ExecuteNonQuery();
-            transaction.Commit();
-        }
-        catch (Exception)
-        {
-            transaction.Rollback();
-            _connection.Close();
-            throw;
-        }
-
-        _connection.Close();
-    }
 
     public void ActivateTutoring(int reservationId)
     {
         _connection.Open();
         var transaction = _connection.BeginTransaction();
-        const string query = "UPDATE tutor_to_exam as t SET available_reservations = available_reservations - 1, last_reservation = DEFAULT " +
-                             "WHERE EXISTS (select * FROM reservation as res WHERE ID=@reservationId AND " +
-                             "res.exam = t.exam AND res.tutor = t.tutor);";
+        const string query =
+            "UPDATE tutor_to_exam as t SET available_reservations = available_reservations - 1, last_reservation = DEFAULT " +
+            "WHERE EXISTS (select * FROM reservation as res WHERE ID=@reservationId AND " +
+            "res.exam = t.exam AND res.tutor = t.tutor);";
         try
         {
             var command = new MySqlCommand(query, _connection, transaction);
@@ -668,7 +577,7 @@ public class TutorDAO
                                   "WHERE ID=@reservationId;";
             command.Prepare();
             command.ExecuteNonQuery();
-            
+
             command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                                   "WHERE student_code IN (select student FROM reservation WHERE ID=@reservationId);";
             command.Prepare();
@@ -688,7 +597,47 @@ public class TutorDAO
             _connection.Close();
             throw;
         }
+
         _connection.Close();
     }
-    
+
+    public bool DeactivateTutoring(int tutor, int exam, int studentCode)
+    {
+        _connection.Open();
+        var transaction = _connection.BeginTransaction();
+        const string query =
+            "DELETE FROM active_tutoring WHERE tutor = @tutor AND exam = @exam AND student = @studentCode";
+        try
+        {
+            var command = new MySqlCommand(query, _connection, transaction);
+            command.Parameters.AddWithValue("@tutor", tutor);
+            command.Parameters.AddWithValue("@exam", exam);
+            command.Parameters.AddWithValue("@studentCode", studentCode);
+            command.Prepare();
+            var affectedRows = command.ExecuteNonQuery();
+            if (affectedRows == 0)
+            {
+                transaction.Commit();
+                _connection.Close();
+                return false;
+            }
+            
+            command.CommandText = "UPDATE tutor_to_exam SET available_reservations = available_reservations + 1 " +
+                                  "WHERE exam=@exam AND tutor=@tutor";
+            command.Prepare();
+            command.ExecuteNonQuery();
+
+            transaction.Commit();
+            Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was deleted", tutor, studentCode);
+        }
+        catch (Exception)
+        {
+            transaction.Rollback();
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return true;
+    }
 }

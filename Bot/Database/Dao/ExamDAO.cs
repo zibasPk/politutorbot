@@ -15,11 +15,11 @@ public class ExamDAO
 
 
     /// <summary>
-    /// Finds exams of a course from a specific year.
+    /// Finds exam by searching by its name and course.
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="name">Name of exam to search.</param>
     /// <param name="course">The course for which to search.</param>
-    /// <returns>List of exams of a course from a specific year.</returns>
+    /// <returns>Exam</returns>
     public Exam? FindExam(string name, string course)
     {
         _connection.Open();

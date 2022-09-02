@@ -62,8 +62,7 @@ public static class MessageHandlers
         var userId = message.From.Id;
         Log.Information("Received message '{text}' by user {userId}", message.Text, userId);
 
-        // Check if user is already locked for finalizing a tutor request
-        // TODO: non fare il controllo su db ogni messaggio?
+        // Check if user is already locked for finalizing a tutor reques
 
 
         if (!UserIdToConversation.TryGetValue(userId, out var conversation))
@@ -154,8 +153,7 @@ public static class MessageHandlers
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
-
-        var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
+        
         if (school != "ICAT")
         {
             Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
@@ -164,7 +162,8 @@ public static class MessageHandlers
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
         }
-
+        
+        var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
         // Check if school is valid
         if (replyKeyboardMarkup == null)
         {
