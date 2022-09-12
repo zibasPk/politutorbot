@@ -14,22 +14,6 @@ public enum UserState
 
 public static class UserStateMethods
 {
-    private static int GetValue(this UserState currentUserState)
-    {
-        return currentUserState switch
-        {
-            UserState.Start => 0,
-            UserState.School => 1,
-            UserState.Course => 2,
-            UserState.Year => 3,
-            UserState.Exam => 4,
-            UserState.Link => 5,
-            UserState.ReLink => 5,
-            UserState.Tutor => 6,
-            _ => throw new ArgumentOutOfRangeException(nameof(currentUserState), currentUserState, null)
-        };
-    }
-
     /// <summary>
     /// Looks for the state preceding currentState
     /// </summary>
@@ -37,14 +21,19 @@ public static class UserStateMethods
     /// <returns>previous state if found; otherwise current state.</returns>
     public static UserState GetPreviousState(this UserState currentUserState)
     {
-        var states = Enum.GetValues<UserState>();
-
-        foreach (var state in states)
+        
+        return currentUserState switch
         {
-            if (state.GetValue() == currentUserState.GetValue() - 1)
-                return state;
-        }
-
-        return currentUserState;
+            UserState.Start => UserState.Start,
+            UserState.School => UserState.Start,
+            UserState.Course => UserState.School,
+            UserState.Year => UserState.Course,
+            UserState.Exam => UserState.Year,
+            UserState.Link => UserState.Exam,
+            UserState.ReLink => UserState.Exam,
+            UserState.Tutor => UserState.Exam,
+            _ => currentUserState
+        };
+        
     }
 }

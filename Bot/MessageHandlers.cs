@@ -85,15 +85,17 @@ public static class MessageHandlers
         var action = conversation.State switch
         {
             UserState.Start => SendSchoolKeyboard(botClient, message),
-            UserState.School => SendCourseKeyboard(botClient, message, command!),
-            UserState.Course => SendYearKeyboard(botClient, message, command!),
-            UserState.Year => SendExamKeyboard(botClient, message, command!),
-            UserState.Exam => SendSaveUserData(botClient, message, command!),
+            UserState.School => SendSaveUserData(botClient, message, command!),
             UserState.Link => ReadStudentCode(botClient, message, command!),
             UserState.ReLink => ReadYesOrNo(botClient, message, command!),
+            UserState.Course => SendYearKeyboard(botClient, message, command!),
+            UserState.Year => SendExamKeyboard(botClient, message, command!),
+            UserState.Exam => SendTutorsKeyboard(botClient, message, command!),
             UserState.Tutor => ReadTutor(botClient, message, command!),
             _ => SendEcho(botClient, message)
         };
+        
+        
 
         await action;
     }
@@ -152,27 +154,8 @@ public static class MessageHandlers
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
-        
-        if (school != "ICAT")
-        {
-            Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
-            // Release lock from conversation
-            Monitor.Exit(conversation.ConvLock);
-            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
-        }
-        
-        var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
-        // Check if school is valid
-        if (replyKeyboardMarkup == null)
-        {
-            Log.Debug("Invalid school {school} chosen in chat {id}.", school, message.Chat.Id);
-            // Release lock from conversation
-            Monitor.Exit(conversation.ConvLock);
-            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Inserisci una scuola valida");
-        }
 
+        var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
         // Show typing action to client
         await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
         // Change conversation state to Course and save chosen school
@@ -255,27 +238,39 @@ public static class MessageHandlers
             replyMarkup: replyKeyboardMarkup);
     }
 
-    private static async Task<Message> SendSaveUserData(ITelegramBotClient botClient, Message message, string examName)
+    private static async Task<Message> SendSaveUserData(ITelegramBotClient botClient, Message message, string school)
     {
         UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
         // Check if conversation has been reset or is locked by a reset if not acquire lock
         if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
             return await SendEcho(botClient, message);
         var connection = DbConnection.GetMySqlConnection();
-        var examService = new ExamDAO(connection);
-        var exam = examService.FindExam(examName, conversation.Course!);
-        if (exam == null ||
-            !examService.IsExamInCourse(exam.Value.Code, conversation.Course!, conversation.Year!))
+        
+        if (school != "ICAT")
         {
-            Log.Debug("Invalid Exam {exam} chosen in chat {id}.", examName, message.Chat.Id);
+            Log.Debug("Unavailable school {school} chosen in chat {id}.", school, message.Chat.Id);
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Inserisci una materia valida");
+                text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
         }
 
-        conversation.Exam = exam;
+        //TODO: change to school service query
+        var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
+
+        // check school validity
+        if (courseService.FindCoursesInSchool(school).Count == 0)
+        {
+            Log.Debug("Invalid school {school} chosen in chat {id}.", school, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Inserisci una scuola valida");
+        }
+            
+        conversation.School = school;
         conversation.State = UserState.Link;
+        
         var userService = new UserDAO(connection);
         var userId = message.From.Id;
         var studentCode = userService.FindUserStudentCode(userId);
@@ -362,7 +357,8 @@ public static class MessageHandlers
                 conversation.StudentCode = userService.FindUserStudentCode(userId)!.Value;
                 // Release lock from conversation
                 Monitor.Exit(conversation.ConvLock);
-                return await SendTutorsKeyboard(botClient, message);
+                var school = conversation.School;
+                return await SendCourseKeyboard(botClient, message, school!);
             default:
                 Log.Debug("Invalid {studentCode} chosen in chat {id}.", studentCode, message.Chat.Id);
                 return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -405,18 +401,20 @@ public static class MessageHandlers
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.");
+                text: "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.",
+                replyMarkup: KeyboardGenerator.BackKeyboard());
         }
 
         var studentCode = int.Parse(studentCodeStr);
         var userId = message.From!.Id;
         var userService = new UserDAO(DbConnection.GetMySqlConnection());
         userService.SaveUserLink(userId, studentCode);
-        conversation.State = UserState.Tutor;
+        conversation.State = UserState.Course;
         conversation.StudentCode = studentCode;
         // Release lock from conversation
         Monitor.Exit(conversation.ConvLock);
-        return await SendTutorsKeyboard(botClient, message);
+        var school = conversation.School;
+        return await SendCourseKeyboard(botClient, message, school!);
     }
 
     private static async Task<Message> SendEcho(ITelegramBotClient botClient, Message message)
@@ -425,7 +423,7 @@ public static class MessageHandlers
             text: message.Text!);
     }
 
-    private static async Task<Message> SendTutorsKeyboard(ITelegramBotClient botClient, Message message)
+    private static async Task<Message> SendTutorsKeyboard(ITelegramBotClient botClient, Message message, string examName)
     {
         var userId = message.From!.Id;
         UserIdToConversation.TryGetValue(userId, out var conversation);
@@ -436,10 +434,25 @@ public static class MessageHandlers
             Log.Debug("user {id} tried to access a locked conversation", message.From.Id);
             return await SendEcho(botClient, message);
         }
-
+        
+        
+        var examService = new ExamDAO(DbConnection.GetMySqlConnection());
+        var exam = examService.FindExam(examName, conversation.Course!);
+        // Check if exam valid
+        if (exam == null ||
+            !examService.IsExamInCourse(exam.Value.Code, conversation.Course!, conversation.Year!))
+        {
+            Log.Debug("Invalid Exam {exam} chosen in chat {id}.", examName, message.Chat.Id);
+            // Release lock from conversation
+            Monitor.Exit(conversation.ConvLock);
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Inserisci una materia valida");
+        }
+        
+        conversation.Exam = exam;
+        conversation.State = UserState.Tutor;
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        var exam = conversation.Exam!.Value;
-        var tutors = tutorService.FindAvailableTutors(exam.Code, GlobalConfig.BotConfig!.TutorLockHours);
+        var tutors = tutorService.FindAvailableTutors(exam.Value.Code, GlobalConfig.BotConfig!.TutorLockHours);
         if (tutors.Count == 0)
         {
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
