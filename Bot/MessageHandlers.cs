@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Bot.configs;
+using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Entity;
@@ -107,9 +108,7 @@ public static class MessageHandlers
         if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
         {
             return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
-                text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
-                      $"ore dalla tua precedente richiesta " +
-                      $"o fino a che la segreteria non l'avrà elaborata.",
+                text: ReplyMessages.LockedUser,
                 replyMarkup: new ReplyKeyboardRemove());
         }
 
@@ -220,7 +219,7 @@ public static class MessageHandlers
         var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard();
 
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Scegli il tuo anno",
+            text: "Scegli il tuo anno di corso",
             replyMarkup: replyKeyboardMarkup);
     }
 
@@ -252,7 +251,7 @@ public static class MessageHandlers
         await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Scegli la materia per cui ti serve un tutoraggio",
+            text: "Scegli l’insegnamento per cui ti serve un tutorato",
             replyMarkup: replyKeyboardMarkup);
     }
 
@@ -296,7 +295,7 @@ public static class MessageHandlers
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Inserisci il tuo codice matricola:",
+                text: "Inserisci il tuo codice matricola (NO CODICE PERSONA):",
                 replyMarkup: new ReplyKeyboardRemove());
         }
 
@@ -309,8 +308,8 @@ public static class MessageHandlers
         var replyKeyboardMarkup = KeyboardGenerator.YesOrNoKeyboard();
         return await
             botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: $"Il tuo id telegram è già associato al codice matricola {studentCode}.\n" +
-                      "Vuoi reinserire?",
+                text: $"Il tuo id Telegram è già associato al codice matricola {studentCode}.\n" +
+                      "Vuoi reinserire la matricola?",
                 replyMarkup: replyKeyboardMarkup);
     }
 
@@ -406,7 +405,7 @@ public static class MessageHandlers
             // Release lock from conversation
             Monitor.Exit(conversation.ConvLock);
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Spiacente non sei abilitato ai tutoraggi peer to peer.");
+                text: "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.");
         }
 
         var studentCode = int.Parse(studentCodeStr);
@@ -441,6 +440,12 @@ public static class MessageHandlers
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         var exam = conversation.Exam!.Value;
         var tutors = tutorService.FindAvailableTutors(exam.Code, GlobalConfig.BotConfig!.TutorLockHours);
+        if (tutors.Count == 0)
+        {
+            return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: ReplyMessages.NoTutoring,
+                replyMarkup: KeyboardGenerator.BackKeyboard());
+        }
         var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
         var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course + 
                                              "\nprof: " + x.Professor + "\n \n")

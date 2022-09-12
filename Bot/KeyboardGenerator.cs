@@ -56,6 +56,10 @@ public static class KeyboardGenerator
         return GenerateKeyboardMarkup(items, 2, true);
     }
 
+    /// <summary>
+    /// Generate a keyboard containing only a back button.
+    /// </summary>
+    /// <returns></returns>
     public static ReplyKeyboardMarkup BackKeyboard()
     {
         return GenerateKeyboardMarkup(new List<string>(), true);
