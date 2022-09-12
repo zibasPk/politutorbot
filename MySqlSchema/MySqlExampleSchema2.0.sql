@@ -26,13 +26,12 @@ DROP TABLE IF EXISTS `active_tutoring`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `active_tutoring` (
   `tutor` int NOT NULL,
-  `exam` varchar(300) NOT NULL,
+  `exam` int DEFAULT NULL,
   `student` int NOT NULL,
-  PRIMARY KEY (`tutor`,`exam`,`student`),
+  PRIMARY KEY (`tutor`,`student`),
   KEY `exam` (`exam`),
   KEY `student` (`student`),
-  CONSTRAINT `active_tutoring_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`student_code`),
-  CONSTRAINT `active_tutoring_ibfk_2` FOREIGN KEY (`exam`) REFERENCES `exam` (`code`),
+  CONSTRAINT `active_tutoring_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`tutor_code`),
   CONSTRAINT `active_tutoring_ibfk_3` FOREIGN KEY (`student`) REFERENCES `enabled_student` (`student_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -103,7 +102,7 @@ DROP TABLE IF EXISTS `exam`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `exam` (
-  `code` varchar(300) NOT NULL,
+  `code` int NOT NULL,
   `course` varchar(300) NOT NULL,
   `name` varchar(300) NOT NULL,
   `year` varchar(2) NOT NULL,
@@ -119,7 +118,7 @@ CREATE TABLE `exam` (
 
 LOCK TABLES `exam` WRITE;
 /*!40000 ALTER TABLE `exam` DISABLE KEYS */;
-INSERT INTO `exam` VALUES ('123','Ingegneria Civile','analisi 1','Y1'),('123','Ingegneria Informatica','analisi 1','Y1'),('141','Ingegneria Civile','fondamenti di internet e reti','Y1'),('14124','Ingegneria Civile','Onde elettromagnetiche e mezzi trasmissivi','Y1'),('313','Ingegneria Civile','fondamenti di automazione','Y1'),('321','Ingegneria Civile','analisi 2','Y2'),('444','Ingegneria Civile','fondamenti di informatica','Y1');
+INSERT INTO `exam` VALUES (123,'Ingegneria Civile','analisi 1','Y1'),(123,'Ingegneria Informatica','analisi 1','Y1'),(141,'Ingegneria Civile','fondamenti di internet e reti','Y1'),(313,'Ingegneria Civile','fondamenti di automazione','Y1'),(321,'Ingegneria Civile','analisi 2','Y2'),(444,'Ingegneria Civile','fondamenti di informatica','Y1'),(14124,'Ingegneria Civile','Onde elettromagnetiche e mezzi trasmissivi','Y1');
 /*!40000 ALTER TABLE `exam` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -131,17 +130,20 @@ DROP TABLE IF EXISTS `reservation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reservation` (
+  `ID` int NOT NULL AUTO_INCREMENT,
   `tutor` int NOT NULL,
-  `exam` varchar(300) NOT NULL,
+  `exam` int NOT NULL,
   `student` int NOT NULL,
-  `reservation_timestamp` varchar(300) NOT NULL DEFAULT 'NOW()',
-  PRIMARY KEY (`tutor`,`exam`,`student`),
+  `reservation_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_processed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`),
+  KEY `tutor` (`tutor`),
   KEY `exam` (`exam`),
   KEY `student` (`student`),
-  CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`student_code`),
+  CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`tutor_code`),
   CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`exam`) REFERENCES `exam` (`code`),
   CONSTRAINT `reservation_ibfk_3` FOREIGN KEY (`student`) REFERENCES `enabled_student` (`student_code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,6 +152,7 @@ CREATE TABLE `reservation` (
 
 LOCK TABLES `reservation` WRITE;
 /*!40000 ALTER TABLE `reservation` DISABLE KEYS */;
+INSERT INTO `reservation` VALUES (3,123123,123,111111,'2022-09-02 10:44:17',1),(4,123123,123,111111,'2022-09-02 15:43:20',0),(5,123123,123,111111,'2022-09-02 16:33:02',0),(6,123123,123,111111,'2022-09-04 09:45:21',1),(7,123123,123,111111,'2022-09-04 10:03:06',0);
 /*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -186,7 +189,7 @@ DROP TABLE IF EXISTS `telegram_user`;
 CREATE TABLE `telegram_user` (
   `userID` int NOT NULL,
   `student_code` int NOT NULL,
-  `lock_timestamp` timestamp NOT NULL,
+  `lock_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`userID`),
   KEY `1_idx` (`student_code`),
   CONSTRAINT `telegram_user_ibfk_1` FOREIGN KEY (`student_code`) REFERENCES `enabled_student` (`student_code`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -199,6 +202,7 @@ CREATE TABLE `telegram_user` (
 
 LOCK TABLES `telegram_user` WRITE;
 /*!40000 ALTER TABLE `telegram_user` DISABLE KEYS */;
+INSERT INTO `telegram_user` VALUES (1089557436,111111,'0000-00-00 00:00:00');
 /*!40000 ALTER TABLE `telegram_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -210,12 +214,13 @@ DROP TABLE IF EXISTS `tutor`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tutor` (
-  `student_code` int NOT NULL,
+  `tutor_code` int NOT NULL,
   `name` varchar(300) NOT NULL,
   `surname` varchar(300) NOT NULL,
   `course` varchar(300) NOT NULL,
   `OFA_available` tinyint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`student_code`),
+  `ranking` int NOT NULL,
+  PRIMARY KEY (`tutor_code`),
   KEY `course` (`course`),
   CONSTRAINT `tutor_ibfk_1` FOREIGN KEY (`course`) REFERENCES `course` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
@@ -227,7 +232,7 @@ CREATE TABLE `tutor` (
 
 LOCK TABLES `tutor` WRITE;
 /*!40000 ALTER TABLE `tutor` DISABLE KEYS */;
-INSERT INTO `tutor` VALUES (123123,'nome','cognome','Ingegneria Civile',0),(123322,'nome','cognome','Ingegneria dell\'Automazione',0),(123456,'nome','cognome','Ingegneria Chimica',0),(321321,'nome','cognome','Ingegneria Informatica',0);
+INSERT INTO `tutor` VALUES (123123,'nome','cognome','Ingegneria Civile',0,1),(123322,'nome','cognome','Ingegneria dell\'Automazione',0,2),(123456,'nome','cognome','Ingegneria Chimica',0,3),(321321,'nome','cognome','Ingegneria Informatica',0,4);
 /*!40000 ALTER TABLE `tutor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -240,13 +245,13 @@ DROP TABLE IF EXISTS `tutor_to_exam`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tutor_to_exam` (
   `tutor` int NOT NULL,
-  `exam` varchar(300) NOT NULL,
+  `exam` int NOT NULL,
   `exam_professor` varchar(300) NOT NULL,
   `last_reservation` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `available_reservations` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`tutor`,`exam`),
   KEY `exam` (`exam`),
-  CONSTRAINT `tutor_to_exam_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`student_code`),
+  CONSTRAINT `tutor_to_exam_ibfk_1` FOREIGN KEY (`tutor`) REFERENCES `tutor` (`tutor_code`),
   CONSTRAINT `tutor_to_exam_ibfk_2` FOREIGN KEY (`exam`) REFERENCES `exam` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -257,7 +262,7 @@ CREATE TABLE `tutor_to_exam` (
 
 LOCK TABLES `tutor_to_exam` WRITE;
 /*!40000 ALTER TABLE `tutor_to_exam` DISABLE KEYS */;
-INSERT INTO `tutor_to_exam` VALUES (123123,'123','nome cognome','0000-00-00 00:00:00',1),(123123,'321','nome cognome','0000-00-00 00:00:00',1),(123456,'123','nome cognome','0000-00-00 00:00:00',1),(321321,'123','nome cognome','0000-00-00 00:00:00',1);
+INSERT INTO `tutor_to_exam` VALUES (123123,123,'nome cognome','0000-00-00 00:00:00',1),(123123,321,'nome cognome','0000-00-00 00:00:00',1),(123456,123,'nome cognome','0000-00-00 00:00:00',1),(321321,123,'nome cognome','0000-00-00 00:00:00',1);
 /*!40000 ALTER TABLE `tutor_to_exam` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -274,4 +279,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-08-31 14:34:03
+-- Dump completed on 2022-09-12 17:09:30
