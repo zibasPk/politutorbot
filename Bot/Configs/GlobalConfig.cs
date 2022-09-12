@@ -1,3 +1,4 @@
+using Serilog;
 using Serilog.Events;
 
 namespace Bot.configs;
@@ -9,6 +10,10 @@ public static class GlobalConfig
 {
     static GlobalConfig()
     {
+        BotConfig = new BotConfig();
+        DbConfig = new DbConfig();
+        WebConfig = new WebAppConfig();
+        Directory.CreateDirectory("data");
         InitConfigs();
     } 
     public static BotConfig? BotConfig { get; set; }
@@ -56,8 +61,8 @@ public static class GlobalConfig
     /// </summary>
     private static void InitConfigs()
     {
-        BotConfig.InitializeConfig();
-        DbConfig.InitializeConfig();
-        WebAppConfig.InitializeConfig();
+        BotConfig!.Initialize();
+        DbConfig!.Initialize();
+        WebConfig!.Initialize();
     }
 }
