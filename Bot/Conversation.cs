@@ -106,11 +106,12 @@ public class Conversation
     /// <summary>
     /// Resets a conversation by erasing all data but the chatId. 
     /// </summary>
-    private void ResetConversation(object? source, ElapsedEventArgs e)
+    private async void ResetConversation(object? source, ElapsedEventArgs e)
     {
         if (!Monitor.TryEnter(ConvLock))
             return;
         Log.Debug("Resetting conversation in state {state}", State);
+        await AsyncResponseHandler.SendMessage(ChatId, "Sei inattivo da troppo tempo, la conversazione verrà resettata.");
         State = UserState.Start;
         School = null;
         Course = null;
