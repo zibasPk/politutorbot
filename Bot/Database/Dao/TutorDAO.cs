@@ -733,14 +733,12 @@ public class TutorDAO
     public List<TutorToExam> FindAvailableOFATutors(int lockHours)
     {
         _connection.Open();
-        const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code=tutor " +
-                             "WHERE OFA_available = 1 AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
-                             "AND available_tutorings > 0";
+        const string query = "SELECT * FROM tutor " +
+                             "WHERE OFA_available = 1";
         var tutors = new List<TutorToExam>();
         try
         {
             var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@hours", lockHours);
             command.Prepare();
 
             var reader = command.ExecuteReader();
@@ -752,16 +750,12 @@ public class TutorDAO
             {
                 var tutor = new TutorToExam
                 {
-                    TutorCode = reader.GetInt32("tutor"),
+                    TutorCode = reader.GetInt32("tutor_code"),
                     Name = reader.GetString("name"),
                     Surname = reader.GetString("surname"),
-                    ExamCode = reader.GetInt32("exam"),
-                    Professor = reader.GetString("exam_professor"),
                     Course = reader.GetString("course"),
                     Ranking = reader.GetInt32("ranking"),
-                    OfaAvailable = reader.GetBoolean("OFA_available"),
-                    LastReservation = reader.GetDateTime("last_reservation"),
-                    AvailableTutorings = reader.GetInt32("available_tutorings")
+                    OfaAvailable = reader.GetBoolean("OFA_available")
                 };
                 tutors.Add(tutor);
             }

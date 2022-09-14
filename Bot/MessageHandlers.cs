@@ -75,6 +75,14 @@ public static class MessageHandlers
         {
             if (conversation.WaitingForApiCall)
                 conversation.WaitingForApiCall = false;
+
+            if (conversation.State == UserState.Exam)
+            {
+                //this is necessary because of bad design; the whole state machine should be redone
+                await SendYearKeyboard(botClient, message);
+                return;
+            }
+
             conversation.GoToPreviousState();
             conversation.GoToPreviousState();
             command = conversation.GetCurrentTopic();
@@ -116,7 +124,7 @@ public static class MessageHandlers
         }
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-        
+
         var tutorCode = tutorService.FindTutorCode(tutor);
         //TODO: also check if tutor is for OFA
         if (tutorCode == null)
@@ -196,8 +204,7 @@ public static class MessageHandlers
         }
 
         var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
-        var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +
-                                             "\nprof: " + x.Professor + "\n \n")
+        var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +"\n \n")
             .ToList();
         var text = $"Scegli uno dei tutor disponibili per recupero OFA (NO OFA ENG):\n \n";
         foreach (var tutorsText in tutorsTexts)
