@@ -10,7 +10,7 @@ public record struct TutorToExam(
     int Ranking,
     bool OfaAvailable,
     DateTime LastReservation,
-    int AvailableReservations
+    int AvailableTutorings
 );
 
 public record struct Reservation(
@@ -19,7 +19,8 @@ public record struct Reservation(
     int Exam,
     int Student,
     DateTime ReservationTimestamp,
-    bool IsProcessed
+    bool IsProcessed,
+    bool IsOFA
 );
 
 public record struct Exam(

@@ -33,11 +33,14 @@ public class ReservationDAO
                 {
                     Id = reader.GetInt32("ID"),
                     Tutor = reader.GetInt32("tutor"),
-                    Exam = reader.GetInt32("exam"),
                     Student = reader.GetInt32("student"),
                     ReservationTimestamp = reader.GetDateTime("reservation_timestamp"),
-                    IsProcessed = reader.GetBoolean("is_processed")
+                    IsProcessed = reader.GetBoolean("is_processed"),
+                    IsOFA = reader.GetBoolean("is_OFA")
                 };  
+                var ordinal = reader.GetOrdinal("exam");
+                if (!reader.IsDBNull(ordinal))
+                    reservation.Exam = reader.GetInt32("exam");
                 _connection.Close();
                 return reservation;
             }
@@ -71,11 +74,14 @@ public class ReservationDAO
                 {
                     Id = reader.GetInt32("ID"),
                     Tutor = reader.GetInt32("tutor"),
-                    Exam = reader.GetInt32("exam"),
                     Student = reader.GetInt32("student"),
                     ReservationTimestamp = reader.GetDateTime("reservation_timestamp"),
-                    IsProcessed = reader.GetBoolean("is_processed")
+                    IsProcessed = reader.GetBoolean("is_processed"),
+                    IsOFA = reader.GetBoolean("is_OFA")
                 };
+                var ordinal = reader.GetOrdinal("exam");
+                if (!reader.IsDBNull(ordinal))
+                    reservation.Exam = reader.GetInt32("exam");
                 reservations.Add(reservation);
             }
         }
@@ -109,11 +115,14 @@ public class ReservationDAO
                 {
                     Id = reader.GetInt32("ID"),
                     Tutor = reader.GetInt32("tutor"),
-                    Exam = reader.GetInt32("exam"),
                     Student = reader.GetInt32("student"),
                     ReservationTimestamp = reader.GetDateTime("reservation_timestamp"),
-                    IsProcessed = reader.GetBoolean("is_processed")
+                    IsProcessed = reader.GetBoolean("is_processed"),
+                    IsOFA = reader.GetBoolean("is_OFA")
                 };
+                var ordinal = reader.GetOrdinal("exam");
+                if (!reader.IsDBNull(ordinal))
+                    reservation.Exam = reader.GetInt32("exam");
                 reservations.Add(reservation);
             }
         }
@@ -129,17 +138,32 @@ public class ReservationDAO
     public bool IsReservationAllowed(int reservationId)
     {
         _connection.Open();
-        const string query = "SELECT * FROM tutor_to_exam as tut " +
-                             "join (select * FROM reservation WHERE ID=@reservationId) as res " +
-                             "on tut.exam=res.exam AND tut.tutor=res.tutor " +
-                             "WHERE available_reservations > 0";
         try
         {
+            var query = "SELECT * FROM reservation " +
+                        "WHERE ID = @reservationId AND is_OFA = 1";
             var command = new MySqlCommand(query, _connection);
             command.Parameters.AddWithValue("@reservationId", reservationId);
             command.Prepare();
             var reader = command.ExecuteReader();
-
+            if (reader.HasRows)
+            {
+                // checking if reservation regards an OFA tutoring
+                Log.Debug("Reservation is for OFA");
+                _connection.Close();
+                return true;
+            }
+            reader.Close();
+            
+            query = "SELECT * FROM tutor_to_exam as tut " +
+                    "join (select * FROM reservation WHERE ID=@reservationId) as res " +
+                    "on tut.exam=res.exam AND tut.tutor=res.tutor " +
+                    "WHERE available_tutorings > 0";
+            command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@reservationId", reservationId);
+            command.Prepare();
+            
+            reader = command.ExecuteReader();
             if (!reader.HasRows)
             {
                 Log.Debug("No available reservations with id: {0} found in db ", reservationId);
@@ -154,5 +178,34 @@ public class ReservationDAO
         }
         _connection.Close();
         return true;
+    }
+
+    public bool IsReservationProcessed(int reservationId)
+    {
+        _connection.Open();
+
+        const string query = "SELECT * FROM reservation " +
+                             "WHERE ID = @reservationId AND is_processed = 1";
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@reservationId", reservationId);
+            command.Prepare();
+            var reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                // checking if reservation regards an OFA tutoring
+                Log.Debug("Reservation {0} is already processed", reservationId);
+                _connection.Close();
+                return true;
+            }
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+        _connection.Close();
+        return false;
     }
 }

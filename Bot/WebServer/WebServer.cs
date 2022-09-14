@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
-using Bot.Database.Entity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -71,9 +70,18 @@ public static class WebServer
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
-        // Checks if the exam corresponding to the reservation has any available reservations
+        
+        if (reservationService.IsReservationProcessed(id))
+        {
+            // Reservation already marked as processed
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            response.WriteAsync($"reservation {id} already processed");
+            return;
+        }
+        
         if (!reservationService.IsReservationAllowed(id))
         {
+            // The exam corresponding to the reservation has no available reservations
             response.StatusCode = StatusCodes.Status400BadRequest;
             response.WriteAsync($"reservation {id} hasn't enough available reservations.");
             return;
@@ -91,9 +99,10 @@ public static class WebServer
             return;
         }
         
-        if (tutorService.DeactivateTutoring(tutor, exam, student))
+        if (!tutorService.DeactivateTutoring(tutor, exam, student))
         {
-            response.StatusCode = StatusCodes.Status404NotFound;
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            response.WriteAsync($"no such tutoring found");
         }
     }
 

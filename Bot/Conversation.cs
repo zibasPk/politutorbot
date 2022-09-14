@@ -1,7 +1,9 @@
 using System.Timers;
 using Bot.configs;
+using Bot.Constants;
 using Bot.Database.Entity;
 using Bot.Enums;
+using Org.BouncyCastle.Crypto.Modes;
 using Serilog;
 using Timer = System.Timers.Timer;
 
@@ -65,16 +67,20 @@ public class Conversation
             case UserState.Course:
                 Course = null;
                 break;
+            case UserState.Link:
+                StudentCode = 0;
+                break;
+            case UserState.ReLink:
+                break;
+            case UserState.OFA:
+                break;
+            case UserState.OFATutor:
+                break;
             case UserState.Year:
                 Year = null;
                 break;
             case UserState.Exam:
                 Exam = null;
-                break;
-            case UserState.Link:
-                StudentCode = 0;
-                break;
-            case UserState.ReLink:
                 break;
             case UserState.Tutor:
                 Tutor = null;
@@ -111,7 +117,6 @@ public class Conversation
         if (!Monitor.TryEnter(ConvLock))
             return;
         Log.Debug("Resetting conversation in state {state}", State);
-        await AsyncResponseHandler.SendMessage(ChatId, "Sei inattivo da troppo tempo, la conversazione verrà resettata.");
         State = UserState.Start;
         School = null;
         Course = null;
@@ -120,5 +125,6 @@ public class Conversation
         StudentCode = 0;
         Tutor = null;
         Monitor.Exit(ConvLock);
+        await AsyncResponseHandler.SendMessage(ChatId, ReplyTexts.ConversationReset);
     }
 }

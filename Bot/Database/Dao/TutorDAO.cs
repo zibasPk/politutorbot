@@ -56,6 +56,48 @@ public class TutorDAO
         }
     }
 
+    public int? FindTutorCode(string tutorFullName)
+    {
+        var names = tutorFullName.Split(' ');
+        if (names.Length < 2)
+        {
+            Log.Debug("Failed to properly split name: {t}", tutorFullName);
+            return null;
+        }
+
+        var firstName = names[0];
+        var lastName = names[1];
+        _connection.Open();
+        const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code = tutor " +
+                             "WHERE name=@firstName AND surname=@lastName AND OFA_available = 1";
+
+        var tutors = new List<TutorToExam>();
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@firstName", firstName);
+            command.Parameters.AddWithValue("@lastName", lastName);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+            if (!reader.Read())
+            {
+                Log.Debug("No tutor code found for {name} in db", tutorFullName);
+                _connection.Close();
+                return null;
+            }
+
+            var tudorCode = reader.GetInt32("tutor");
+            _connection.Close();
+            return tudorCode;
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+    }
+    
     public TutorToExam? FindTutoring(int tutor, int exam)
     {
         _connection.Open();
@@ -89,7 +131,7 @@ public class TutorDAO
                 Ranking = reader.GetInt32("ranking"),
                 OfaAvailable = reader.GetBoolean("OFA_available"),
                 LastReservation = reader.GetDateTime("last_reservation"),
-                AvailableReservations = reader.GetInt32("available_reservations")
+                AvailableTutorings = reader.GetInt32("available_tutorings")
             };
             _connection.Close();
             return tutorObj;
@@ -134,7 +176,7 @@ public class TutorDAO
                         Ranking = reader.GetInt32("ranking"),
                         OfaAvailable = reader.GetBoolean("OFA_available"),
                         LastReservation = reader.GetDateTime("last_reservation"),
-                        AvailableReservations = reader.GetInt32("available_reservations")
+                        AvailableTutorings = reader.GetInt32("available_tutorings")
                     };
                     tutors.Add(tutoring);
                 }
@@ -180,7 +222,7 @@ public class TutorDAO
                     Ranking = reader.GetInt32("ranking"),
                     OfaAvailable = reader.GetBoolean("OFA_available"),
                     LastReservation = reader.GetDateTime("last_reservation"),
-                    AvailableReservations = reader.GetInt32("available_reservations")
+                    AvailableTutorings = reader.GetInt32("available_tutorings")
                 };
                 tutors.Add(tutor);
             }
@@ -230,7 +272,7 @@ public class TutorDAO
                     Ranking = reader.GetInt32("ranking"),
                     OfaAvailable = reader.GetBoolean("OFA_available"),
                     LastReservation = reader.GetDateTime("last_reservation"),
-                    AvailableReservations = reader.GetInt32("available_reservations")
+                    AvailableTutorings = reader.GetInt32("available_tutorings")
                 };
                 tutors.Add(tutor);
             }
@@ -282,7 +324,7 @@ public class TutorDAO
                     Ranking = reader.GetInt32("ranking"),
                     OfaAvailable = reader.GetBoolean("OFA_available"),
                     LastReservation = reader.GetDateTime("last_reservation"),
-                    AvailableReservations = reader.GetInt32("available_reservations")
+                    AvailableTutorings = reader.GetInt32("available_tutorings")
                 };
                 tutors.Add(tutor);
             }
@@ -309,7 +351,7 @@ public class TutorDAO
         _connection.Open();
         const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code=tutor " +
                              "WHERE exam=@exam AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
-                             "AND available_reservations > 0";
+                             "AND available_tutorings > 0";
         var tutors = new List<TutorToExam>();
         try
         {
@@ -336,7 +378,7 @@ public class TutorDAO
                     Ranking = reader.GetInt32("ranking"),
                     OfaAvailable = reader.GetBoolean("OFA_available"),
                     LastReservation = reader.GetDateTime("last_reservation"),
-                    AvailableReservations = reader.GetInt32("available_reservations")
+                    AvailableTutorings = reader.GetInt32("available_tutorings")
                 };
                 tutors.Add(tutor);
             }
@@ -436,6 +478,49 @@ public class TutorDAO
         {
             Log.Error("Exception while user {0} with student code {1} was reserving tutor {2} for exam {3}"
                 , user, studentCode, tutor, exam);
+            transaction.Rollback();
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+    }
+    
+     /// <summary>
+    /// Updated user lock time stamp and inserts OFA reservation into reservation table.
+    /// </summary>
+    /// <param name="tutor">Student code of Tutor that needs to be reserved.</param>
+     /// <param name="user">Telegram ID of user that reserved the tutor.</param>
+    /// <param name="studentCode">StudentCode of the user that made the reservation</param>
+    public void ReserveOFATutor(int tutor, long user, int studentCode)
+    {
+        _connection.Open();
+        var transaction = _connection.BeginTransaction();
+
+        try
+        {
+            const string query = "UPDATE telegram_user SET lock_timestamp = NOW() " 
+                                 + "WHERE userID = @userID";
+            
+            var command = new MySqlCommand(query, _connection, transaction);
+            command.Parameters.AddWithValue("@userID", user);
+            command.Prepare();
+            command.ExecuteNonQuery();
+
+            command.Parameters.Clear();
+            command.CommandText = "INSERT INTO reservation (tutor,student,is_OFA) VALUES (@tutor,@student,1)";
+            command.Parameters.AddWithValue("@tutor", tutor);
+            command.Parameters.AddWithValue("@student", studentCode);
+            command.Prepare();
+            command.ExecuteNonQuery();
+
+            transaction.Commit();
+            Log.Debug("Tutor {tutor} was reserved", tutor);
+        }
+        catch (Exception e)
+        {
+            Log.Error("Exception while user {0} with student code {1} was reserving tutor {2} for OFA"
+                , user, studentCode, tutor);
             transaction.Rollback();
             _connection.Close();
             throw;
@@ -563,7 +648,7 @@ public class TutorDAO
         _connection.Open();
         var transaction = _connection.BeginTransaction();
         const string query =
-            "UPDATE tutor_to_exam as t SET available_reservations = available_reservations - 1, last_reservation = DEFAULT " +
+            "UPDATE tutor_to_exam as t SET available_tutorings = available_tutorings - 1, last_reservation = DEFAULT " +
             "WHERE EXISTS (select * FROM reservation as res WHERE ID=@reservationId AND " +
             "res.exam = t.exam AND res.tutor = t.tutor);";
         try
@@ -578,13 +663,17 @@ public class TutorDAO
             command.Prepare();
             command.ExecuteNonQuery();
 
+            command.CommandText = "UPDATE tutor_to_exam SET last_reservation = DEFAULT " +
+                                  "WHERE exam IN (select exam FROM reservation WHERE ID=@reservationId)";
+            command.Prepare();
+
             command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                                   "WHERE student_code IN (select student FROM reservation WHERE ID=@reservationId);";
             command.Prepare();
             command.ExecuteNonQuery();
 
-            command.CommandText = "INSERT INTO active_tutoring (tutor, exam, student) " +
-                                  "SELECT tutor, exam, student " +
+            command.CommandText = "INSERT INTO active_tutoring (tutor, exam, student, is_OFA) " +
+                                  "SELECT tutor, exam, student, is_OFA " +
                                   "FROM reservation " +
                                   "WHERE ID=@reservationId;";
             command.Prepare();
@@ -622,7 +711,7 @@ public class TutorDAO
                 return false;
             }
             
-            command.CommandText = "UPDATE tutor_to_exam SET available_reservations = available_reservations + 1 " +
+            command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                                   "WHERE exam=@exam AND tutor=@tutor";
             command.Prepare();
             command.ExecuteNonQuery();
@@ -639,5 +728,51 @@ public class TutorDAO
 
         _connection.Close();
         return true;
+    }
+
+    public List<TutorToExam> FindAvailableOFATutors(int lockHours)
+    {
+        _connection.Open();
+        const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code=tutor " +
+                             "WHERE OFA_available = 1 AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
+                             "AND available_tutorings > 0";
+        var tutors = new List<TutorToExam>();
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@hours", lockHours);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+                Log.Debug("No unlocked tutors found for OFA in db");
+
+            while (reader.Read())
+            {
+                var tutor = new TutorToExam
+                {
+                    TutorCode = reader.GetInt32("tutor"),
+                    Name = reader.GetString("name"),
+                    Surname = reader.GetString("surname"),
+                    ExamCode = reader.GetInt32("exam"),
+                    Professor = reader.GetString("exam_professor"),
+                    Course = reader.GetString("course"),
+                    Ranking = reader.GetInt32("ranking"),
+                    OfaAvailable = reader.GetBoolean("OFA_available"),
+                    LastReservation = reader.GetDateTime("last_reservation"),
+                    AvailableTutorings = reader.GetInt32("available_tutorings")
+                };
+                tutors.Add(tutor);
+            }
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return tutors;
     }
 }
