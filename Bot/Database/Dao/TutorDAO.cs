@@ -351,7 +351,7 @@ public class TutorDAO
         _connection.Open();
         const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code=tutor " +
                              "WHERE exam=@exam AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
-                             "AND available_tutorings > 0";
+                             "AND available_reservations > 0 ORDER BY ranking ASC";
         var tutors = new List<TutorToExam>();
         try
         {
@@ -390,8 +390,11 @@ public class TutorDAO
         }
 
         _connection.Close();
+        
         return tutors;
     }
+
+
 
     /// <summary>
     /// Checks if if a tutor teaches a given exam.
