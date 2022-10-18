@@ -21,3 +21,11 @@ th {
   float:left;
   text-align: left;
 }
+
+.arrow {
+  display: none;
+}
+
+td:hover .arrow {
+  display: inline-block;
+}

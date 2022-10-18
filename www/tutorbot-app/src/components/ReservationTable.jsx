@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import SquareIcon from '@mui/icons-material/Square';
 import './ReservationTable.css';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const Reservations = [
   {
@@ -16,7 +17,7 @@ const Reservations = [
     selected: false
   },
   {
-    id: 2,
+    id: 10,
     tutorNumber: 321321,
     tutorName: "Mario",
     tutorSurname: "Rossi",
@@ -24,7 +25,7 @@ const Reservations = [
     studentNumber: "938354",
     email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
-    state: true,
+    state: false,
     selected: false
   },
   {
@@ -130,6 +131,24 @@ class ReservationTable extends React.Component {
     });
   }
 
+  sortByNumber() {
+    const tempList = this.state.List;
+    tempList.sort(function (x, y) {
+      if (x.id == y.id) return 0;
+      return (x.id > y.id) ? 1 : -1;
+    })
+
+    const totalItems = this.state.List.length;
+    const totalCheckedItems = tempList.filter((e) => e.selected).length;
+    let mastercheck = totalItems === totalCheckedItems;
+    if (!mastercheck)
+      tempList.map((reservation) => reservation.selected = false);
+    this.setState({
+      MasterChecked: mastercheck,
+      List: tempList
+    });
+  }
+
   render() {
     return (
       <div className="container">
@@ -147,14 +166,14 @@ class ReservationTable extends React.Component {
                       onChange={(e) => this.onMasterCheck(e)}
                     />
                   </th>
-                  <th scope="col">Prenotazione</th>
-                  <th scope="col">Nome Tutor</th>
-                  <th scope="col">Cognome Tutor</th>
-                  <th scope="col">Cod. Matr. Tutor</th>
-                  <th scope="col">Codice Esame</th>
-                  <th scope="col">Cod. Matr. Studente</th>
-                  <th scope="col">Data</th>
-                  <th scope="col">Stato</th>
+                  <HeaderCellWithHover text="Prenotazione" />
+                  <HeaderCellWithHover text="Cod. Matr. Tutor" />
+                  <HeaderCellWithHover text="Nome Tutor" />
+                  <HeaderCellWithHover text="Cognome Tutor" />
+                  <HeaderCellWithHover text="Codice Esame" />
+                  <HeaderCellWithHover text="Cod. Matr. Studente" />
+                  <HeaderCellWithHover text="Data" />
+                  <HeaderCellWithHover text="Stato" />
                 </tr>
               </thead>
               <tbody>
@@ -177,8 +196,8 @@ class ReservationTable extends React.Component {
                     <td>{reservation.studentNumber}</td>
                     <td>{reservation.timeStamp}</td>
                     {reservation.state ?
-                    <td><SquareIcon className="box" /></td> : 
-                    <td><SquareIcon/></td>}
+                      <td style={{ textAlign: 'center' }}><SquareIcon className="newStatusSquare" /></td> :
+                      <td></td>}
                   </tr>
                 ))}
               </tbody>
@@ -188,6 +207,12 @@ class ReservationTable extends React.Component {
               onClick={() => this.getSelectedRows()}
             >
               Prenotazioni Selezionate {this.state.SelectedList.length}
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => this.sortByNumber()}
+            >
+              Sort by id {this.state.SelectedList.length}
             </button>
             <div className="row">
               <b>All Row Items:</b>
@@ -202,6 +227,22 @@ class ReservationTable extends React.Component {
       </div>
     );
   }
+}
+
+function HeaderCellWithHover(props) {
+  const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
+  const [style, setStyle] = useState({});
+  return (
+    <th scope="col" style={style}
+      onMouseEnter={e => {
+        setIconStyle({ visibility: 'visible'});
+        setStyle({cursor: 'pointer'})
+      }}
+      onMouseLeave={e => {
+        setIconStyle({ visibility: 'hidden' })
+      }}>
+      {props.text}<KeyboardArrowDownIcon style={iconStyle} className="arrow"/>
+    </th >)
 }
 
 export default ReservationTable;

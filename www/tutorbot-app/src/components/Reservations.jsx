@@ -8,7 +8,7 @@ function Reservations() {
   return (
     <>
       <h1>Reservations</h1>
-      <ReservationTable />
+      <ReservationTable name={"Prenotazione"} />
     </>
   );
 }
