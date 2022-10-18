@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import FunctionNavbar from './components/NavBar';
+import Navigation from './components/NavBar';
 import ActiveTutorings from './components/ActiveTutorings';
 import EnabledStudents from './components/EnabledStudents';
 import TutorManagement from './components/TutorManagement';
@@ -14,7 +14,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <>
     <BrowserRouter>
-      <FunctionNavbar />
+      <Navigation />
       <Routes>
         <Route path="/reservations" element={<Reservations />} />
         <Route path="/active-tutorings" element={<ActiveTutorings />} />
