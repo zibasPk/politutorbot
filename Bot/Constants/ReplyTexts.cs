@@ -17,5 +17,5 @@ public static class ReplyTexts
                                         "\nRiceverai a breve conferma via mail dell’abbinamento con il tutor e ulteriori istruzioni dalla segreteria del tutorato.";
 
     public const string OFAChoice = "Sei in cerca di un tutor per recupero OFA (NO OFA ENG)?";
-    public const string ConversationReset = "Lo stato della conversazione è stato resettato per intattività. \nScrivi un qualsiasi messaggio per ricominciare";
+    public const string ConversationReset = "Lo stato della conversazione è stato resettato per inattività. \nScrivi un qualsiasi messaggio per ricominciare";
 }
