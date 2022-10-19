@@ -1,3 +1,44 @@
+
+.cont{
+  margin-left: auto;
+  margin-right: auto;
+  max-width: max-content;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: collapse;
+  width: 70%;
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+th {
+  text-align: left;
+}
+
+td:hover .arrow {
+  display: inline-block;
+}
+
+.firstCell {
+  text-align: center;
+}
+
+.th_text {
+  float:left;
+  text-align: left;
+}
+
+.arrow {
+  display: none;
+}
+
+
+
 .newStatusSquare {
   color: rgb(255, 221, 0);
   margin-left: auto;
@@ -5,11 +46,26 @@
   vertical-align: top;
 }
 
-th {
-  text-align: left;
-}
+
 
 .arrow {
   display: inline-block;
   vertical-align: middle;
+}
+
+.btn-showmore{
+  margin: auto;
+  width: 20%;
+  text-align: center;
+}
+
+.btn-showmore:hover{
+  cursor: pointer;
+}
+
+.btn-confirm{
+  width: fit-content;
+  padding: 3px;
+  margin-bottom: 5px;
+  float: right;
 }
