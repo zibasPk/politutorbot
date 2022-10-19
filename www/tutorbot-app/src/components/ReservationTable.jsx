@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import SquareIcon from '@mui/icons-material/Square';
 import './ReservationTable.css';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 const Reservations = [
   {
@@ -11,7 +12,6 @@ const Reservations = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
     state: true,
     selected: false
@@ -23,7 +23,6 @@ const Reservations = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
     state: false,
     selected: false
@@ -35,7 +34,6 @@ const Reservations = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
     state: true,
     selected: false
@@ -47,7 +45,6 @@ const Reservations = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
     state: true,
     selected: false
@@ -59,7 +56,6 @@ const Reservations = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
     state: true,
     selected: false
@@ -71,7 +67,6 @@ const Reservations = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    email: "Sincere@april.biz",
     timeStamp: "12-09-12 22:22:22",
     state: true,
     selected: false
@@ -85,6 +80,7 @@ class ReservationTable extends React.Component {
       List: Reservations,
       MasterChecked: false,
       SelectedList: [],
+      HeaderArrows: Array(Object.keys(Reservations[0]).length - 1).fill(0),
     };
   }
 
@@ -131,12 +127,69 @@ class ReservationTable extends React.Component {
     });
   }
 
-  sortByNumber() {
+  handleHeaderClick(i) {
+    const tempList = this.state.HeaderArrows
+    switch (tempList[i]) {
+      case 0:
+        tempList[i] = -1;
+        break;
+      case 1:
+        tempList[i] = -1;
+        break;
+      case -1:
+        tempList[i] = 1;
+        break;
+      default:
+        console.error("Invalid HeaderCell arrow direction: " + tempList[i]);
+        return;
+    }
+    tempList.forEach((arrow, index) => { if (i !== index) arrow = 0 });
+    this.setState({
+      HeaderArrows: tempList
+    });
+    this.sortBy(i);
+  }
+
+  comparator(x, y, order) {
+    if (x === y) return 0;
+    if (order === 1)
+      return (x > y) ? 1 : -1;
+    if (order === -1)
+      return (x < y) ? 1 : -1;
+    return 0;
+  }
+
+  sortBy(i) {
     const tempList = this.state.List;
-    tempList.sort(function (x, y) {
-      if (x.id == y.id) return 0;
-      return (x.id > y.id) ? 1 : -1;
-    })
+    const keys = Object.keys(Reservations[0]);
+    switch (keys[i]) {
+      case "id":
+        tempList.sort((x, y) => this.comparator(x.id, y.id, this.state.HeaderArrows[i]));
+        break;
+      case "tutorNumber":
+        tempList.sort((x, y) => this.comparator(x.tutorNumber, y.tutorNumber, this.state.HeaderArrows[i]));
+        break;
+      case "tutorName":
+        tempList.sort((x, y) => this.comparator(x.tutorName, y.tutorName, this.state.HeaderArrows[i]));
+        break;
+      case "tutorSurname":
+        tempList.sort((x, y) => this.comparator(x.tutorSurname, y.tutorSurname, this.state.HeaderArrows[i]));
+        break;
+      case "examCode":
+        tempList.sort((x, y) => this.comparator(x.examCode, y.examCode, this.state.HeaderArrows[i]));
+        break;
+      case "studentNumber":
+        tempList.sort((x, y) => this.comparator(x.studentNumber, y.studentNumber, this.state.HeaderArrows[i]));
+        break;
+      case "timeStamp":
+        tempList.sort((x, y) => this.comparator(x.timeStamp, y.timeStamp, this.state.HeaderArrows[i]));
+        break;
+      case "state":
+        tempList.sort((x, y) => this.comparator(x.state, y.state, this.state.HeaderArrows[i]));
+        break;
+      default:
+        break;
+    }
 
     const totalItems = this.state.List.length;
     const totalCheckedItems = tempList.filter((e) => e.selected).length;
@@ -166,14 +219,22 @@ class ReservationTable extends React.Component {
                       onChange={(e) => this.onMasterCheck(e)}
                     />
                   </th>
-                  <HeaderCellWithHover text="Prenotazione" />
-                  <HeaderCellWithHover text="Cod. Matr. Tutor" />
-                  <HeaderCellWithHover text="Nome Tutor" />
-                  <HeaderCellWithHover text="Cognome Tutor" />
-                  <HeaderCellWithHover text="Codice Esame" />
-                  <HeaderCellWithHover text="Cod. Matr. Studente" />
-                  <HeaderCellWithHover text="Data" />
-                  <HeaderCellWithHover text="Stato" />
+                  <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[0]} text="Prenotazione"
+                    arrowAction={() => this.handleHeaderClick(0)} />
+                  <HeaderCellWithHover text="Cod. Matr. Tutor" arrowDirection={this.state.HeaderArrows[1]} 
+                  arrowAction={() => this.handleHeaderClick(1)} />
+                  <HeaderCellWithHover text="Nome Tutor" arrowDirection={this.state.HeaderArrows[2]} 
+                  arrowAction={() => this.handleHeaderClick(2)}/>
+                  <HeaderCellWithHover text="Cognome Tutor" arrowDirection={this.state.HeaderArrows[3]} 
+                  arrowAction={() => this.handleHeaderClick(3)}/>
+                  <HeaderCellWithHover text="Codice Esame" arrowDirection={this.state.HeaderArrows[4]} 
+                  arrowAction={() => this.handleHeaderClick(4)}/>
+                  <HeaderCellWithHover text="Cod. Matr. Studente" arrowDirection={this.state.HeaderArrows[5]} 
+                  arrowAction={() => this.handleHeaderClick(5)}/>
+                  <HeaderCellWithHover text="Data" arrowDirection={this.state.HeaderArrows[6]} 
+                  arrowAction={() => this.handleHeaderClick(6)}/>
+                  <HeaderCellWithHover text="Stato" arrowDirection={this.state.HeaderArrows[7]} 
+                  arrowAction={() => this.handleHeaderClick(7)}/>
                 </tr>
               </thead>
               <tbody>
@@ -210,7 +271,7 @@ class ReservationTable extends React.Component {
             </button>
             <button
               className="btn btn-primary"
-              onClick={() => this.sortByNumber()}
+              onClick={() => this.sortByReservation()}
             >
               Sort by id {this.state.SelectedList.length}
             </button>
@@ -232,16 +293,26 @@ class ReservationTable extends React.Component {
 function HeaderCellWithHover(props) {
   const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
   const [style, setStyle] = useState({});
+  let arrow;
+
+  if (props.arrowDirection === 1 || props.arrowDirection === 0)
+    arrow = <KeyboardArrowDownIcon style={iconStyle} className="arrow" />
+  if (props.arrowDirection === -1)
+    arrow = <KeyboardArrowUpIcon style={iconStyle} className="arrow" />
   return (
     <th scope="col" style={style}
       onMouseEnter={e => {
-        setIconStyle({ visibility: 'visible'});
-        setStyle({cursor: 'pointer'})
+        setIconStyle({ visibility: 'visible' });
+        setStyle({ cursor: 'pointer' })
       }}
       onMouseLeave={e => {
         setIconStyle({ visibility: 'hidden' })
-      }}>
-      {props.text}<KeyboardArrowDownIcon style={iconStyle} className="arrow"/>
+      }}
+      onClick={e => {
+        props.arrowAction();
+      }}
+    >
+      {props.text}{arrow}
     </th >)
 }
 
