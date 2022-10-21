@@ -63,9 +63,32 @@ td:hover .arrow {
   cursor: pointer;
 }
 
+.tableFunctions{
+  position: relative;
+  width: 100%;
+}
+
 .btn-confirm{
   width: fit-content;
   padding: 3px;
   margin-bottom: 5px;
-  float: right;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.searchDiv{
+  display: inline-block;
+}
+
+.searchDiv label{
+  background-color: rgb(255, 248, 246);
+  display:list-item;
+  margin-bottom: 5px;
+  width: fit-content;
+  list-style-type: none;
+}
+
+.searchDiv label input{
+  margin-left: 5px;
 }
