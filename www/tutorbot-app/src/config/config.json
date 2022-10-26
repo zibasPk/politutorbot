@@ -1,5 +1,5 @@
 {
-  "debugMode": true,
+  "debugMode": false,
   "defaultTableRows": 5,
   "addonTableRows": 5
 }

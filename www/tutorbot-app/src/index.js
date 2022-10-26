@@ -8,7 +8,7 @@ import Navigation from './components/NavBar';
 import ActiveTutorings from './components/ActiveTutorings';
 import EnabledStudents from './components/EnabledStudents';
 import TutorManagement from './components/TutorManagement';
-import Reservations from './components/Reservations';
+import Reservations from './components/reservations/Reservations';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

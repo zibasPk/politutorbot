@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import SquareIcon from '@mui/icons-material/Square';
 import './ReservationTable.css';
+
+import ModalPopup from "./ModalPopup";
+import SquareIcon from '@mui/icons-material/Square';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import configData from "../config/config.json";
+import configData from "../../config/config.json";
+
 
 class ReservationTable extends React.Component {
   constructor(props) {
@@ -15,6 +18,7 @@ class ReservationTable extends React.Component {
       SelectedList: [],
       HeaderArrows: Array(Object.keys(props.reservations[0]).length - 1).fill(0),
       VisibleRows: configData.defaultTableRows,
+      IsModalVisible: false
     };
   }
 
@@ -51,13 +55,6 @@ class ReservationTable extends React.Component {
     this.setState({
       MasterChecked: totalItems === totalCheckedItems,
       List: tempList,
-      SelectedList: this.state.FilteredResList.filter((e) => e.selected),
-    });
-  }
-
-  // Event to get selected rows(Optional)
-  getSelectedRows() {
-    this.setState({
       SelectedList: this.state.FilteredResList.filter((e) => e.selected),
     });
   }
@@ -148,18 +145,26 @@ class ReservationTable extends React.Component {
     })
   }
 
+  handleModalVisibility() {
+    console.log("mela")
+    var temp = this.state.IsModalVisible;
+    this.setState({
+      IsModalVisible: !temp,
+    });
+  }
+
   render() {
     const visibleRows = this.state.FilteredResList.slice(0, this.state.VisibleRows);
     return (
       <div className="cont">
+        <ModalPopup show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
         <div className="row">
-
           <div className="col-md-12">
             <div className="tableFunctions">
               <div className="searchDiv">
                 <label htmlFor="search">
                   Ricerca Tutor:
-                  <input id="search" type="text"  placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+                  <input id="search" type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
                 </label>
                 <label htmlFor="search">
                   Ricerca Studente:
@@ -167,14 +172,13 @@ class ReservationTable extends React.Component {
                 </label>
               </div>
               <button
+                variant="secondary"
                 className="btn-confirm"
-                onClick={() => this.getSelectedRows()}
+                onClick={() => this.handleModalVisibility()}
               >
                 Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
               </button>
             </div>
-
-
             <table className="table">
               <thead>
                 <tr>
@@ -269,7 +273,7 @@ class ReservationTable extends React.Component {
           (res) => res.tutorNumber.toString().includes(event.target.value)
         );
         break;
-      
+
       case "studentNumber":
         tempList = this.state.Reservations.filter(
           (res) => res.studentNumber.toString().includes(event.target.value)
@@ -338,6 +342,5 @@ function ShowMoreButton(props) {
   }
 
 }
-
 
 export default ReservationTable;
