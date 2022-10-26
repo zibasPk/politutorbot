@@ -1,0 +1,4 @@
+.my-modal {
+  width: fit-content;
+  max-width: none !important;
+}

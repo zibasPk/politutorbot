@@ -31,7 +31,7 @@ class ReservationTable extends React.Component {
     // Update State
     this.setState({
       MasterChecked: e.target.checked,
-      List: tempList,
+      FilteredResList: tempList,
       SelectedList: this.state.FilteredResList.filter((e) => e.selected),
     });
   }
@@ -39,7 +39,6 @@ class ReservationTable extends React.Component {
   // Update List Item's state and Master Checkbox State
   onItemCheck(e, item) {
     let tempList = this.state.FilteredResList;
-    console.log(item);
     tempList.map((reservation) => {
       if (reservation.id === item.id) {
         reservation.selected = e.target.checked;
@@ -48,13 +47,14 @@ class ReservationTable extends React.Component {
     });
 
     //To Control Master Checkbox State
-    const totalItems = this.state.FilteredResList.length;
+    const totalItems = this.state.Reservations.length;
     const totalCheckedItems = tempList.filter((e) => e.selected).length;
+
 
     // Update State 
     this.setState({
       MasterChecked: totalItems === totalCheckedItems,
-      List: tempList,
+      FilteredResList: tempList,
       SelectedList: this.state.FilteredResList.filter((e) => e.selected),
     });
   }
@@ -129,11 +129,12 @@ class ReservationTable extends React.Component {
     let mastercheck = totalItems === totalCheckedItems;
     if (!mastercheck) {
       tempList.map((reservation) => reservation.selected = false);
+      // Can be removed if we want to keep checked items after order change
       selectedListTemp = [];
     }
     this.setState({
       MasterChecked: mastercheck,
-      List: tempList,
+      FilteredResList: tempList,
       SelectedList: selectedListTemp,
     });
   }
@@ -146,7 +147,6 @@ class ReservationTable extends React.Component {
   }
 
   handleModalVisibility() {
-    console.log("mela")
     var temp = this.state.IsModalVisible;
     this.setState({
       IsModalVisible: !temp,
@@ -290,7 +290,7 @@ class ReservationTable extends React.Component {
   }
 }
 
-function HeaderCellWithHover(props) {
+export function HeaderCellWithHover(props) {
   const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
   const [style, setStyle] = useState({});
   let arrow;
