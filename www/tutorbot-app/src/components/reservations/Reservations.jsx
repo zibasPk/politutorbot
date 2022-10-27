@@ -296,10 +296,9 @@ const ReservationsArray = [
 
 function Reservations() {
   return (
-    <>
-      <h1>Reservations</h1>
+    <div className="content">
       <ReservationTable reservations={ReservationsArray} />
-    </>
+    </div>
   );
 }
 
