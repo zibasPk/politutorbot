@@ -5,7 +5,7 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Navigation from './components/NavBar';
-import ActiveTutorings from './components/ActiveTutorings';
+import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
 import EnabledStudents from './components/EnabledStudents';
 import TutorManagement from './components/TutorManagement';
 import Reservations from './components/reservations/Reservations';

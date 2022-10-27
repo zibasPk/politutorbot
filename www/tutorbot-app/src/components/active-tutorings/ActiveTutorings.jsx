@@ -1,22 +1,19 @@
-import React, { useState } from "react";
-import './ReservationTable.css';
+import React from 'react';
 
-import ModalPopup from "./ModalPopup";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { ShowMoreButton } from '../reservations/ReservationTable';
 
-
-class ReservationTable extends React.Component {
+class ActiveTutorings extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      Reservations: props.reservations,
-      FilteredResList: props.reservations,
+      Tutorings: props.tutorings,
+      FilteredTutorList: props.tutorings,
       MasterChecked: false,
       SelectedList: [],
-      HeaderArrows: Array(Object.keys(props.reservations[0]).length - 1).fill(0),
+      HeaderArrows: Array(Object.keys(props.tutorings[0]).length - 1).fill(0),
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false
     };
@@ -148,54 +145,11 @@ class ReservationTable extends React.Component {
     })
   }
 
-  handleModalVisibility() {
-    var temp = this.state.IsModalVisible;
-    this.setState({
-      IsModalVisible: !temp,
-    });
-  }
-
-  handleVisibleAmountChange(e) {
-    let amount = e.target.value;
-    const regex = /^[0-9]+$/;
-    if(!amount || !regex.test(amount))
-      amount = configData.defaultTableRows; 
-    this.setState({
-      VisibleRows: amount,
-    });
-  }
-
   render() {
-    const visibleRows = this.state.FilteredResList.slice(0, this.state.VisibleRows);
-    return (
-      <div className="cont">
-        <ModalPopup show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
-        <div className="row">
-          <div className="col-md-12">
-            <div className="tableFunctions">
-              <div className="searchDiv">
-                <label htmlFor="search">
-                  Ricerca Tutor:
-                  <input  type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
-                </label>
-                <label htmlFor="search">
-                  Ricerca Studente:
-                  <input  type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
-                </label>
-                <label htmlFor="search">
-                  Numero di righe da visualizzare:
-                  <input className="input-visrows" type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
-                </label>
-              </div>
-              <button
-                variant="secondary"
-                className="btn-confirm"
-                onClick={() => this.handleModalVisibility()}
-              >
-                Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
-              </button>  
-            </div>
-            <table className="table">
+    const visibleRows = this.state.FilteredTutorList.slice(0, this.state.VisibleRows);
+    return(
+      <>
+        <table className="table">
               <thead>
                 <tr>
                   <th scope="col">
@@ -226,26 +180,26 @@ class ReservationTable extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {visibleRows.map((reservation) =>
+                {visibleRows.map((tutoring) =>
                 (
-                  <tr key={reservation.id} className={reservation.selected ? "selected" : ""}>
+                  <tr key={tutoring.id} className={tutoring.selected ? "selected" : ""}>
                     <th scope="row">
                       <input
                         type="checkbox"
-                        checked={reservation.selected}
+                        checked={tutoring.selected}
                         className="form-check-input"
                         id="rowcheck{user.id}"
-                        onChange={(e) => this.onItemCheck(e, reservation)}
+                        onChange={(e) => this.onItemCheck(e, tutoring)}
                       />
                     </th>
-                    <td>{reservation.id}</td>
-                    <td>{reservation.tutorNumber}</td>
-                    <td>{reservation.tutorName}</td>
-                    <td>{reservation.tutorSurname}</td>
-                    <td>{reservation.examCode}</td>
-                    <td>{reservation.studentNumber}</td>
-                    <td>{reservation.timeStamp}</td>
-                    {reservation.state ?
+                    <td>{tutoring.id}</td>
+                    <td>{tutoring.tutorNumber}</td>
+                    <td>{tutoring.tutorName}</td>
+                    <td>{tutoring.tutorSurname}</td>
+                    <td>{tutoring.examCode}</td>
+                    <td>{tutoring.studentNumber}</td>
+                    <td>{tutoring.timeStamp}</td>
+                    {tutoring.state ?
                       <td style={{ textAlign: 'center' }}><ErrorOutlineIcon className="newStatusIcon" /></td> :
                       <td></td>}
                   </tr>
@@ -255,108 +209,12 @@ class ReservationTable extends React.Component {
             </table>
             <ShowMoreButton onClick={() => this.handleShowMoreClick()}
               visibleRows={this.state.VisibleRows}
-              maximumRows={this.state.FilteredResList.length}
+              maximumRows={this.state.FilteredTutorList.length}
             />
-            <this.renderDebug visibleList={this.state.FilteredResList} selectedList={this.state.SelectedList} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  renderDebug(props) {
-    if (configData.debugMode)
-      return (
-        <>
-          <div className="row">
-            <b>All Row Items:</b>
-            <code>{JSON.stringify(props.visibleList)}</code>
-          </div>
-          <div className="row">
-            <b>Selected Row Items(Click Button To Get):</b>
-            <code>{JSON.stringify(props.selectedList)}</code>
-          </div>
-        </>
-      )
-  }
-
-  handleSearch(event, type) {
-    let tempList;
-
-    switch (type) {
-      case "tutorNumber":
-        tempList = this.state.Reservations.filter(
-          (res) => res.tutorNumber.toString().includes(event.target.value)
-        );
-        break;
-
-      case "studentNumber":
-        tempList = this.state.Reservations.filter(
-          (res) => res.studentNumber.toString().includes(event.target.value)
-        );
-        break;
-      default:
-        tempList = [];
-        console.error("Invalid search type");
-        break;
-    }
-    this.setState({
-      FilteredResList: tempList
-    })
-  }
-}
-
-export function HeaderCellWithHover(props) {
-  const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
-  const [style, setStyle] = useState({});
-  let arrow;
-
-  if (props.arrowDirection === 1 || props.arrowDirection === 0)
-    arrow = <KeyboardArrowDownIcon style={iconStyle} className="arrow" />
-  if (props.arrowDirection === -1)
-    arrow = <KeyboardArrowUpIcon style={iconStyle} className="arrow" />
-  return (
-    <th scope="col" style={style}
-      onMouseEnter={e => {
-        setIconStyle({ visibility: 'visible' });
-        setStyle({ cursor: 'pointer' })
-      }}
-      onMouseLeave={e => {
-        setIconStyle({ visibility: 'hidden' })
-      }}
-      onClick={e => {
-        props.arrowAction();
-      }}
-    >
-      {props.text}{arrow}
-    </th >)
-}
-
-export function ShowMoreButton(props) {
-
-  const [style, setStyle] = useState({});
-  if (props.visibleRows >= props.maximumRows) {
-    return (
-      <div
-        onClick={() => props.onClick()}
-        className="btn-showmore"
-        style={{ visibility: 'hidden' }}
-      >
-        Mostra altri
-      </div>
-    )
-  } else {
-    return (
-      <div
-        onClick={() => props.onClick()}
-        className="btn-showmore"
-        style={{ visibility: 'visible' }}
-      >
-        Mostra altri
-      </div>
+            <this.renderDebug visibleList={this.state.FilteredTutorList} selectedList={this.state.SelectedList} />
+      </>
     )
   }
-
 }
 
-export default ReservationTable;
+export default ActiveTutorings;
