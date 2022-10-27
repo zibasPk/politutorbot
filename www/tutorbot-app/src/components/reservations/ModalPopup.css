@@ -1,6 +1,6 @@
 .my-modal {
   width: fit-content;
-  max-width: none !important;
+  max-width: 75% !important;
 }
 
 .td-mail{

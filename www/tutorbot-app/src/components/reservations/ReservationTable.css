@@ -61,6 +61,7 @@ td:hover .arrow {
 
 .btn-showmore:hover{
   cursor: pointer;
+  color: gray;
 }
 
 .tableFunctions{
