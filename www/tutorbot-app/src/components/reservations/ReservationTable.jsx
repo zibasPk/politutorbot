@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import './ReservationTable.css';
 
 import ModalPopup from "./ModalPopup";
-import SquareIcon from '@mui/icons-material/Square';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import configData from "../../config/config.json";
@@ -75,7 +75,9 @@ class ReservationTable extends React.Component {
         console.error("Invalid HeaderCell arrow direction: " + tempList[i]);
         return;
     }
-    tempList.forEach((arrow, index) => { if (i !== index) arrow = 0 });
+    tempList.forEach((index) => { 
+      if (i !== index) tempList[index] = 0;
+    });
     this.setState({
       HeaderArrows: tempList
     });
@@ -153,6 +155,16 @@ class ReservationTable extends React.Component {
     });
   }
 
+  handleVisibleAmountChange(e) {
+    let amount = e.target.value;
+    const regex = /^[0-9]+$/;
+    if(!amount || !regex.test(amount))
+      amount = configData.defaultTableRows; 
+    this.setState({
+      VisibleRows: amount,
+    });
+  }
+
   render() {
     const visibleRows = this.state.FilteredResList.slice(0, this.state.VisibleRows);
     return (
@@ -164,11 +176,15 @@ class ReservationTable extends React.Component {
               <div className="searchDiv">
                 <label htmlFor="search">
                   Ricerca Tutor:
-                  <input id="search" type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+                  <input  type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
                 </label>
                 <label htmlFor="search">
                   Ricerca Studente:
-                  <input id="search" type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+                  <input  type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+                </label>
+                <label htmlFor="search">
+                  Numero di righe da visualizzare:
+                  <input className="input-visrows" type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
                 </label>
               </div>
               <button
@@ -177,7 +193,7 @@ class ReservationTable extends React.Component {
                 onClick={() => this.handleModalVisibility()}
               >
                 Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
-              </button>
+              </button>  
             </div>
             <table className="table">
               <thead>
@@ -230,7 +246,7 @@ class ReservationTable extends React.Component {
                     <td>{reservation.studentNumber}</td>
                     <td>{reservation.timeStamp}</td>
                     {reservation.state ?
-                      <td style={{ textAlign: 'center' }}><SquareIcon className="newStatusSquare" /></td> :
+                      <td style={{ textAlign: 'center' }}><ErrorOutlineIcon className="newStatusIcon" /></td> :
                       <td></td>}
                   </tr>
                 )
