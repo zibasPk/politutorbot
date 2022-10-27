@@ -2,3 +2,17 @@
   width: fit-content;
   max-width: none !important;
 }
+
+.td-mail{
+  border: 0
+}
+
+.btn-mail:hover{
+  color: rgb(174, 187, 188);
+  cursor: pointer;
+}
+
+.btn-mail{
+  color: rgb(144, 151, 151);
+  cursor: pointer;
+}

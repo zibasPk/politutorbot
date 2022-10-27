@@ -2,39 +2,31 @@ import React, { useState } from "react";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import './ModalPopup.css';
+import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 export default class ModalPopup extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ResList: props.selectedList
+    }
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    return{
+      ResList: props.selectedList
+    };
+  }
+
   handleConfirm() {
-    console.log(this.props.selectedList);
     this.props.handleVisibility();
   }
 
-  handleHeaderClick(i) {
-    const tempList = this.state.HeaderArrows
-    switch (tempList[i]) {
-      case 0:
-        tempList[i] = -1;
-        break;
-      case 1:
-        tempList[i] = -1;
-        break;
-      case -1:
-        tempList[i] = 1;
-        break;
-      default:
-        console.error("Invalid HeaderCell arrow direction: " + tempList[i]);
-        return;
-    }
-    tempList.forEach((arrow, index) => { if (i !== index) arrow = 0 });
-    this.setState({
-      HeaderArrows: tempList
-    });
-    this.sortBy(i);
-  }
-
   renderBody(props) {
-    if (props.selectedList.length != 0) {
-      const rows = props.selectedList;
+    const rows = props.resList;
+    if (rows.length != 0) {
       return (
         <table className="table">
           <thead>
@@ -46,7 +38,6 @@ export default class ModalPopup extends React.Component {
               <th scope="col">Codice Esame</th >
               <th scope="col">Cod. Matr. Studente</th >
               <th scope="col">Data</th >
-              <th scope="col">Stato</th >
             </tr>
           </thead>
           <tbody>
@@ -60,6 +51,7 @@ export default class ModalPopup extends React.Component {
                 <td>{reservation.examCode}</td>
                 <td>{reservation.studentNumber}</td>
                 <td>{reservation.timeStamp}</td>
+                <MailCell reservation={reservation} />
               </tr>
             )
             )}
@@ -82,7 +74,8 @@ export default class ModalPopup extends React.Component {
           <Modal.Title>Conferma prenotazione selezionate</Modal.Title>
         </Modal.Header>
         <Modal.Body >
-          <this.renderBody selectedList={this.props.selectedList}/>
+          <MailTemplate/>
+          <this.renderBody resList={this.state.ResList} />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => this.handleConfirm()}>
@@ -92,5 +85,32 @@ export default class ModalPopup extends React.Component {
       </Modal>
     )
   }
+}
+
+class MailCell extends React.Component {
+  render() {
+    return (
+      <td className="td-mail">
+        <MarkEmailReadIcon className="btn-mail"/>
+      </td>
+    );
+  }
+}
+
+function MailTemplate(props) {
+  var arrow = expanded ? <KeyboardArrowDownIcon/> : <KeyboardArrowUpIcon/>
+  return(
+    <>
+    <div>Mostra Modello Email <arrow/></div>
+    <div>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+    Nulla fringilla tellus sagittis quam eleifend molestie. 
+    Cras nisi nulla, bibendum vitae fermentum finibus, gravida non diam. 
+    Sed laoreet porttitor luctus. Suspendisse id sem posuere, efficitur ex non, scelerisque est. 
+    Aliquam scelerisque luctus elit eget tempus. 
+    Aliquam felis felis, sodales et felis. 
+    </div>
+    </>
+  );
 }
 
