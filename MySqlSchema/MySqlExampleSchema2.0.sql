@@ -29,6 +29,8 @@ CREATE TABLE `active_tutoring` (
   `exam` int DEFAULT NULL,
   `student` int NOT NULL,
   `is_OFA` tinyint NOT NULL DEFAULT '0',
+  `start_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`tutor`,`student`),
   KEY `exam` (`exam`),
   KEY `student` (`student`),
@@ -281,4 +283,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-30 16:44:59
+-- Dump completed on 2022-10-30 17:11:21

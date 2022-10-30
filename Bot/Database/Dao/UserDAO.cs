@@ -188,18 +188,20 @@ public class UserDAO
     }
 
     /// <summary>
-    /// Checks if the given user is locked.
+    /// Checks if the given user is locked from making new requests.
     /// </summary>
     /// <param name="userId">Telegram userId to check.</param>
     /// <param name="hoursSinceLock">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
     /// <returns>true if user is locked; otherwise false.</returns>
     public bool IsUserLocked(long userId, int hoursSinceLock)
     {
+        // A user is locked if he already had done a request in the last "hoursSinceLock" hours or
+        // if there is an already active tutoring
         _connection.Open();
         const string query =
             "SELECT * FROM telegram_user " +
             "WHERE userID=@userId AND (lock_timestamp >= NOW() - INTERVAL @hours HOUR OR " +
-            "student_code IN (select student FROM active_tutoring))";
+            "student_code IN (select student FROM active_tutoring WHERE end_date IS NULL))";
         try
         {
             var command = new MySqlCommand(query, _connection);

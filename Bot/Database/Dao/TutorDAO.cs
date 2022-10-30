@@ -693,17 +693,24 @@ public class TutorDAO
         _connection.Close();
     }
 
+    /// <summary>
+    /// Ends a tutoring by adding an end date to an active tutoring,
+    /// and updates the number of available tutorings for the relating exam.
+    /// </summary>
+    /// <param name="tutor">Tutor student number of the tutoring to end.</param>
+    /// <param name="exam">Exam code of the tutoring to end.</param>
+    /// <param name="studentCode">Student number of the tutoring to end.</param>
+    /// <returns>false if now rows where affected, otherwise true</returns>
     public bool DeactivateTutoring(int tutor, int exam, int studentCode)
     {
         _connection.Open();
         var transaction = _connection.BeginTransaction();
         const string query =
-            "DELETE FROM active_tutoring WHERE tutor = @tutor AND exam = @exam AND student = @studentCode";
+            "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP WHERE tutor = @tutor AND student = @studentCode";
         try
         {
             var command = new MySqlCommand(query, _connection, transaction);
             command.Parameters.AddWithValue("@tutor", tutor);
-            command.Parameters.AddWithValue("@exam", exam);
             command.Parameters.AddWithValue("@studentCode", studentCode);
             command.Prepare();
             var affectedRows = command.ExecuteNonQuery();
@@ -720,7 +727,7 @@ public class TutorDAO
             command.ExecuteNonQuery();
 
             transaction.Commit();
-            Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was deleted", tutor, studentCode);
+            Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was ended", tutor, studentCode);
         }
         catch (Exception)
         {
@@ -732,7 +739,46 @@ public class TutorDAO
         _connection.Close();
         return true;
     }
+    
+    /// <summary>
+    /// Ends a tutoring by adding an end date to an active OFA tutoring.
+    /// </summary>
+    /// <param name="tutor">Tutor student number of the tutoring to end.</param>
+    /// <param name="studentCode">Student number of the tutoring to end.</param>
+    /// <returns>false if now rows where affected, otherwise true</returns>
+    public bool DeactivateTutoring(int tutor, int studentCode)
+    {
+        _connection.Open();
+        var transaction = _connection.BeginTransaction();
+        const string query =
+            "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP WHERE tutor = @tutor AND student = @studentCode";
+        try
+        {
+            var command = new MySqlCommand(query, _connection, transaction);
+            command.Parameters.AddWithValue("@tutor", tutor);
+            command.Parameters.AddWithValue("@studentCode", studentCode);
+            command.Prepare();
+            var affectedRows = command.ExecuteNonQuery();
+            if (affectedRows == 0)
+            {
+                transaction.Commit();
+                _connection.Close();
+                return false;
+            }
+            transaction.Commit();
+            Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was ended", tutor, studentCode);
+        }
+        catch (Exception)
+        {
+            transaction.Rollback();
+            _connection.Close();
+            throw;
+        }
 
+        _connection.Close();
+        return true;
+    }
+    
     public List<TutorToExam> FindAvailableOFATutors(int lockHours)
     {
         _connection.Open();
