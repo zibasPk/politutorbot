@@ -1,5 +1,42 @@
-.mela {
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 800px;
+.content {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.functionsHeader {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.table-tutorings {
+  max-width: max-content;
+  min-width: 700px;
+  grid-column: 1;
+  grid-row: 2;
+}
+
+table,
+th,
+td {
+  border: 1px solid black;
+}
+
+th {
+  vertical-align: text-top;
+  text-align: left;
+}
+
+td:hover .arrow {
+  display: inline-block;
+}
+
+.firstCell {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.th_text {
+  float: left;
+  text-align: left;
 }

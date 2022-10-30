@@ -229,7 +229,7 @@ class ReservationTable extends React.Component {
                 {visibleRows.map((reservation) =>
                 (
                   <tr key={reservation.id} className={reservation.selected ? "selected" : ""}>
-                    <th scope="row">
+                    <th scope="row" className="firstCell">
                       <input
                         type="checkbox"
                         checked={reservation.selected}

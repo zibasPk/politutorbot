@@ -107,7 +107,7 @@ function MailTemplate() {
   return (
     <>
     <div>Mostra Modello Email<ExpandMoreIcon
-        expand={expanded}
+        expand={expanded.toString()}
         onClick={handleExpandClick}
         aria-expanded={expanded}
         aria-label="show more"
