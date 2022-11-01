@@ -184,7 +184,7 @@ class ReservationTable extends React.Component {
                 </label>
                 <label htmlFor="search">
                   Numero di righe da visualizzare:
-                  <input className="input-visrows" type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+                  <input className="input-visrows" placeholder ={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
                 </label>
               </div>
               <button

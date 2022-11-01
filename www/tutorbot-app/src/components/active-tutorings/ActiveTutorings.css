@@ -1,19 +1,51 @@
 .content {
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr 1fr;
 }
 
-.functionsHeader {
+.ActiveTableContent {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+
+.EndedTableContent {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+
+.title {
   grid-column: 1;
   grid-row: 1;
 }
 
+.functionsHeader {
+  grid-column: 1;
+  grid-row: 2;
+}
+
 .table-tutorings {
+  margin-left: none;
+  margin-right: none;
   max-width: max-content;
   min-width: 700px;
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 3;
 }
 
 table,
