@@ -4,6 +4,8 @@ import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
 
 import { ShowMoreButton } from '../reservations/ReservationTable';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import DoneIcon from '@mui/icons-material/Done';
 
 
 export default class ActiveTutoringsTable extends React.Component {
@@ -224,6 +226,7 @@ export default class ActiveTutoringsTable extends React.Component {
                 arrowAction={() => this.handleHeaderClick(4)} />
               <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
                 arrowAction={() => this.handleHeaderClick(5)} />
+              <EndAllTutoringsCell />
             </tr>
           </thead>
           <tbody>
@@ -245,6 +248,7 @@ export default class ActiveTutoringsTable extends React.Component {
                 <td>{tutoring.studentNumber}</td>
                 <td>{tutoring.examCode}</td>
                 <td>{tutoring.start_date.toLocaleString()}</td>
+                <EndTutoringCell/>
               </tr>
             )
             )}
@@ -257,4 +261,20 @@ export default class ActiveTutoringsTable extends React.Component {
       </div>
     )
   }
+}
+
+function EndAllTutoringsCell() {
+  return(
+    <td className='td-endTutoring'>
+      <DoneAllIcon className="btn-endTutoring"/>
+    </td>
+  );
+}
+
+function EndTutoringCell() {
+  return(
+    <td className='td-endTutoring'>
+      <DoneIcon className="btn-endTutoring"/>
+    </td>
+  );
 }

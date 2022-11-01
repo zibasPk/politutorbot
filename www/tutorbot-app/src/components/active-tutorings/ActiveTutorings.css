@@ -49,6 +49,8 @@
   width: 100%;
   grid-column: 1;
   grid-row: 3;
+  border-collapse:collapse;
+  border: 0;
 }
 
 table,
@@ -74,4 +76,17 @@ td:hover .arrow {
 .th_text {
   float: left;
   text-align: left;
+}
+
+.td-endTutoring {
+  border-style: none;
+  text-align: center;
+}
+.btn-endTutoring {
+  color:rgb(239, 58, 58);
+}
+
+.btn-endTutoring:hover{
+  cursor: pointer;
+  color: rgb(254, 142, 142);
 }
