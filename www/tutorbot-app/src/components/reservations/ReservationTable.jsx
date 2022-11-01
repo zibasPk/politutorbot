@@ -158,7 +158,7 @@ class ReservationTable extends React.Component {
   handleVisibleAmountChange(e) {
     let amount = e.target.value;
     const regex = /^[0-9]+$/;
-    if(!amount || !regex.test(amount))
+    if(!amount || !regex.test(amount)|| amount === 0)
       amount = configData.defaultTableRows; 
     this.setState({
       VisibleRows: amount,

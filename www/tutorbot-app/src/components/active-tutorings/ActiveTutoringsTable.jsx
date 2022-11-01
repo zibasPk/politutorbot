@@ -95,10 +95,7 @@ export default class ActiveTutoringsTable extends React.Component {
   sortBy(i) {
     const tempList = this.state.FilteredTutorList;
     const keys = Object.keys(this.state.FilteredTutorList[0]);
-    switch (keys[i]) {
-      case "id":
-        tempList.sort((x, y) => this.comparator(x.id, y.id, this.state.HeaderArrows[i]));
-        break;
+    switch (keys[i+1]) {
       case "tutorNumber":
         tempList.sort((x, y) => this.comparator(x.tutorNumber, y.tutorNumber, this.state.HeaderArrows[i]));
         break;
@@ -116,9 +113,6 @@ export default class ActiveTutoringsTable extends React.Component {
         break;
       case "start_date":
         tempList.sort((x, y) => this.comparator(x.start_date, y.start_date, this.state.HeaderArrows[i]));
-        break;
-      case "state":
-        tempList.sort((x, y) => this.comparator(x.state, y.state, this.state.HeaderArrows[i]));
         break;
       default:
         break;
@@ -140,12 +134,48 @@ export default class ActiveTutoringsTable extends React.Component {
     });
   }
 
+  handleSearch(event, type) {
+    let tempList;
+
+    switch (type) {
+      case "tutorNumber":
+        tempList = this.state.Tutorings.filter(
+          (res) => res.tutorNumber.toString().includes(event.target.value)
+        );
+        break;
+
+      case "studentNumber":
+        tempList = this.state.Tutorings.filter(
+          (res) => res.studentNumber.toString().includes(event.target.value)
+        );
+        break;
+      default:
+        tempList = [];
+        console.error("Invalid search type");
+        break;
+    }
+    this.setState({
+      FilteredTutorList: tempList
+    })
+  }
+
   handleShowMoreClick() {
     let newAmount = this.state.VisibleRows + configData.addonTableRows;
     this.setState({
       VisibleRows: newAmount,
     })
   }
+
+  handleVisibleAmountChange(e) {
+    let amount = e.target.value;
+    const regex = /^[0-9]+$/;
+    if (!amount || !regex.test(amount) || amount === 0)
+      amount = configData.defaultTableRows;
+    this.setState({
+      VisibleRows: amount,
+    });
+  }
+
 
   render() {
     const visibleRows = this.state.FilteredTutorList.slice(0, this.state.VisibleRows);
@@ -155,7 +185,20 @@ export default class ActiveTutoringsTable extends React.Component {
           Tutoraggi Attivi
         </h1>
         <div className="functionsHeader">
-          qua le funzioni :L
+          <div className="searchDiv">
+            <label htmlFor="search">
+              Ricerca Tutor:
+              <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+            </label>
+            <label htmlFor="search">
+              Ricerca Studente:
+              <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+            </label>
+            <label htmlFor="search">
+              Numero di righe da visualizzare:
+              <input className="input-visrows" placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+            </label>
+          </div>
         </div>
         <table className="table-tutorings">
           <thead>
@@ -201,7 +244,7 @@ export default class ActiveTutoringsTable extends React.Component {
                 <td>{tutoring.tutorSurname}</td>
                 <td>{tutoring.studentNumber}</td>
                 <td>{tutoring.examCode}</td>
-                <td>{tutoring.start_date}</td>
+                <td>{tutoring.start_date.toLocaleString()}</td>
               </tr>
             )
             )}

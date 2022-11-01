@@ -11,39 +11,42 @@
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+  height: fit-content;
   grid-column: 1;
   grid-row: 1;
+  row-gap: 0px;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
 }
 
 .EndedTableContent {
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+  height: fit-content;
   grid-column: 1;
   grid-row: 2;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
 }
 
 .title {
+  height: fit-content;
   grid-column: 1;
   grid-row: 1;
 }
 
 .functionsHeader {
+  height: fit-content;
   grid-column: 1;
   grid-row: 2;
 }
 
 .table-tutorings {
-  margin-left: none;
-  margin-right: none;
-  max-width: max-content;
   min-width: 700px;
+  width: 100%;
   grid-column: 1;
   grid-row: 3;
 }
