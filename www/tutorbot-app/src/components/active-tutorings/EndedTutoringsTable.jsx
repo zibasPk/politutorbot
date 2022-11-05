@@ -14,7 +14,6 @@ export default class EndedTutoringsTable extends React.Component {
       SelectedList: [],
       HeaderArrows: Array(Object.keys(props.tutoringsArray[0]).length - 1).fill(0),
       VisibleRows: configData.defaultTableRows,
-      IsModalVisible: false
     };
   }
 

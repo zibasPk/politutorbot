@@ -27,7 +27,7 @@
   height: fit-content;
   grid-column: 1;
   grid-row: 2;
-  display: grid;
+  
   grid-template-columns: auto;
   grid-template-rows: auto auto auto;
 }
@@ -42,7 +42,29 @@
   height: fit-content;
   grid-column: 1;
   grid-row: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 10px;
 }
+
+.searchDiv {
+  grid-column: 1;
+}
+
+.buttonDiv {
+  grid-column: 2;
+  justify-self: stretch;
+  position:relative;
+}
+
+.btn-confirm-end{
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
 
 .table-tutorings {
   min-width: 700px;
@@ -90,3 +112,4 @@ td:hover .arrow {
   cursor: pointer;
   color: rgb(254, 142, 142);
 }
+

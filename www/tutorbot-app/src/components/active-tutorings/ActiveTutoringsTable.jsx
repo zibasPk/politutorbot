@@ -3,6 +3,7 @@ import React from 'react';
 import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
 
+import ConfirmModal from './ConfirmModal';
 import { ShowMoreButton } from '../reservations/ReservationTable';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DoneIcon from '@mui/icons-material/Done';
@@ -21,6 +22,109 @@ export default class ActiveTutoringsTable extends React.Component {
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false
     };
+  }
+
+  render() {
+    const visibleRows = this.state.FilteredTutorList.slice(0, this.state.VisibleRows);
+    return (
+      <>
+        <ConfirmModal show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
+        <div className="ActiveTableContent">
+          <h1 className="title">
+            Tutoraggi Attivi
+          </h1>
+          <div className="functionsHeader">
+            <div className="searchDiv">
+              <label htmlFor="search">
+                Ricerca Tutor:
+                <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+              </label>
+              <label htmlFor="search">
+                Ricerca Studente:
+                <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+              </label>
+              <label htmlFor="search">
+                Numero di righe da visualizzare:
+                <input className="input-visrows" placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+              </label>
+            </div>
+            <div class="buttonDiv">
+              <button
+                variant="secondary"
+                className="btn-confirm-end"
+                onClick={() => this.handleModalVisibility()}
+              >
+                Concludi Tutoraggi Selezionati {this.state.SelectedList.length}
+              </button>
+            </div>
+
+          </div>
+          <table className="table-tutorings">
+            <thead>
+              <tr>
+                <th scope="col" className="firstCell">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={this.state.MasterChecked}
+                    id="mastercheck"
+                    onChange={(e) => this.onMasterCheck(e)}
+                  />
+                </th>
+                <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[0]} text="Cod. Matr. Tutor"
+                  arrowAction={() => this.handleHeaderClick(0)} />
+                <HeaderCellWithHover text="Nome Tutor" arrowDirection={this.state.HeaderArrows[1]}
+                  arrowAction={() => this.handleHeaderClick(1)} />
+                <HeaderCellWithHover text="Cognome Tutor" arrowDirection={this.state.HeaderArrows[2]}
+                  arrowAction={() => this.handleHeaderClick(2)} />
+                <HeaderCellWithHover text="Cod. Matr. Studente" arrowDirection={this.state.HeaderArrows[3]}
+                  arrowAction={() => this.handleHeaderClick(3)} />
+                <HeaderCellWithHover text="Codice Esame" arrowDirection={this.state.HeaderArrows[4]}
+                  arrowAction={() => this.handleHeaderClick(4)} />
+                <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
+                  arrowAction={() => this.handleHeaderClick(5)} />
+                <EndAllTutoringsCell />
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRows.map((tutoring) =>
+              (
+                <tr key={tutoring.id} className={tutoring.selected ? "selected" : ""}>
+                  <th scope="row" className="firstCell">
+                    <input
+                      type="checkbox"
+                      checked={tutoring.selected}
+                      className="form-check-input"
+                      id="rowcheck{user.id}"
+                      onChange={(e) => this.onItemCheck(e, tutoring)}
+                    />
+                  </th>
+                  <td>{tutoring.tutorNumber}</td>
+                  <td>{tutoring.tutorName}</td>
+                  <td>{tutoring.tutorSurname}</td>
+                  <td>{tutoring.studentNumber}</td>
+                  <td>{tutoring.examCode}</td>
+                  <td>{tutoring.start_date.toLocaleString()}</td>
+                  <EndTutoringCell />
+                </tr>
+              )
+              )}
+            </tbody>
+          </table>
+          <ShowMoreButton onClick={() => this.handleShowMoreClick()}
+            visibleRows={this.state.VisibleRows}
+            maximumRows={this.state.FilteredTutorList.length}
+          />
+        </div>
+      </>
+    )
+  }
+
+  handleModalVisibility() {
+    var temp = this.state.IsModalVisible;
+    this.setState({
+      IsModalVisible: !temp,
+    });
   }
 
   // Select/ UnSelect Table rows
@@ -97,7 +201,7 @@ export default class ActiveTutoringsTable extends React.Component {
   sortBy(i) {
     const tempList = this.state.FilteredTutorList;
     const keys = Object.keys(this.state.FilteredTutorList[0]);
-    switch (keys[i+1]) {
+    switch (keys[i + 1]) {
       case "tutorNumber":
         tempList.sort((x, y) => this.comparator(x.tutorNumber, y.tutorNumber, this.state.HeaderArrows[i]));
         break;
@@ -177,104 +281,20 @@ export default class ActiveTutoringsTable extends React.Component {
       VisibleRows: amount,
     });
   }
-
-
-  render() {
-    const visibleRows = this.state.FilteredTutorList.slice(0, this.state.VisibleRows);
-    return (
-      <div className="ActiveTableContent">
-        <h1 className="title">
-          Tutoraggi Attivi
-        </h1>
-        <div className="functionsHeader">
-          <div className="searchDiv">
-            <label htmlFor="search">
-              Ricerca Tutor:
-              <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
-            </label>
-            <label htmlFor="search">
-              Ricerca Studente:
-              <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
-            </label>
-            <label htmlFor="search">
-              Numero di righe da visualizzare:
-              <input className="input-visrows" placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
-            </label>
-          </div>
-        </div>
-        <table className="table-tutorings">
-          <thead>
-            <tr>
-              <th scope="col" className="firstCell">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  checked={this.state.MasterChecked}
-                  id="mastercheck"
-                  onChange={(e) => this.onMasterCheck(e)}
-                />
-              </th>
-              <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[0]} text="Cod. Matr. Tutor"
-                arrowAction={() => this.handleHeaderClick(0)} />
-              <HeaderCellWithHover text="Nome Tutor" arrowDirection={this.state.HeaderArrows[1]}
-                arrowAction={() => this.handleHeaderClick(1)} />
-              <HeaderCellWithHover text="Cognome Tutor" arrowDirection={this.state.HeaderArrows[2]}
-                arrowAction={() => this.handleHeaderClick(2)} />
-              <HeaderCellWithHover text="Cod. Matr. Studente" arrowDirection={this.state.HeaderArrows[3]}
-                arrowAction={() => this.handleHeaderClick(3)} />
-              <HeaderCellWithHover text="Codice Esame" arrowDirection={this.state.HeaderArrows[4]}
-                arrowAction={() => this.handleHeaderClick(4)} />
-              <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
-                arrowAction={() => this.handleHeaderClick(5)} />
-              <EndAllTutoringsCell />
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((tutoring) =>
-            (
-              <tr key={tutoring.id} className={tutoring.selected ? "selected" : ""}>
-                <th scope="row" className="firstCell">
-                  <input
-                    type="checkbox"
-                    checked={tutoring.selected}
-                    className="form-check-input"
-                    id="rowcheck{user.id}"
-                    onChange={(e) => this.onItemCheck(e, tutoring)}
-                  />
-                </th>
-                <td>{tutoring.tutorNumber}</td>
-                <td>{tutoring.tutorName}</td>
-                <td>{tutoring.tutorSurname}</td>
-                <td>{tutoring.studentNumber}</td>
-                <td>{tutoring.examCode}</td>
-                <td>{tutoring.start_date.toLocaleString()}</td>
-                <EndTutoringCell/>
-              </tr>
-            )
-            )}
-          </tbody>
-        </table>
-        <ShowMoreButton onClick={() => this.handleShowMoreClick()}
-          visibleRows={this.state.VisibleRows}
-          maximumRows={this.state.FilteredTutorList.length}
-        />
-      </div>
-    )
-  }
 }
 
 function EndAllTutoringsCell() {
-  return(
+  return (
     <td className='td-endTutoring'>
-      <DoneAllIcon className="btn-endTutoring"/>
+      <DoneAllIcon className="btn-endTutoring" />
     </td>
   );
 }
 
 function EndTutoringCell() {
-  return(
+  return (
     <td className='td-endTutoring'>
-      <DoneIcon className="btn-endTutoring"/>
+      <DoneIcon className="btn-endTutoring" />
     </td>
   );
 }

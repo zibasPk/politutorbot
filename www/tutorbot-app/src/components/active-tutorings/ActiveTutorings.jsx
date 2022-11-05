@@ -122,10 +122,12 @@ function ActiveTutorings() {
   let activeTutoringsArray = TutoringsArray.filter((t) => t.end_date == null);
   let endedTutoringsArray = TutoringsArray.filter((t) => t.end_date != null);
   return (
-    <div className='content'>
-      <ActiveTutoringsTable tutoringsArray={activeTutoringsArray} />
-      <EndedTutoringsTable tutoringsArray={endedTutoringsArray} />
-    </div>
+    <>
+      <div className="content">
+        <ActiveTutoringsTable tutoringsArray={activeTutoringsArray} />
+        <EndedTutoringsTable tutoringsArray={endedTutoringsArray} />
+      </div>
+    </>
   );
 }
 
