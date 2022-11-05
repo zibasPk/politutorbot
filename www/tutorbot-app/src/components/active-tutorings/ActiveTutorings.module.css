@@ -1,7 +1,7 @@
 .content {
   margin-left: auto;
   margin-right: auto;
-  width: fit-content;
+  max-width: max-content;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr 1fr;
@@ -51,13 +51,21 @@
   grid-column: 1;
 }
 
+.searchDiv label{
+  background-color: rgb(255, 248, 246);
+  display:list-item;
+  margin-bottom: 5px;
+  width: fit-content;
+  list-style-type: none;
+}
+
 .buttonDiv {
   grid-column: 2;
   justify-self: stretch;
   position:relative;
 }
 
-.btn-confirm-end{
+.btnConfirmSelected{
   width: fit-content;
   height: fit-content;
   position: absolute;
@@ -66,7 +74,7 @@
 }
 
 
-.table-tutorings {
+.tableTutorings {
   min-width: 700px;
   width: 100%;
   grid-column: 1;
@@ -95,21 +103,21 @@ td:hover .arrow {
   text-align: center;
 }
 
-.th_text {
-  float: left;
-  text-align: left;
-}
-
-.td-endTutoring {
+.cellEndTutoring {
   border-style: none;
   text-align: center;
 }
-.btn-endTutoring {
+.btnEndTutoring {
   color:rgb(239, 58, 58);
 }
 
-.btn-endTutoring:hover{
+.btnEndTutoring:hover{
   cursor: pointer;
   color: rgb(254, 142, 142);
+}
+
+.myModal {
+  width: fit-content;
+  max-width: 75% !important;
 }
 

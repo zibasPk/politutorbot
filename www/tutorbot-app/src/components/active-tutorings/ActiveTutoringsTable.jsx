@@ -1,4 +1,6 @@
 import React from 'react';
+import styles from "./ActiveTutorings.module.css"
+
 
 import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
@@ -7,6 +9,7 @@ import ConfirmModal from './ConfirmModal';
 import { ShowMoreButton } from '../reservations/ReservationTable';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DoneIcon from '@mui/icons-material/Done';
+import { StayPrimaryLandscapeSharp } from '@mui/icons-material';
 
 
 export default class ActiveTutoringsTable extends React.Component {
@@ -29,13 +32,13 @@ export default class ActiveTutoringsTable extends React.Component {
     return (
       <>
         <ConfirmModal show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
-        <div className="ActiveTableContent">
-          <h1 className="title">
+        <div className={styles.ActiveTableContent}>
+          <h1 className={styles.title}>
             Tutoraggi Attivi
           </h1>
-          <div className="functionsHeader">
-            <div className="searchDiv">
-              <label htmlFor="search">
+          <div className={styles.functionsHeader}>
+            <div className={styles.searchDiv}>
+              <label htmlFor={styles.search}>
                 Ricerca Tutor:
                 <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
               </label>
@@ -48,10 +51,10 @@ export default class ActiveTutoringsTable extends React.Component {
                 <input className="input-visrows" placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
               </label>
             </div>
-            <div class="buttonDiv">
+            <div className={styles.buttonDiv}>
               <button
                 variant="secondary"
-                className="btn-confirm-end"
+                className={styles.btnConfirmSelected}
                 onClick={() => this.handleModalVisibility()}
               >
                 Concludi Tutoraggi Selezionati {this.state.SelectedList.length}
@@ -59,10 +62,10 @@ export default class ActiveTutoringsTable extends React.Component {
             </div>
 
           </div>
-          <table className="table-tutorings">
+          <table className={styles.tableTutorings}>
             <thead>
               <tr>
-                <th scope="col" className="firstCell">
+                <th scope="col" className={styles.firstCell}>
                   <input
                     type="checkbox"
                     className="form-check-input"
@@ -89,8 +92,8 @@ export default class ActiveTutoringsTable extends React.Component {
             <tbody>
               {visibleRows.map((tutoring) =>
               (
-                <tr key={tutoring.id} className={tutoring.selected ? "selected" : ""}>
-                  <th scope="row" className="firstCell">
+                <tr key={tutoring.id} className={tutoring.selected ? styles.selected : ""}>
+                  <th scope="row" className={styles.firstCell}>
                     <input
                       type="checkbox"
                       checked={tutoring.selected}
@@ -285,16 +288,16 @@ export default class ActiveTutoringsTable extends React.Component {
 
 function EndAllTutoringsCell() {
   return (
-    <td className='td-endTutoring'>
-      <DoneAllIcon className="btn-endTutoring" />
+    <td className={styles.cellEndTutoring}>
+      <DoneAllIcon className={styles.btnEndTutoring} />
     </td>
   );
 }
 
 function EndTutoringCell() {
   return (
-    <td className='td-endTutoring'>
-      <DoneIcon className="btn-endTutoring" />
+    <td className={styles.cellEndTutoring}>
+      <DoneIcon className={styles.btnEndTutoring} />
     </td>
   );
 }

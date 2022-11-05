@@ -1,7 +1,9 @@
 import React from "react";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import './ModalPopup.css';
+import styles from './ModalPopup.module.css';
+
+
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import CardContent from '@mui/material/CardContent';
 import Collapse from '@mui/material/Collapse';
@@ -29,7 +31,7 @@ export default class ModalPopup extends React.Component {
     const rows = props.resList;
     if (rows.length !== 0) {
       return (
-        <table className="table">
+        <table className={styles.table}>
           <thead>
             <tr>
               <th scope="col">Prenotazione</th >
@@ -69,7 +71,7 @@ export default class ModalPopup extends React.Component {
       <Modal show={this.props.show}
         onHide={this.props.handleVisibility}
         backdrop="static"
-        dialogClassName="my-modal"
+        dialogClassName={styles.myModal}
       >
         <Modal.Header closeButton>
           <Modal.Title>Conferma prenotazione selezionate</Modal.Title>
@@ -91,8 +93,8 @@ export default class ModalPopup extends React.Component {
 class MailCell extends React.Component {
   render() {
     return (
-      <td className="td-mail">
-        <MarkEmailReadIcon className="btn-mail" />
+      <td className={styles.tdMail}>
+        <MarkEmailReadIcon className={styles.btnMail} />
       </td>
     );
   }

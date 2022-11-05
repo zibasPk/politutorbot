@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import './Reservations.css';
+import styles from './Reservations.module.css';
 import ReservationTable from './ReservationTable';
 
 
@@ -296,7 +296,7 @@ const ReservationsArray = [
 
 function Reservations() {
   return (
-    <div className="content">
+    <div className={styles.content}>
       <ReservationTable reservations={ReservationsArray} />
     </div>
   );

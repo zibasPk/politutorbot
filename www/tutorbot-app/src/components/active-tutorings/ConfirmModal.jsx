@@ -1,4 +1,6 @@
 import React from "react";
+import styles from './ActiveTutorings.module.css'
+
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
@@ -17,7 +19,7 @@ export default class ConfirmModal extends React.Component {
       <Modal show={this.props.show}
         onHide={this.props.handleVisibility}
         backdrop="static"
-        dialogClassName="my-modal"
+        dialogClassName={styles.myModal}
       >
         <Modal.Header closeButton>
           <Modal.Title>Conferma conclusione tutoraggi selezionati</Modal.Title>

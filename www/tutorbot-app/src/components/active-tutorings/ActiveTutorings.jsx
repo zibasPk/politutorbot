@@ -2,7 +2,7 @@ import React from 'react';
 
 import ActiveTutoringsTable from './ActiveTutoringsTable';
 import EndedTutoringsTable from './EndedTutoringsTable';
-import "./ActiveTutorings.css"
+import styles from "./ActiveTutorings.module.css"
 
 const TutoringsArray = [
   {
@@ -123,7 +123,7 @@ function ActiveTutorings() {
   let endedTutoringsArray = TutoringsArray.filter((t) => t.end_date != null);
   return (
     <>
-      <div className="content">
+      <div className={styles.content}>
         <ActiveTutoringsTable tutoringsArray={activeTutoringsArray} />
         <EndedTutoringsTable tutoringsArray={endedTutoringsArray} />
       </div>

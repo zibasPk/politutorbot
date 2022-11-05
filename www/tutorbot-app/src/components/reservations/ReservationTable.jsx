@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './ReservationTable.css';
+import styles from './ReservationTable.module.css';
 
 import ModalPopup from "./ModalPopup";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -168,12 +168,12 @@ class ReservationTable extends React.Component {
   render() {
     const visibleRows = this.state.FilteredResList.slice(0, this.state.VisibleRows);
     return (
-      <div className="cont">
+      <div className={styles.cont}>
         <ModalPopup show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
-        <div className="row">
-          <div className="col-md-12">
-            <div className="tableFunctions">
-              <div className="searchDiv">
+        <div className={styles.row}>
+          <div>
+            <div className={styles.tableFunctions}>
+              <div className={styles.searchDiv}>
                 <label htmlFor="search">
                   Ricerca Tutor:
                   <input  type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
@@ -184,18 +184,18 @@ class ReservationTable extends React.Component {
                 </label>
                 <label htmlFor="search">
                   Numero di righe da visualizzare:
-                  <input className="input-visrows" placeholder ={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+                  <input className={styles.inputVisrows} placeholder ={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
                 </label>
               </div>
               <button
                 variant="secondary"
-                className="btn-confirm"
+                className={styles.btnConfirm}
                 onClick={() => this.handleModalVisibility()}
               >
                 Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
               </button>  
             </div>
-            <table className="table">
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th scope="col">
@@ -228,8 +228,8 @@ class ReservationTable extends React.Component {
               <tbody>
                 {visibleRows.map((reservation) =>
                 (
-                  <tr key={reservation.id} className={reservation.selected ? "selected" : ""}>
-                    <th scope="row" className="firstCell">
+                  <tr key={reservation.id} className={reservation.selected ? styles.selected : ""}>
+                    <th scope="row" className={styles.firstCell}>
                       <input
                         type="checkbox"
                         checked={reservation.selected}
@@ -246,7 +246,7 @@ class ReservationTable extends React.Component {
                     <td>{reservation.studentNumber}</td>
                     <td>{reservation.timeStamp}</td>
                     {reservation.state ?
-                      <td style={{ textAlign: 'center' }}><ErrorOutlineIcon className="newStatusIcon" /></td> :
+                      <td style={{ textAlign: 'center' }}><ErrorOutlineIcon className={styles.newStatusIcon} /></td> :
                       <td></td>}
                   </tr>
                 )
@@ -268,11 +268,11 @@ class ReservationTable extends React.Component {
     if (configData.debugMode)
       return (
         <>
-          <div className="row">
+          <div>
             <b>All Row Items:</b>
             <code>{JSON.stringify(props.visibleList)}</code>
           </div>
-          <div className="row">
+          <div>
             <b>Selected Row Items(Click Button To Get):</b>
             <code>{JSON.stringify(props.selectedList)}</code>
           </div>
@@ -312,9 +312,9 @@ export function HeaderCellWithHover(props) {
   let arrow;
 
   if (props.arrowDirection === 1 || props.arrowDirection === 0)
-    arrow = <KeyboardArrowDownIcon style={iconStyle} className="arrow" />
+    arrow = <KeyboardArrowDownIcon style={iconStyle} className={styles.arrow} />
   if (props.arrowDirection === -1)
-    arrow = <KeyboardArrowUpIcon style={iconStyle} className="arrow" />
+    arrow = <KeyboardArrowUpIcon style={iconStyle} className={styles.arrow} />
   return (
     <th scope="col" style={style}
       onMouseEnter={e => {
@@ -339,7 +339,7 @@ export function ShowMoreButton(props) {
     return (
       <div
         onClick={() => props.onClick()}
-        className="btn-showmore"
+        className={styles.btnShowmore}
         style={{ visibility: 'hidden' }}
       >
         Mostra altri
@@ -349,7 +349,7 @@ export function ShowMoreButton(props) {
     return (
       <div
         onClick={() => props.onClick()}
-        className="btn-showmore"
+        className={styles.btnShowmore}
         style={{ visibility: 'visible' }}
       >
         Mostra altri

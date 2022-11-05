@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './ActiveTutorings.module.css'
 
 import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
@@ -137,12 +138,12 @@ export default class EndedTutoringsTable extends React.Component {
   render() {
     const visibleRows = this.state.FilteredTutorList.slice(0, this.state.VisibleRows);
     return (
-      <div className="EndedTableContent">
-        <h1 className="title">
+      <div className={styles.EndedTableContent}>
+        <h1 className={styles.title}>
           Tutoraggi Conclusi
         </h1>
-        <div className="functionsHeader">
-        <div className="searchDiv">
+        <div className={styles.functionHeader}>
+        <div className={styles.searchDiv}>
             <label htmlFor="search">
               Ricerca Tutor:
               <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
@@ -157,7 +158,7 @@ export default class EndedTutoringsTable extends React.Component {
             </label>
           </div>
         </div>
-        <table className="table-tutorings">
+        <table className={styles.tableTutorings}>
           <thead>
             <tr>
               <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[0]} text="Cod. Matr. Tutor"
@@ -179,7 +180,7 @@ export default class EndedTutoringsTable extends React.Component {
           <tbody>
             {visibleRows.map((tutoring) =>
             (
-              <tr key={tutoring.id} className={tutoring.selected ? "selected" : ""}>
+              <tr key={tutoring.id} className={tutoring.selected ? styles.selected : ""}>
                 <td>{tutoring.tutorNumber}</td>
                 <td>{tutoring.tutorName}</td>
                 <td>{tutoring.tutorSurname}</td>

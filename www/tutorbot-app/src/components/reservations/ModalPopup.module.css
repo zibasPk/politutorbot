@@ -1,0 +1,38 @@
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: collapse;
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+th {
+  vertical-align: text-top;
+  text-align: left;
+}
+
+td:hover .arrow {
+  display: inline-block;
+}
+
+
+.myModal {
+  width: fit-content;
+  max-width: 75% !important;
+}
+
+.tdMail{
+  border: 0
+}
+
+.btnMail:hover{
+  color: rgb(174, 187, 188);
+  cursor: pointer;
+}
+
+.btnMail{
+  color: rgb(144, 151, 151);
+  cursor: pointer;
+}
