@@ -85,7 +85,7 @@ const TutoringsArray = [
   {
     id: 8,
     tutorNumber: 321321,
-    tutorName: "Mario Claudio",
+    tutorName: "Mario Claudiolini",
     tutorSurname: "Brontesi",
     examCode: 11999,
     studentNumber: "938354",

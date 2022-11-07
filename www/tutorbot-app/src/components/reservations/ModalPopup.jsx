@@ -81,8 +81,8 @@ export default class ModalPopup extends React.Component {
           <this.renderBody resList={this.state.ResList} />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => this.handleConfirm()}>
-            Close
+          <Button variant="warning" onClick={() => this.handleConfirm()}>
+            Annulla
           </Button>
         </Modal.Footer>
       </Modal>

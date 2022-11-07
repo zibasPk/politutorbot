@@ -121,3 +121,12 @@ td:hover .arrow {
   max-width: 75% !important;
 }
 
+.btnCancel{
+  background: #fff;
+  color: red;
+  border: 2px solid red;
+  border-radius: 3px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+}
+

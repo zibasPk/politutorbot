@@ -2,14 +2,13 @@ import React from 'react';
 import styles from "./ActiveTutorings.module.css"
 
 
-import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
 
+import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import ConfirmModal from './ConfirmModal';
 import { ShowMoreButton } from '../reservations/ReservationTable';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DoneIcon from '@mui/icons-material/Done';
-import { StayPrimaryLandscapeSharp } from '@mui/icons-material';
 
 
 export default class ActiveTutoringsTable extends React.Component {
@@ -136,12 +135,14 @@ export default class ActiveTutoringsTable extends React.Component {
     // Check/ UnCheck All Items
     tempList.map((user) => (user.selected = e.target.checked));
 
+    const selectedList = this.state.FilteredTutorList.filter((e) => e.selected);
     // Update State
     this.setState({
       MasterChecked: e.target.checked,
       FilteredTutorList: tempList,
-      SelectedList: this.state.FilteredTutorList.filter((e) => e.selected),
+      SelectedList: selectedList
     });
+    
   }
 
   // Update List Item's state and Master Checkbox State
