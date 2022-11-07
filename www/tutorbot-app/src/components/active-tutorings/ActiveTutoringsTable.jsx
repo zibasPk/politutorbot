@@ -59,7 +59,6 @@ export default class ActiveTutoringsTable extends React.Component {
                 Concludi Tutoraggi Selezionati {this.state.SelectedList.length}
               </button>
             </div>
-
           </div>
           <table className={styles.tableTutorings}>
             <thead>
@@ -85,7 +84,9 @@ export default class ActiveTutoringsTable extends React.Component {
                   arrowAction={() => this.handleHeaderClick(4)} />
                 <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
                   arrowAction={() => this.handleHeaderClick(5)} />
-                <EndAllTutoringsCell />
+                <td className={styles.cellEndTutoring}>
+                  <DoneAllIcon className={styles.btnEndTutoring} onClick={() => this.handleDoneAllClick()} />
+                </td>
               </tr>
             </thead>
             <tbody>
@@ -107,7 +108,9 @@ export default class ActiveTutoringsTable extends React.Component {
                   <td>{tutoring.studentNumber}</td>
                   <td>{tutoring.examCode}</td>
                   <td>{tutoring.start_date.toLocaleString()}</td>
-                  <EndTutoringCell />
+                  <td className={styles.cellEndTutoring}>
+                    <DoneIcon className={styles.btnEndTutoring} onClick={(e) => this.handleDoneClick(tutoring)} />
+                  </td>
                 </tr>
               )
               )}
@@ -122,6 +125,25 @@ export default class ActiveTutoringsTable extends React.Component {
     )
   }
 
+  handleDoneAllClick() {
+    let tempList = this.state.FilteredTutorList;
+    tempList.map((tutoring) => tutoring.selected = true);
+    this.setState({
+      MasterChecked: true,
+      SelectedList: tempList
+    }, () => { this.handleModalVisibility() });
+  }
+
+  handleDoneClick(tutoring) {
+    this.state.FilteredTutorList.map(t => t.selected = false);
+    tutoring.selected = true;
+    this.setState({
+      MasterChecked: false,
+      SelectedList: this.state.FilteredTutorList.filter((e) => e.selected)
+    }, () => { this.handleModalVisibility(); 
+    });
+  }
+
   handleModalVisibility() {
     var temp = this.state.IsModalVisible;
     this.setState({
@@ -133,7 +155,7 @@ export default class ActiveTutoringsTable extends React.Component {
   onMasterCheck(e) {
     let tempList = this.state.FilteredTutorList;
     // Check/ UnCheck All Items
-    tempList.map((user) => (user.selected = e.target.checked));
+    tempList.map((tutoring) => (tutoring.selected = e.target.checked));
 
     const selectedList = this.state.FilteredTutorList.filter((e) => e.selected);
     // Update State
@@ -142,7 +164,7 @@ export default class ActiveTutoringsTable extends React.Component {
       FilteredTutorList: tempList,
       SelectedList: selectedList
     });
-    
+
   }
 
   // Update List Item's state and Master Checkbox State
@@ -285,20 +307,4 @@ export default class ActiveTutoringsTable extends React.Component {
       VisibleRows: amount,
     });
   }
-}
-
-function EndAllTutoringsCell() {
-  return (
-    <td className={styles.cellEndTutoring}>
-      <DoneAllIcon className={styles.btnEndTutoring} />
-    </td>
-  );
-}
-
-function EndTutoringCell() {
-  return (
-    <td className={styles.cellEndTutoring}>
-      <DoneIcon className={styles.btnEndTutoring} />
-    </td>
-  );
 }
