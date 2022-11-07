@@ -9,6 +9,7 @@ import ConfirmModal from './ConfirmModal';
 import { ShowMoreButton } from '../reservations/ReservationTable';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DoneIcon from '@mui/icons-material/Done';
+import { Tooltip } from '@mui/material';
 
 
 export default class ActiveTutoringsTable extends React.Component {
@@ -85,7 +86,9 @@ export default class ActiveTutoringsTable extends React.Component {
                 <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
                   arrowAction={() => this.handleHeaderClick(5)} />
                 <td className={styles.cellEndTutoring}>
+                <Tooltip title="concludi tutti i tutoraggi">
                   <DoneAllIcon className={styles.btnEndTutoring} onClick={() => this.handleDoneAllClick()} />
+                </Tooltip>
                 </td>
               </tr>
             </thead>
@@ -109,7 +112,9 @@ export default class ActiveTutoringsTable extends React.Component {
                   <td>{tutoring.examCode}</td>
                   <td>{tutoring.start_date.toLocaleString()}</td>
                   <td className={styles.cellEndTutoring}>
+                  <Tooltip title="concludi tutoraggio">
                     <DoneIcon className={styles.btnEndTutoring} onClick={(e) => this.handleDoneClick(tutoring)} />
+                  </Tooltip>
                   </td>
                 </tr>
               )

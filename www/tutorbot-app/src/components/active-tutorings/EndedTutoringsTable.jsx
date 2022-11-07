@@ -85,7 +85,6 @@ export default class EndedTutoringsTable extends React.Component {
         break;
     }
 
-    const totalItems = this.state.FilteredTutorList.length;
     let selectedListTemp = this.state.SelectedList;
     this.setState({
       FilteredTutorList: tempList,

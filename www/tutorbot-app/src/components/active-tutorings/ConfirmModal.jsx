@@ -5,9 +5,8 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
 export default class ConfirmModal extends React.Component {
-  
+
   render() {
-    
     return (
       <>
         <Modal show={this.props.show}
@@ -35,7 +34,7 @@ export default class ConfirmModal extends React.Component {
   };
 
   renderBody(props) {
-    if(props.selectedList.length == 0) {
+    if(props.selectedList.length === 0) {
       return(<div>Nessun Tutoraggio Selezionato</div>);
     }
 

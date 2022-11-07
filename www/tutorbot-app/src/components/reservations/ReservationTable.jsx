@@ -5,6 +5,7 @@ import ModalPopup from "./ModalPopup";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { Tooltip } from "@mui/material";
 import configData from "../../config/config.json";
 
 
@@ -75,7 +76,7 @@ class ReservationTable extends React.Component {
         console.error("Invalid HeaderCell arrow direction: " + tempList[i]);
         return;
     }
-    tempList.forEach((index) => { 
+    tempList.forEach((index) => {
       if (i !== index) tempList[index] = 0;
     });
     this.setState({
@@ -158,8 +159,8 @@ class ReservationTable extends React.Component {
   handleVisibleAmountChange(e) {
     let amount = e.target.value;
     const regex = /^[0-9]+$/;
-    if(!amount || !regex.test(amount)|| amount === 0)
-      amount = configData.defaultTableRows; 
+    if (!amount || !regex.test(amount) || amount === 0)
+      amount = configData.defaultTableRows;
     this.setState({
       VisibleRows: amount,
     });
@@ -176,15 +177,15 @@ class ReservationTable extends React.Component {
               <div className={styles.searchDiv}>
                 <label htmlFor="search">
                   Ricerca Tutor:
-                  <input  type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+                  <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
                 </label>
                 <label htmlFor="search">
                   Ricerca Studente:
-                  <input  type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+                  <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
                 </label>
                 <label htmlFor="search">
                   Numero di righe da visualizzare:
-                  <input className={styles.inputVisrows} placeholder ={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+                  <input className={styles.inputVisrows} placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
                 </label>
               </div>
               <button
@@ -193,7 +194,7 @@ class ReservationTable extends React.Component {
                 onClick={() => this.handleModalVisibility()}
               >
                 Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
-              </button>  
+              </button>
             </div>
             <table className={styles.table}>
               <thead>
@@ -246,7 +247,11 @@ class ReservationTable extends React.Component {
                     <td>{reservation.studentNumber}</td>
                     <td>{reservation.timeStamp}</td>
                     {reservation.state ?
-                      <td style={{ textAlign: 'center' }}><ErrorOutlineIcon className={styles.newStatusIcon} /></td> :
+                      <td style={{ textAlign: 'center' }}>
+                        <Tooltip title="prenotazione non gestita">
+                          <ErrorOutlineIcon className={styles.newStatusIcon}/>
+                        </Tooltip>
+                      </td> :
                       <td></td>}
                   </tr>
                 )
@@ -334,7 +339,6 @@ export function HeaderCellWithHover(props) {
 
 export function ShowMoreButton(props) {
 
-  const [style, setStyle] = useState({});
   if (props.visibleRows >= props.maximumRows) {
     return (
       <div

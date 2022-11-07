@@ -9,6 +9,9 @@ import CardContent from '@mui/material/CardContent';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import { Tooltip } from "react-bootstrap";
+
 export default class ModalPopup extends React.Component {
   constructor(props) {
     super(props);
@@ -94,7 +97,12 @@ class MailCell extends React.Component {
   render() {
     return (
       <td className={styles.tdMail}>
-        <MarkEmailReadIcon className={styles.btnMail} />
+        <OverlayTrigger
+          placement="right"
+          overlay={<Tooltip className={styles.modalTooltip}>Conferma prenotazione (dopo invio mail)</Tooltip>}
+        >
+          <MarkEmailReadIcon className={styles.btnMail} />
+        </OverlayTrigger>
       </td>
     );
   }
@@ -108,13 +116,13 @@ function MailTemplate() {
   };
   return (
     <>
-    <div>Mostra Modello Email<ExpandMoreIcon
+      <div>Mostra Modello Email<ExpandMoreIcon
         expand={expanded.toString()}
         onClick={handleExpandClick}
         aria-expanded={expanded}
         aria-label="show more"
       /></div>
-      
+
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
           <Typography paragraph>Method:</Typography>
@@ -129,7 +137,7 @@ function MailTemplate() {
             large plate and set aside, leaving chicken and chorizo in the pan. Add
             pimentón, bay leaves, garlic, tomatoes, onion, salt and pepper, and cook,
             stirring often until thickened and fragrant, about 10 minutes. Add
-            saffron broth and remaining 4 1/2 cups chicken broth; bring to a boil.
+            saffron broth and remaining 4 asd1/2 cups chicken broth; bring to a boil.
           </Typography>
           <Typography paragraph>
             Add rice and stir very gently to distribute. Top with artichokes and
