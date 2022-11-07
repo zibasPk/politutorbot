@@ -86,7 +86,7 @@ export default class ActiveTutoringsTable extends React.Component {
                 <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
                   arrowAction={() => this.handleHeaderClick(5)} />
                 <td className={styles.cellEndTutoring}>
-                <Tooltip title="concludi tutti i tutoraggi">
+                <Tooltip title="concludi tutti i tutoraggi" placement="right">
                   <DoneAllIcon className={styles.btnEndTutoring} onClick={() => this.handleDoneAllClick()} />
                 </Tooltip>
                 </td>
@@ -112,7 +112,7 @@ export default class ActiveTutoringsTable extends React.Component {
                   <td>{tutoring.examCode}</td>
                   <td>{tutoring.start_date.toLocaleString()}</td>
                   <td className={styles.cellEndTutoring}>
-                  <Tooltip title="concludi tutoraggio">
+                  <Tooltip title="concludi tutoraggio"  placement="right">
                     <DoneIcon className={styles.btnEndTutoring} onClick={(e) => this.handleDoneClick(tutoring)} />
                   </Tooltip>
                   </td>

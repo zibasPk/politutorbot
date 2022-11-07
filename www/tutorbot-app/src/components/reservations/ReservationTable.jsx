@@ -248,7 +248,7 @@ class ReservationTable extends React.Component {
                     <td>{reservation.timeStamp}</td>
                     {reservation.state ?
                       <td style={{ textAlign: 'center' }}>
-                        <Tooltip title="prenotazione non gestita">
+                        <Tooltip title="prenotazione non gestita" placement="right">
                           <ErrorOutlineIcon className={styles.newStatusIcon}/>
                         </Tooltip>
                       </td> :

@@ -4,7 +4,7 @@
   max-width: max-content;
 }
 
-table {
+.table {
   margin-left: auto;
   margin-right: auto;
   border-collapse: collapse;
@@ -21,6 +21,10 @@ th {
 
 td:hover .arrow {
   display: inline-block;
+}
+
+.table tr:hover {
+  background-color: rgb(231, 244, 255);
 }
 
 .firstCell {
