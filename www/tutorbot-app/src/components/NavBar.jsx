@@ -14,7 +14,7 @@ function Navigation() {
             <Nav.Item><Nav.Link as={Link} to="/reservations">Storico Prenotazioni</Nav.Link></Nav.Item>
             <Nav.Item><Nav.Link as={Link} to="/active-tutorings">Tutoraggi Attivi</Nav.Link></Nav.Item>
             <Nav.Item><Nav.Link as={Link} to="/enabled-students">Matricole Abilitate</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link as={Link} to="/manage-tutors">Gestione Tutoraggi</Nav.Link></Nav.Item>
+            <Nav.Item><Nav.Link as={Link} to="/manage-tutors">Gestione Tutor</Nav.Link></Nav.Item>
           </Nav>
         </Navbar.Collapse>
       </Container>

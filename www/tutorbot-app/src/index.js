@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Navigation from './components/NavBar';
 import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
 import EnabledStudents from './components/enabledStudents/EnabledStudents';
-import TutorManagement from './components/TutorManagement';
+import TutorManagement from './components/tutorManagement/TutorManagement';
 import Reservations from './components/reservations/Reservations';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
