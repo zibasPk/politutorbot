@@ -1,0 +1,66 @@
+.content {
+  padding-top: 30px;
+  max-width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.functionsHeader {
+  height: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-color: rgb(169, 170, 171);
+}
+
+.addFunctions {
+  min-width: fit-content;
+  flex-grow: 1;
+  display: inline-block;
+  padding-right: 2%;
+}
+
+.removeFunctions {
+  display: inline-block;
+  min-width: fit-content;
+  flex-grow: 1;
+}
+
+.listContainer {
+  overflow-y:auto;
+  max-height: 300px;
+  border-style: solid;
+  border-color: rgb(169, 170, 171);
+}
+
+.resultAlert {
+  text-align: right;
+
+}
+
+.studentList {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.studentList li{
+  text-align: center;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-color: rgb(169, 170, 171);
+}
+
+
+.helpIcon {
+  color: rgb(157, 196, 223);
+  padding-left: 3px;
+  padding-bottom: 7px;
+}
+
+.helpIcon:hover {
+  cursor: pointer;
+}
