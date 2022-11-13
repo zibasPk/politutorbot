@@ -2,10 +2,7 @@ import React from 'react';
 import styles from './EnabledStudents.module.css';
 
 import Form from 'react-bootstrap/Form';
-import HelpIcon from '@mui/icons-material/Help';
-import Tooltip from '@mui/material/Tooltip';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-
+import InfoIcon from '../utils/InfoIcon';
 
 const StudentArray = [
   123123,
@@ -41,18 +38,20 @@ export default function EnabledStudents() {
               <Form.Control type="text" placeholder="Matr. Studente" />
             </Form.Group>
             <Form.Group controlId="formFileEnable" className="mb-3">
-              <Form.Label>Carica File CVS</Form.Label><InfoIcon />
+              <Form.Label>Carica File CVS</Form.Label>
+              <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da abilitare."/>
               <Form.Control type="file" />
             </Form.Group>
           </div>
           <div className={styles.removeFunctions}>
             <h1>Rimuovi studenti</h1>
-            <Form.Group controlId="formTextEnable" className="mb-3">
+            <Form.Group controlId="formTextRemove" className="mb-3">
               <Form.Label>Rimuovi Studente</Form.Label>
               <Form.Control type="text" placeholder="Matr. Studente" />
             </Form.Group>
-            <Form.Group controlId="formFileEnable" className="mb-3">
-              <Form.Label>Carica File CVS</Form.Label><InfoIcon />
+            <Form.Group controlId="formFileRemove" className="mb-3">
+              <Form.Label>Carica File CVS</Form.Label>
+              <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da rimuovere."/>
               <Form.Control type="file" />
             </Form.Group>
           </div>
@@ -101,34 +100,3 @@ class StudentList extends React.Component {
   }
 }
 
-function InfoIcon() {
-  const [open, setOpen] = React.useState(false);
-
-  const handleTooltipClose = () => {
-    setOpen(false);
-  };
-
-  const handleTooltipOpen = () => {
-    setOpen(true);
-  };
-
-  return (
-    <ClickAwayListener onClickAway={handleTooltipClose}>
-
-      <Tooltip
-        PopperProps={{
-          disablePortal: true,
-        }}
-        onClose={handleTooltipClose}
-        open={open}
-        disableFocusListener
-        disableHoverListener
-        disableTouchListener
-        title="Caricare un file CVS contente un elenco di codici matricola."
-      >
-        <HelpIcon className={styles.helpIcon} onClick={handleTooltipOpen} />
-      </Tooltip>
-
-    </ClickAwayListener>
-  );
-}

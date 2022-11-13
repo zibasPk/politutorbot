@@ -53,14 +53,3 @@
   border-bottom-width: 1px;
   border-color: rgb(169, 170, 171);
 }
-
-
-.helpIcon {
-  color: rgb(157, 196, 223);
-  padding-left: 3px;
-  padding-bottom: 7px;
-}
-
-.helpIcon:hover {
-  cursor: pointer;
-}

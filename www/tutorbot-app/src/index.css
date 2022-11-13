@@ -17,3 +17,13 @@ code {
       height: auto !important;
   }
 }
+
+.helpIcon {
+  color: rgb(157, 196, 223);
+  padding-left: 3px;
+  padding-bottom: 7px;
+}
+
+.helpIcon:hover {
+  cursor: pointer;
+}
