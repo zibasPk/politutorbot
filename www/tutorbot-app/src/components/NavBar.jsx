@@ -6,15 +6,15 @@ import { Link } from 'react-router-dom';
 
 function Navigation() {
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar className="navBar" expand="lg">
       <Container>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Item><Nav.Link as={Link} to="/reservations">Storico Prenotazioni</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link as={Link} to="/active-tutorings">Tutoraggi Attivi</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link as={Link} to="/enabled-students">Matricole Abilitate</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link as={Link} to="/manage-tutors">Gestione Tutor</Nav.Link></Nav.Item>
+          <Nav className="navbarCollapse">
+            <Nav.Item className="navItem"><Nav.Link as={Link} to="/reservations" className="text-light">Storico Prenotazioni</Nav.Link></Nav.Item>
+            <Nav.Item className="navItem"><Nav.Link as={Link} to="/active-tutorings" className="text-light">Tutoraggi Attivi</Nav.Link></Nav.Item>
+            <Nav.Item className="navItem"><Nav.Link as={Link} to="/enabled-students" className="text-light">Matricole Abilitate</Nav.Link></Nav.Item>
+            <Nav.Item className="navItem"><Nav.Link as={Link} to="/manage-tutors" className="text-light">Gestione Tutor</Nav.Link></Nav.Item>
           </Nav>
         </Navbar.Collapse>
       </Container>

@@ -1,10 +1,11 @@
 .content {
-  padding-top: 30px;
-  max-width: 60%;
+  margin-top: 1em;
+  max-width: 50%;
   margin-left: auto;
   margin-right: auto;
   display: flex;
   flex-direction: column;
+  
 }
 
 .newTutorForm {
@@ -12,4 +13,8 @@
   border-bottom-width: 1px;
   border-color: rgb(169, 170, 171);
   margin-bottom: 10px;
+}
+
+.addButton{
+  margin-bottom: 16px;
 }

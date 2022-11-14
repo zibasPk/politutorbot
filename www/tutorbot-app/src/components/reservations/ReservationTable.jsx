@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import styles from './ReservationTable.module.css';
 
+
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import ModalPopup from "./ModalPopup";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -169,7 +172,7 @@ class ReservationTable extends React.Component {
   render() {
     const visibleRows = this.state.FilteredResList.slice(0, this.state.VisibleRows);
     return (
-      <div className={styles.cont}>
+      <>
         <ModalPopup show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
         <div className={styles.row}>
           <div>
@@ -177,24 +180,24 @@ class ReservationTable extends React.Component {
               <div className={styles.searchDiv}>
                 <label htmlFor="search">
                   Ricerca Tutor:
-                  <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+                  <Form.Control className={styles.searchInput} type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
                 </label>
                 <label htmlFor="search">
                   Ricerca Studente:
-                  <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+                  <Form.Control className={styles.searchInput} type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
                 </label>
                 <label htmlFor="search">
                   Numero di righe da visualizzare:
-                  <input className={styles.inputVisrows} placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+                  <Form.Control className={styles.inputVisrows} type="text" placeholder={configData.defaultTableRows} onChange={(e) => this.handleVisibleAmountChange(e)} />
                 </label>
               </div>
-              <button
-                variant="secondary"
+              <Button
+                variant="warning"
                 className={styles.btnConfirm}
                 onClick={() => this.handleModalVisibility()}
               >
                 Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
-              </button>
+              </Button>
             </div>
             <table className={styles.table}>
               <thead>
@@ -249,7 +252,7 @@ class ReservationTable extends React.Component {
                     {reservation.state ?
                       <td style={{ textAlign: 'center' }}>
                         <Tooltip title="prenotazione non gestita" placement="right">
-                          <ErrorOutlineIcon className={styles.newStatusIcon}/>
+                          <ErrorOutlineIcon className={styles.newStatusIcon} />
                         </Tooltip>
                       </td> :
                       <td></td>}
@@ -265,7 +268,7 @@ class ReservationTable extends React.Component {
             <this.renderDebug visibleList={this.state.FilteredResList} selectedList={this.state.SelectedList} />
           </div>
         </div>
-      </div>
+      </>
     );
   }
 

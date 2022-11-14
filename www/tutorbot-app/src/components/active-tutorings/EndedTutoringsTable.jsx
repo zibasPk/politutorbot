@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './ActiveTutorings.module.css'
 
+import Form from 'react-bootstrap/Form';
 import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import configData from "../../config/config.json";
 import { ShowMoreButton } from '../reservations/ReservationTable';
@@ -52,7 +53,7 @@ export default class EndedTutoringsTable extends React.Component {
     return 0;
   }
 
-  dateCompartor(x,y, order) {
+  dateCompartor(x, y, order) {
   }
 
   sortBy(i) {
@@ -127,8 +128,8 @@ export default class EndedTutoringsTable extends React.Component {
   handleVisibleAmountChange(e) {
     let amount = e.target.value;
     const regex = /^[0-9]+$/;
-    if(!amount || !regex.test(amount) || amount === 0)
-      amount = configData.defaultTableRows; 
+    if (!amount || !regex.test(amount) || amount === 0)
+      amount = configData.defaultTableRows;
     this.setState({
       VisibleRows: amount,
     });
@@ -142,18 +143,18 @@ export default class EndedTutoringsTable extends React.Component {
           Tutoraggi Conclusi
         </h1>
         <div className={styles.functionHeader}>
-        <div className={styles.searchDiv}>
+          <div className={styles.searchDiv}>
             <label htmlFor="search">
               Ricerca Tutor:
-              <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+              <Form.Control className={styles.searchInput} type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
             </label>
             <label htmlFor="search">
               Ricerca Studente:
-              <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+              <Form.Control className={styles.searchInput} type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
             </label>
             <label htmlFor="search">
               Numero di righe da visualizzare:
-              <input className="input-visrows" placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+              <Form.Control className={styles.inputVisrows} type="text" placeholder={configData.defaultTableRows} onChange={(e) => this.handleVisibleAmountChange(e)} />
             </label>
           </div>
         </div>

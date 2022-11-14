@@ -4,6 +4,8 @@ import styles from "./ActiveTutorings.module.css"
 
 import configData from "../../config/config.json";
 
+import Form from 'react-bootstrap/Form';
+import { Button } from 'react-bootstrap';
 import { HeaderCellWithHover } from '../reservations/ReservationTable';
 import ConfirmModal from './ConfirmModal';
 import { ShowMoreButton } from '../reservations/ReservationTable';
@@ -38,27 +40,27 @@ export default class ActiveTutoringsTable extends React.Component {
           </h1>
           <div className={styles.functionsHeader}>
             <div className={styles.searchDiv}>
-              <label htmlFor={styles.search}>
+              <label htmlFor="search">
                 Ricerca Tutor:
-                <input type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
+                <Form.Control className={styles.searchInput} type="text" placeholder="Matr. Tutor" onChange={(e) => this.handleSearch(e, "tutorNumber")} />
               </label>
               <label htmlFor="search">
                 Ricerca Studente:
-                <input type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
+                <Form.Control className={styles.searchInput} type="text" placeholder="Matr. Studente" onChange={(e) => this.handleSearch(e, "studentNumber")} />
               </label>
               <label htmlFor="search">
                 Numero di righe da visualizzare:
-                <input className="input-visrows" placeholder={configData.defaultTableRows} type="text" onChange={(e) => this.handleVisibleAmountChange(e)} />
+                <Form.Control className={styles.inputVisrows} type="text" placeholder={configData.defaultTableRows} onChange={(e) => this.handleVisibleAmountChange(e)} />
               </label>
             </div>
             <div className={styles.buttonDiv}>
-              <button
-                variant="secondary"
+              <Button
+                variant="warning"
                 className={styles.btnConfirmSelected}
                 onClick={() => this.handleModalVisibility()}
               >
                 Concludi Tutoraggi Selezionati {this.state.SelectedList.length}
-              </button>
+              </Button>
             </div>
           </div>
           <table className={styles.tableTutorings}>
@@ -86,9 +88,9 @@ export default class ActiveTutoringsTable extends React.Component {
                 <HeaderCellWithHover text="Data Inizio" arrowDirection={this.state.HeaderArrows[5]}
                   arrowAction={() => this.handleHeaderClick(5)} />
                 <td className={styles.cellEndTutoring}>
-                <Tooltip title="concludi tutti i tutoraggi" placement="right">
-                  <DoneAllIcon className={styles.btnEndTutoring} onClick={() => this.handleDoneAllClick()} />
-                </Tooltip>
+                  <Tooltip title="concludi tutti i tutoraggi" placement="right">
+                    <DoneAllIcon className={styles.btnEndTutoring} onClick={() => this.handleDoneAllClick()} />
+                  </Tooltip>
                 </td>
               </tr>
             </thead>
@@ -112,9 +114,9 @@ export default class ActiveTutoringsTable extends React.Component {
                   <td>{tutoring.examCode}</td>
                   <td>{tutoring.start_date.toLocaleString()}</td>
                   <td className={styles.cellEndTutoring}>
-                  <Tooltip title="concludi tutoraggio"  placement="right">
-                    <DoneIcon className={styles.btnEndTutoring} onClick={(e) => this.handleDoneClick(tutoring)} />
-                  </Tooltip>
+                    <Tooltip title="concludi tutoraggio" placement="right">
+                      <DoneIcon className={styles.btnEndTutoring} onClick={(e) => this.handleDoneClick(tutoring)} />
+                    </Tooltip>
                   </td>
                 </tr>
               )
@@ -145,7 +147,8 @@ export default class ActiveTutoringsTable extends React.Component {
     this.setState({
       MasterChecked: false,
       SelectedList: this.state.FilteredTutorList.filter((e) => e.selected)
-    }, () => { this.handleModalVisibility(); 
+    }, () => {
+      this.handleModalVisibility();
     });
   }
 

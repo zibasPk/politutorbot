@@ -297,6 +297,7 @@ const ReservationsArray = [
 function Reservations() {
   return (
     <div className={styles.content}>
+      <h1>Storico Prenotazioni</h1>
       <ReservationTable reservations={ReservationsArray} />
     </div>
   );
