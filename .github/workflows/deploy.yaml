@@ -17,9 +17,6 @@ jobs:
         working-directory: ./www/tutorbot-app/
     
     steps:
-    - name: debug 1
-      run: apt install tree
-      
     - name: Checkout code
       uses: actions/checkout@v2
     
@@ -39,9 +36,9 @@ jobs:
       with:
         name: production-files
         path: ./www/tutorbot-app/build
-    - name: debug 2
-      run: tree -L 3
-  
+    - name: ls
+      run: ls -a
+      
   deploy:
     name: Deploy
     needs: build
