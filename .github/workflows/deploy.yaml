@@ -17,6 +17,9 @@ jobs:
         working-directory: ./www/tutorbot-app/
     
     steps:
+    - name: debug 1
+      run: apt install tree
+      
     - name: Checkout code
       uses: actions/checkout@v2
     
@@ -35,7 +38,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: production-files
-        path: ./build
+        path: ./www/tutorbot-app/build
+    - name: debug 2
+      run: tree -L 3
   
   deploy:
     name: Deploy
@@ -46,7 +51,7 @@ jobs:
       run: 
         working-directory: ./www/tutorbot-app/
     
-    steps:   
+    steps: 
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
