@@ -1,7 +1,11 @@
+.tableContainer {
+  overflow: auto;
+}
 .table {
   margin-left: auto;
   margin-right: auto;
   border-collapse: collapse;
+  min-width: 700px;
 }
 
 table, th, td {
@@ -59,21 +63,30 @@ td:hover .arrow {
 }
 
 .tableFunctions{
-  position: relative;
   width: 100%;
   margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.boxBtns {
+  flex-grow: 1;
+  min-height: 50px;
+  min-width: 280px;
+  position: relative;
 }
 
 .btnConfirm{
   width: fit-content;
-  padding: 3px;
   margin-bottom: 5px;
   position: absolute;
+  padding: 3px;
   right: 0;
   bottom: 0;
 }
 
 .searchDiv{
+  min-width: 360px;
   display: inline-block;
 }
 

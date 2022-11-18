@@ -175,7 +175,7 @@ class ReservationTable extends React.Component {
       <>
         <ModalPopup show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} selectedList={this.state.SelectedList} />
         <div className={styles.row}>
-          <div>
+          <>
             <div className={styles.tableFunctions}>
               <div className={styles.searchDiv}>
                 <label htmlFor="search">
@@ -191,82 +191,86 @@ class ReservationTable extends React.Component {
                   <Form.Control className={styles.inputVisrows} type="text" placeholder={configData.defaultTableRows} onChange={(e) => this.handleVisibleAmountChange(e)} />
                 </label>
               </div>
-              <Button
-                variant="warning"
-                className={styles.btnConfirm}
-                onClick={() => this.handleModalVisibility()}
-              >
-                Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
-              </Button>
+              <div className={styles.boxBtns}>
+                <Button
+                  variant="warning"
+                  className={styles.btnConfirm}
+                  onClick={() => this.handleModalVisibility()}
+                >
+                  Conferma Prenotazioni Selezionate {this.state.SelectedList.length}
+                </Button>
+              </div>
             </div>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th scope="col">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      checked={this.state.MasterChecked}
-                      id="mastercheck"
-                      onChange={(e) => this.onMasterCheck(e)}
-                    />
-                  </th>
-                  <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[0]} text="Prenotazione"
-                    arrowAction={() => this.handleHeaderClick(0)} />
-                  <HeaderCellWithHover text="Cod. Matr. Tutor" arrowDirection={this.state.HeaderArrows[1]}
-                    arrowAction={() => this.handleHeaderClick(1)} />
-                  <HeaderCellWithHover text="Nome Tutor" arrowDirection={this.state.HeaderArrows[2]}
-                    arrowAction={() => this.handleHeaderClick(2)} />
-                  <HeaderCellWithHover text="Cognome Tutor" arrowDirection={this.state.HeaderArrows[3]}
-                    arrowAction={() => this.handleHeaderClick(3)} />
-                  <HeaderCellWithHover text="Codice Esame" arrowDirection={this.state.HeaderArrows[4]}
-                    arrowAction={() => this.handleHeaderClick(4)} />
-                  <HeaderCellWithHover text="Cod. Matr. Studente" arrowDirection={this.state.HeaderArrows[5]}
-                    arrowAction={() => this.handleHeaderClick(5)} />
-                  <HeaderCellWithHover text="Data" arrowDirection={this.state.HeaderArrows[6]}
-                    arrowAction={() => this.handleHeaderClick(6)} />
-                  <HeaderCellWithHover text="Stato" arrowDirection={this.state.HeaderArrows[7]}
-                    arrowAction={() => this.handleHeaderClick(7)} />
-                </tr>
-              </thead>
-              <tbody>
-                {visibleRows.map((reservation) =>
-                (
-                  <tr key={reservation.id} className={reservation.selected ? styles.selected : ""}>
-                    <th scope="row" className={styles.firstCell}>
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th scope="col">
                       <input
                         type="checkbox"
-                        checked={reservation.selected}
                         className="form-check-input"
-                        id="rowcheck{user.id}"
-                        onChange={(e) => this.onItemCheck(e, reservation)}
+                        checked={this.state.MasterChecked}
+                        id="mastercheck"
+                        onChange={(e) => this.onMasterCheck(e)}
                       />
                     </th>
-                    <td>{reservation.id}</td>
-                    <td>{reservation.tutorNumber}</td>
-                    <td>{reservation.tutorName}</td>
-                    <td>{reservation.tutorSurname}</td>
-                    <td>{reservation.examCode}</td>
-                    <td>{reservation.studentNumber}</td>
-                    <td>{reservation.timeStamp}</td>
-                    {reservation.state ?
-                      <td style={{ textAlign: 'center' }}>
-                        <Tooltip title="prenotazione non gestita" placement="right">
-                          <ErrorOutlineIcon className={styles.newStatusIcon} />
-                        </Tooltip>
-                      </td> :
-                      <td></td>}
+                    <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[0]} text="Prenotazione"
+                      arrowAction={() => this.handleHeaderClick(0)} />
+                    <HeaderCellWithHover text="Cod. Matr. Tutor" arrowDirection={this.state.HeaderArrows[1]}
+                      arrowAction={() => this.handleHeaderClick(1)} />
+                    <HeaderCellWithHover text="Nome Tutor" arrowDirection={this.state.HeaderArrows[2]}
+                      arrowAction={() => this.handleHeaderClick(2)} />
+                    <HeaderCellWithHover text="Cognome Tutor" arrowDirection={this.state.HeaderArrows[3]}
+                      arrowAction={() => this.handleHeaderClick(3)} />
+                    <HeaderCellWithHover text="Codice Esame" arrowDirection={this.state.HeaderArrows[4]}
+                      arrowAction={() => this.handleHeaderClick(4)} />
+                    <HeaderCellWithHover text="Cod. Matr. Studente" arrowDirection={this.state.HeaderArrows[5]}
+                      arrowAction={() => this.handleHeaderClick(5)} />
+                    <HeaderCellWithHover text="Data" arrowDirection={this.state.HeaderArrows[6]}
+                      arrowAction={() => this.handleHeaderClick(6)} />
+                    <HeaderCellWithHover text="Stato" arrowDirection={this.state.HeaderArrows[7]}
+                      arrowAction={() => this.handleHeaderClick(7)} />
                   </tr>
-                )
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {visibleRows.map((reservation) =>
+                  (
+                    <tr key={reservation.id} className={reservation.selected ? styles.selected : ""}>
+                      <th scope="row" className={styles.firstCell}>
+                        <input
+                          type="checkbox"
+                          checked={reservation.selected}
+                          className="form-check-input"
+                          id="rowcheck{user.id}"
+                          onChange={(e) => this.onItemCheck(e, reservation)}
+                        />
+                      </th>
+                      <td>{reservation.id}</td>
+                      <td>{reservation.tutorNumber}</td>
+                      <td>{reservation.tutorName}</td>
+                      <td>{reservation.tutorSurname}</td>
+                      <td>{reservation.examCode}</td>
+                      <td>{reservation.studentNumber}</td>
+                      <td>{reservation.timeStamp}</td>
+                      {reservation.state ?
+                        <td style={{ textAlign: 'center' }}>
+                          <Tooltip title="prenotazione non gestita" placement="right">
+                            <ErrorOutlineIcon className={styles.newStatusIcon} />
+                          </Tooltip>
+                        </td> :
+                        <td></td>}
+                    </tr>
+                  )
+                  )}
+                </tbody>
+              </table>
+            </div>
             <ShowMoreButton onClick={() => this.handleShowMoreClick()}
               visibleRows={this.state.VisibleRows}
               maximumRows={this.state.FilteredResList.length}
             />
             <this.renderDebug visibleList={this.state.FilteredResList} selectedList={this.state.SelectedList} />
-          </div>
+          </>
         </div>
       </>
     );
