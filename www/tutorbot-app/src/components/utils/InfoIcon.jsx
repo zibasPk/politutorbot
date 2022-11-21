@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+
 
 import Tooltip from '@mui/material/Tooltip';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
-import HelpIcon from'@mui/icons-material/Help'
-
-
+import HelpIcon from '@mui/icons-material/Help';
 
 export default function InfoIcon(props) {
   const [open, setOpen] = React.useState(false);
@@ -30,6 +29,7 @@ export default function InfoIcon(props) {
         disableHoverListener
         disableTouchListener
         title={props.text}
+        className="tooltop"
       >
         <HelpIcon className="helpIcon" onClick={handleTooltipOpen} />
       </Tooltip>
@@ -37,3 +37,4 @@ export default function InfoIcon(props) {
     </ClickAwayListener>
   );
 }
+

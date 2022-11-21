@@ -51,3 +51,7 @@ code {
   z-index: 1020;
   top: 2px;
 }
+
+.tooltop {
+  width: 10000px;
+}
