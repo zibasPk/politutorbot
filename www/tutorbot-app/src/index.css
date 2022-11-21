@@ -40,6 +40,8 @@ code {
 
 .navItem:hover {
   background-color: #cea146;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
 
 .navBar {
@@ -52,6 +54,11 @@ code {
   top: 2px;
 }
 
-.tooltop {
-  width: 10000px;
+.tooltop > .tooltip {
+  max-width: 100%;
+}
+
+.largeToolTip > .tooltip-inner {
+  max-width: 100%;
+  background-color: rgba(97, 97, 97, 0.92);
 }

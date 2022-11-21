@@ -100,7 +100,7 @@ const ReservationsArray = [
     tutorSurname: "Rossi",
     examCode: "09999",
     studentNumber: "938354",
-    timeStamp: "12-09-12 22:22:22",
+    timeStamp: "10-09-12 22:22:22",
     state: true,
     selected: false
   },

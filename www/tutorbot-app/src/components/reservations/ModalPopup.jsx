@@ -48,7 +48,7 @@ export default class ModalPopup extends React.Component {
           </thead>
           <tbody>
             {rows.map((reservation) =>
-            (
+            ( reservation.state ?
               <tr key={reservation.id}>
                 <td>{reservation.id}</td>
                 <td>{reservation.tutorNumber}</td>
@@ -59,6 +59,9 @@ export default class ModalPopup extends React.Component {
                 <td>{reservation.timeStamp}</td>
                 <MailCell reservation={reservation} />
               </tr>
+              :
+              <>
+              </>
             )
             )}
           </tbody>

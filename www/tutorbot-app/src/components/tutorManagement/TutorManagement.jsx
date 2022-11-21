@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import pic from '../../assets/excel-pic.png';
 import InfoIconBis from '../utils/InfoIconBis';
+import InfoIcon from '../utils/InfoIcon';
 
 function TutorManagement() {
   return (
@@ -48,7 +49,10 @@ function TutorManagement() {
         </div>
         <Form.Group controlId="formTutorFile" className="mb-3">
           <Form.Label>Carica File CVS Tutor</Form.Label>
-          <InfoIconBis text={<img src={pic}></img>}/>
+          <InfoIconBis text={<> 
+          <div>Inserire un file cvs con righe come da figura:</div>
+          <img src={pic}></img>
+          </>}/>
           {/* <InfoIcon text={<img src={pic}></img>} /> */}
           <Form.Control type="file" />
         </Form.Group>

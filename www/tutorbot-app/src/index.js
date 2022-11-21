@@ -5,6 +5,7 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Navigation from './components/NavBar';
+import Footer from './components/Footer';
 import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
 import EnabledStudents from './components/enabledStudents/EnabledStudents';
 import TutorManagement from './components/tutorManagement/TutorManagement';
@@ -16,12 +17,13 @@ root.render(
     <BrowserRouter>
       <Navigation />
       <Routes>
+        <Route path="/" element={<Reservations />} />
         <Route path="/PoliTutorBot/reservations" element={<Reservations />} />
         <Route path="/PoliTutorBot/active-tutorings" element={<ActiveTutorings />} />
         <Route path="/PoliTutorBot/enabled-students" element={<EnabledStudents />} />
         <Route path="/PoliTutorBot/manage-tutors" element={<TutorManagement />} />
       </Routes>
     </BrowserRouter>
-
+    {/* <Footer/> */}
   </>
 );

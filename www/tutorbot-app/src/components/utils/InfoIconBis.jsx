@@ -18,7 +18,7 @@ export default function InfoIconBis(props) {
         <HelpIcon ref={target} className="helpIcon" onClick={() => setShow(!show)} />
         <Overlay target={target.current} show={show} placement="right">
           {(props) => (
-            <Tooltip id="overlay-example" {...props}>
+            <Tooltip id="overlay-example" className='largeToolTip' {...props}>
               {text}
             </Tooltip>
           )}
