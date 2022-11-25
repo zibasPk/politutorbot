@@ -1,0 +1,339 @@
+import React, { useState, Component } from "react";
+import styles from './Table.module.css';
+
+
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import TableModal from "./TableModal";
+
+
+import configData from "../../config/config.json";
+
+class Table extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      Headers: props.headers,
+      Content: props.content,
+      FilteredContent: props.content,
+      ModalContent: props.modalContent,
+      HasChecks: props.hasChecks !== undefined ? props.hasChecks : false,
+      ShowId: props.showId !== undefined ? props.showId : true,
+      MasterChecked: false,
+      SelectedContent: [],
+      HeaderArrows: Array(Object.keys(props.content[0]).length - 1).fill(0),
+      VisibleRows: configData.defaultTableRows,
+      IsModalVisible: false,
+      SearchOption: Object.keys(props.headers)[0],
+    };
+  }
+
+  render() {
+    let i = 0;
+    const HeaderRow = Object.keys(this.state.Headers).map((key) => {
+      if ((this.state.ShowId && key == "id")) {
+        return;
+      }
+
+      let temp = i;
+      const cell = <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[temp]}
+        text={this.state.Headers[key]}
+        arrowAction={() => this.handleHeaderClick(key, temp)}
+        key={i}
+      />
+      i++;
+      return cell;
+    });
+
+    const SearchOptions = Object.keys(this.state.Headers).map((key, i) => {
+      if ((this.state.ShowId && key == "id")) {
+        return;
+      }
+      return <option value={key} key={i} > {this.state.Headers[key]}</option>;
+    });
+
+    const visibleRows = this.state.FilteredContent.slice(0, this.state.VisibleRows);
+    return (
+      <>
+        <TableModal show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} alt="memrmoama" />
+        <div className={styles.tableContent}>
+          <div className={styles.functionsHeader}>
+            <div className={styles.searchDiv}>
+              <label htmlFor="search">
+                Ricerca:
+                <Form.Select className={styles.searchSelect} onChange={(e) => this.changeSearch(e)}>
+                  {SearchOptions}
+                </Form.Select>
+                <Form.Control className={styles.searchInput} type="text" placeholder="cerca qui" onChange={(e) => this.handleSearch(e)} />
+              </label>
+              <label htmlFor="search">
+                Numero di righe da visualizzare:
+                <Form.Control className={styles.inputVisrows} type="text" placeholder={configData.defaultTableRows} onChange={(e) => this.handleVisibleAmountChange(e)} />
+              </label>
+            </div>
+            <div className={styles.buttonDiv}>
+              {this.state.HasChecks ?
+                <Button
+                  variant="warning"
+                  className={styles.btnConfirmSelected}
+                  onClick={() => this.handleModalVisibility()}
+                >
+                  Gestisci Righe Selezionate {this.state.SelectedContent.length}
+                </Button> :
+                <></>
+              }
+            </div>
+          </div>
+          <table className={styles.tableContainer}>
+            <thead>
+              <tr>
+                {
+                  this.state.HasChecks ? <th scope="col" className={styles.firstCell}>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={this.state.MasterChecked}
+                      id="mastercheck"
+                      onChange={(e) => this.onMasterCheck(e)}
+                    />
+                  </th> :
+                    <></>
+                }
+                {HeaderRow}
+              </tr>
+            </thead>
+            <tbody>
+              {
+                visibleRows.map((row) =>
+                  <this.renderRow row={row}
+                    hasChecks={this.state.HasChecks}
+                    showId={this.state.ShowId}
+                    key={row.id}
+                    onChange={(e) => this.onItemCheck(e, row)}
+                  />)
+              }
+            </tbody>
+          </table>
+          <ShowMoreButton onClick={() => this.handleShowMoreClick()}
+            visibleRows={this.state.VisibleRows}
+            maximumRows={this.state.FilteredContent.length}
+          />   
+        </div>
+      </>
+    );
+  }
+
+  renderRow(props) {
+    const variableRows = Object.keys(props.row).map((key, i) => {
+      if ((props.showId && key == "id") || key == "selected") {
+        return;
+      }
+      return <td key={i}>{props.row[key]}</td>;
+    });
+
+    return (
+      <>
+        <tr key={props.row.id} className={props.row.selected ? styles.selected : ""}>
+          {props.hasChecks ? <th scope="row" className={styles.firstCell}>
+            <input
+              type="checkbox"
+              checked={props.row.selected}
+              className="form-check-input"
+              onChange={props.onChange}
+            />
+          </th> :
+            <></>}
+          {variableRows}
+        </tr>
+      </>
+    )
+  }
+
+  // Select/ UnSelect Table rows
+  onMasterCheck(e) {
+    let tempList = this.state.FilteredContent;
+    // Check/ UnCheck All Items
+    tempList.map((user) => (user.selected = e.target.checked));
+
+    // Update State
+    this.setState({
+      MasterChecked: e.target.checked,
+      FilteredContent: tempList,
+      SelectedContent: this.state.FilteredContent.filter((e) => e.selected),
+    });
+  }
+
+  // Update List Item's state and Master Checkbox State
+  onItemCheck(e, item) {
+    let tempList = this.state.FilteredContent;
+    tempList.map((row) => {
+      if (row.id === item.id) {
+        row.selected = e.target.checked;
+      }
+      return row;
+    });
+
+    //To Control Master Checkbox State
+    const totalItems = this.state.Content.length;
+    const totalCheckedItems = tempList.filter((e) => e.selected).length;
+
+
+    // Update State 
+    this.setState({
+      MasterChecked: totalItems === totalCheckedItems,
+      FilteredContent: tempList,
+      SelectedContent: this.state.FilteredContent.filter((e) => e.selected),
+    });
+  }
+
+  handleHeaderClick(key, i) {
+    console.log(i);
+    const arrows = this.state.HeaderArrows;
+    switch (arrows[i]) {
+      case 0:
+        arrows[i] = -1;
+        break;
+      case 1:
+        arrows[i] = -1;
+        break;
+      case -1:
+        arrows[i] = 1;
+        break;
+      default:
+        console.error("Invalid HeaderCell arrow direction: " + arrows[i]);
+        return;
+    }
+    arrows.forEach((index) => {
+      if (i !== index) arrows[index] = 0;
+    });
+    this.setState({
+      HeaderArrows: arrows
+    });
+    this.sortBy(key, i);
+  }
+
+  comparator(x, y, order) {
+    if (x === y) return 0;
+    if (order === 1)
+      return (x > y) ? 1 : -1;
+    if (order === -1)
+      return (x < y) ? 1 : -1;
+    return 0;
+  }
+
+  sortBy(key, i) {
+    const tempList = this.state.FilteredContent;
+    tempList.sort((x, y) => this.comparator(x[key], y[key], this.state.HeaderArrows[i]));
+
+    const totalItems = this.state.FilteredContent.length;
+    const totalCheckedItems = tempList.filter((e) => e.selected).length;
+    let SelectedContentTemp = this.state.SelectedContent;
+    let mastercheck = totalItems === totalCheckedItems;
+    if (!mastercheck) {
+      tempList.map((reservation) => reservation.selected = false);
+      // Can be removed if we want to keep checked items after order change
+      SelectedContentTemp = [];
+    }
+    this.setState({
+      MasterChecked: mastercheck,
+      FilteredContent: tempList,
+      SelectedContent: SelectedContentTemp,
+    });
+  }
+
+  handleShowMoreClick() {
+    let newAmount = this.state.VisibleRows + configData.addonTableRows;
+    this.setState({
+      VisibleRows: newAmount,
+    })
+  }
+
+  handleModalVisibility() {
+    var temp = this.state.IsModalVisible;
+    this.setState({
+      IsModalVisible: !temp,
+    });
+  }
+
+  handleVisibleAmountChange(e) {
+    let amount = e.target.value;
+    const regex = /^[0-9]+$/;
+    if (!amount || !regex.test(amount) || amount === 0)
+      amount = configData.defaultTableRows;
+    this.setState({
+      VisibleRows: amount,
+    });
+  }
+
+  handleSearch(event) {
+    let tempList;
+    tempList = this.state.Content.filter(
+      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(event.target.value.toLowerCase())
+    );
+    this.setState({
+      FilteredContent: tempList
+    })
+  }
+
+  changeSearch(event) {
+    this.setState({
+      SearchOption: event.target.value
+    })
+  }
+}
+
+export function HeaderCellWithHover(props) {
+  const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
+  const [style, setStyle] = useState({});
+  let arrow;
+
+  if (props.arrowDirection === 1 || props.arrowDirection === 0)
+    arrow = <KeyboardArrowDownIcon style={iconStyle} className={styles.arrow} />
+  if (props.arrowDirection === -1)
+    arrow = <KeyboardArrowUpIcon style={iconStyle} className={styles.arrow} />
+  return (
+    <th scope="col" style={style} key={props.text}
+      onMouseEnter={e => {
+        setIconStyle({ visibility: 'visible' });
+        setStyle({ cursor: 'pointer' })
+      }}
+      onMouseLeave={e => {
+        setIconStyle({ visibility: 'hidden' })
+      }}
+      onClick={e => {
+        props.arrowAction();
+      }}
+    >
+      {props.text}{arrow}
+    </th >)
+}
+
+export function ShowMoreButton(props) {
+
+  if (props.visibleRows >= props.maximumRows) {
+    return (
+      <div
+        onClick={() => props.onClick()}
+        className={styles.btnShowmore}
+        style={{ visibility: 'hidden' }}
+      >
+        Mostra altri
+      </div>
+    )
+  } else {
+    return (
+      <div
+        onClick={() => props.onClick()}
+        className={styles.btnShowmore}
+        style={{ visibility: 'visible' }}
+      >
+        Mostra altri
+      </div>
+    )
+  }
+
+}
+
+export default Table;

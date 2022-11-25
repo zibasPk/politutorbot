@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from './ReservationTable.module.css';
+import styles from './ReservationTables.module.css';
 
 
 import Form from 'react-bootstrap/Form';

@@ -53,9 +53,6 @@ export default class EndedTutoringsTable extends React.Component {
     return 0;
   }
 
-  dateCompartor(x, y, order) {
-  }
-
   sortBy(i) {
     const tempList = this.state.FilteredTutorList;
     const keys = Object.keys(this.state.FilteredTutorList[0]);

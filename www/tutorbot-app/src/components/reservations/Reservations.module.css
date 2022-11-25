@@ -4,4 +4,5 @@
   margin-right: auto;
   max-width: max-content;
   overflow: hidden;
+  display: grid;
 }
