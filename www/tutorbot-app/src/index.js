@@ -5,7 +5,6 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Navigation from './components/NavBar';
-import Footer from './components/Footer';
 import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
 import EnabledStudents from './components/enabledStudents/EnabledStudents';
 import TutorManagement from './components/tutorManagement/TutorManagement';
