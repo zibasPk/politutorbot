@@ -1,7 +1,8 @@
 import React from "react";
 
 import styles from './Reservations.module.css';
-import ReservationTable from './ReservationTable';
+import Table from "../utils/Table";
+import ModalBody from "./ModalBody";
 
 
 const ReservationsArray = [
@@ -19,7 +20,7 @@ const ReservationsArray = [
   {
     id: 2,
     tutorNumber: 321321,
-    tutorName: "ario",
+    tutorName: "nario",
     tutorSurname: "Bossi",
     examCode: "09999",
     studentNumber: "838354",
@@ -293,12 +294,35 @@ const ReservationsArray = [
   },
 ];
 
+const Headers = {
+  id: "Prenotazione",
+  tutorNumber: "Cod. Matr. Tutor",
+  tutorName: "Nome Tutor",
+  tutorSurname: "Cognome Tutor",
+  examCode: "Codice Esame",
+  studentNumber: "Cod. Matr. Studente",
+  timeStamp: "Data"
+};
 
 function Reservations() {
+  // prepare object arrays for tables
+  let processedReservations = ReservationsArray.filter((x) => x.state);
+  let pendingReservations = ReservationsArray.filter((x) => !x.state);
+  processedReservations = processedReservations.map(({ state, ...key }) => key);
+  pendingReservations = pendingReservations.map(({ state, ...key }) => key);
+
+
   return (
     <div className={styles.content}>
+      <h1>Prenotazioni da Gestire</h1>
+      <Table headers={Headers} content={pendingReservations} hasChecks={true}
+        modalProps={{
+          modalContent: ModalBody,
+          modalTitle: "Conferma prenotazione selezionate"
+        }}
+      />
       <h1>Storico Prenotazioni</h1>
-      <ReservationTable reservations={ReservationsArray} />
+      <Table headers={Headers} content={processedReservations} hasChecks={false} />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import React from "react";
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import styles from './ModalPopup.module.css';
+import styles from './ModalBody.module.css';
+
 
 
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
@@ -9,29 +8,38 @@ import CardContent from '@mui/material/CardContent';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import BlockIcon from '@mui/icons-material/Block';
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { Tooltip } from "react-bootstrap";
 
-export default class ModalPopup extends React.Component {
+class ModalBody extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ResList: props.selectedList
+      ResList: props.selectedContent
     }
   }
 
-  static getDerivedStateFromProps(props, state) {
-    return {
-      ResList: props.selectedList
-    };
-  }
-
-  handleConfirm() {
-    this.props.handleVisibility();
-  }
-
-  renderBody(props) {
+  renderContent(props) {
     const rows = props.resList;
+
+    const renderBody = rows.map((reservation) => {
+      return (
+        <tr key={reservation.id}>
+          <td >{reservation.id}</td>
+          <td >{reservation.tutorNumber}</td>
+          <td >{reservation.tutorName}</td>
+          <td >{reservation.tutorSurname}</td>
+          <td >{reservation.examCode}</td>
+          <td >{reservation.studentNumber}</td>
+          <td >{reservation.timeStamp}</td>
+          <MailCell reservation={reservation} />
+          <RefuseCell />
+
+        </tr>
+      );
+    });
+
     if (rows.length !== 0) {
       return (
         <table className={styles.table}>
@@ -47,23 +55,7 @@ export default class ModalPopup extends React.Component {
             </tr>
           </thead>
           <tbody>
-            {rows.map((reservation) =>
-            ( reservation.state ?
-              <tr key={reservation.id}>
-                <td>{reservation.id}</td>
-                <td>{reservation.tutorNumber}</td>
-                <td>{reservation.tutorName}</td>
-                <td>{reservation.tutorSurname}</td>
-                <td>{reservation.examCode}</td>
-                <td>{reservation.studentNumber}</td>
-                <td>{reservation.timeStamp}</td>
-                <MailCell reservation={reservation} />
-              </tr>
-              :
-              <>
-              </>
-            )
-            )}
+            {renderBody}
           </tbody>
         </table>
       )
@@ -74,32 +66,35 @@ export default class ModalPopup extends React.Component {
 
   render() {
     return (
-      <Modal show={this.props.show}
-        onHide={this.props.handleVisibility}
-        backdrop="static"
-        dialogClassName={styles.myModal}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Conferma prenotazione selezionate</Modal.Title>
-        </Modal.Header>
-        <Modal.Body >
-          <MailTemplate />
-          <this.renderBody resList={this.state.ResList} />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="warning" onClick={() => this.handleConfirm()}>
-            Annulla
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    )
+      <>
+        <MailTemplate />
+        <this.renderContent resList={this.state.ResList} />
+      </>
+    );
   }
 }
+
+export default ModalBody;
+
+
+function RefuseCell() {
+  return (
+    <td className={styles.tdBorderless}>
+      <OverlayTrigger
+        placement="right"
+        overlay={<Tooltip className={styles.modalTooltip}>Rifiuta prenotazione (dopo invio mail)</Tooltip>}
+      >
+        <BlockIcon className={styles.btnRefuse} />
+      </OverlayTrigger>
+    </td>
+  );
+}
+
 
 class MailCell extends React.Component {
   render() {
     return (
-      <td className={styles.tdMail}>
+      <td className={styles.tdBorderless}>
         <OverlayTrigger
           placement="right"
           overlay={<Tooltip className={styles.modalTooltip}>Conferma prenotazione (dopo invio mail)</Tooltip>}

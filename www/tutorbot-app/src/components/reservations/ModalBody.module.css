@@ -23,7 +23,7 @@ td:hover .arrow {
   max-width: 75% !important;
 }
 
-.tdMail{
+.tdBorderless {
   border: 0
 }
 
@@ -35,4 +35,13 @@ td:hover .arrow {
 .btnMail{
   color: rgb(144, 151, 151);
   cursor: pointer;
+}
+
+.btnRefuse{
+  color: rgb(184, 62, 62);
+  cursor: pointer;
+}
+
+.btnRefuse:hover{
+  color: rgb(174, 187, 188);
 }

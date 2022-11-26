@@ -1,7 +1,8 @@
 import React from 'react';
 
-import ActiveTutoringsTable from './ActiveTutoringsTable';
-import EndedTutoringsTable from './EndedTutoringsTable';
+import Table from '../utils/Table';
+import ModalBody from './ModalBody';
+
 import styles from "./ActiveTutorings.module.css"
 
 const TutoringsArray = [
@@ -128,15 +129,43 @@ const TutoringsArray = [
   },
 ];
 
+const ActiveHeaders = {
+  tutorNumber: "Cod. Matr. Tutor",
+  tutorName: "Nome Tutor",
+  tutorSurname: "Cognome Tutor",
+  examCode: "Cod. Matr. Studente",
+  studentNumber: "Codice Esame",
+  start_date: "Data Inizio",
+}
+
+const EndedHeaders = {
+  tutorNumber: "Cod. Matr. Tutor",
+  tutorName: "Nome Tutor",
+  tutorSurname: "Cognome Tutor",
+  examCode: "Cod. Matr. Studente",
+  studentNumber: "Codice Esame",
+  start_date: "Data Inizio",
+  end_date: "Data Fine"
+}
 
 function ActiveTutorings() {
   let activeTutoringsArray = TutoringsArray.filter((t) => t.end_date == null);
+  activeTutoringsArray = activeTutoringsArray.map(({ end_date, ...key }) => key);
   let endedTutoringsArray = TutoringsArray.filter((t) => t.end_date != null);
   return (
     <>
-      <div className={styles.content}>
-        <ActiveTutoringsTable tutoringsArray={activeTutoringsArray} />
-        <EndedTutoringsTable tutoringsArray={endedTutoringsArray} />
+      <div className={styles.content} >
+        <h1>Tutoraggi Attivi</h1>
+        <Table headers={ActiveHeaders}
+          content={activeTutoringsArray} hasChecks={true}
+          modalProps={{
+            modalContent: ModalBody,
+            onConfirm: () => { console.log("azione confermata") },
+            modalTitle: "Concludi Tutoraggi selezionati"
+          }}/>
+        <h1>Tutoraggi Conclusi</h1>
+        <Table headers={EndedHeaders}
+          content={endedTutoringsArray} hasChecks={false}/>
       </div>
     </>
   );

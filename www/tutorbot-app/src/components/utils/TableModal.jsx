@@ -8,19 +8,26 @@ export default class TableModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      Body: props.body,
-      AltMessage: props.alt
+      Body: props.modalContent,
+      AltMessage: props.alt,
+      Title: props.modalTitle,
+      ConfirmAction: props.onConfirm
     }
   }
 
   handleConfirm() {
+    if (this.state.ConfirmAction !== undefined)
+      this.state.ConfirmAction();
     this.props.handleVisibility();
   }
 
   renderBody(props) {
-    if (props.body !== undefined) {
+    console.log(props.content);
+    if (props.content !== undefined) {
       return (
-        props.body
+        <>
+          <props.content selectedContent={props.selectedContent} />
+        </>
       )
     }
     else
@@ -35,15 +42,23 @@ export default class TableModal extends React.Component {
         dialogClassName={styles.myModal}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Conferma prenotazione selezionate</Modal.Title>
+          <Modal.Title>{this.state.Title}</Modal.Title>
         </Modal.Header>
         <Modal.Body >
-          <this.renderBody body={this.state.Body} alt={this.state.AltMessage} />
+          <this.renderBody content={this.state.Body} alt={this.state.AltMessage} selectedContent={this.props.selectedContent} />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="warning" onClick={() => this.handleConfirm()}>
             Annulla
           </Button>
+          {
+            this.state.ConfirmAction !== undefined ?
+              <Button variant="secondary" onClick={() => this.handleConfirm()}>
+                Conferma
+              </Button>
+              :
+              <></>
+          }
         </Modal.Footer>
       </Modal>
     )

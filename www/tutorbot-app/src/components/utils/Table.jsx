@@ -11,6 +11,7 @@ import TableModal from "./TableModal";
 
 import configData from "../../config/config.json";
 
+
 class Table extends Component {
   constructor(props) {
     super(props);
@@ -18,7 +19,7 @@ class Table extends Component {
       Headers: props.headers,
       Content: props.content,
       FilteredContent: props.content,
-      ModalContent: props.modalContent,
+      ModalProps: props.modalProps,
       HasChecks: props.hasChecks !== undefined ? props.hasChecks : false,
       ShowId: props.showId !== undefined ? props.showId : true,
       MasterChecked: false,
@@ -57,7 +58,15 @@ class Table extends Component {
     const visibleRows = this.state.FilteredContent.slice(0, this.state.VisibleRows);
     return (
       <>
-        <TableModal show={this.state.IsModalVisible} handleVisibility={() => this.handleModalVisibility()} alt="memrmoama" />
+        {
+          this.state.HasChecks ? <TableModal
+            selectedContent={this.state.SelectedContent}
+            show={this.state.IsModalVisible}
+            handleVisibility={() => this.handleModalVisibility()}
+            alt="Errore nel caricamento dei contenuti"
+            {...this.state.ModalProps}
+          /> : <></>
+        }
         <div className={styles.tableContent}>
           <div className={styles.functionsHeader}>
             <div className={styles.searchDiv}>
@@ -80,7 +89,7 @@ class Table extends Component {
                   className={styles.btnConfirmSelected}
                   onClick={() => this.handleModalVisibility()}
                 >
-                  Gestisci Righe Selezionate {this.state.SelectedContent.length}
+                 {this.state.ModalProps.modalTitle} {this.state.SelectedContent.length}
                 </Button> :
                 <></>
               }
@@ -119,7 +128,7 @@ class Table extends Component {
           <ShowMoreButton onClick={() => this.handleShowMoreClick()}
             visibleRows={this.state.VisibleRows}
             maximumRows={this.state.FilteredContent.length}
-          />   
+          />
         </div>
       </>
     );
@@ -130,7 +139,9 @@ class Table extends Component {
       if ((props.showId && key == "id") || key == "selected") {
         return;
       }
-      return <td key={i}>{props.row[key]}</td>;
+      if (props.row[key] instanceof Date)
+        return <td key={i}>{props.row[key].toLocaleString()}</td>;
+      return <td key={i}>{props.row[key].toString()}</td>;
     });
 
     return (
