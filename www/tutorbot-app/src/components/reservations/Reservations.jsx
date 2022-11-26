@@ -10,7 +10,7 @@ const ReservationsArray = [
     id: 1,
     tutorNumber: 321321,
     tutorSurname: "Rossi",
-    tutorName: "Mario",
+    tutorName: "Mar",
     examCode: "09999",
     studentNumber: "938354",
     timeStamp: "12-09-12 22:22:22",

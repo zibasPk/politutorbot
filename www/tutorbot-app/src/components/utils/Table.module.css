@@ -99,6 +99,11 @@ td:hover .arrow {
   text-align: center;
 }
 
+.tdCentered{
+  vertical-align: middle;
+  text-align: center;
+}
+
 .cellEndTutoring {
   background: rgb(247, 250, 255);
   border-style: none;

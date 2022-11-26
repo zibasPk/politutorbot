@@ -1,5 +1,6 @@
 {
   "debugMode": false,
   "defaultTableRows": 5,
-  "addonTableRows": 5
+  "addonTableRows": 5,
+  "tdMaxLenForCenter": 3
 }

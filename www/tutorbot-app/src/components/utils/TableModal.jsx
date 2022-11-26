@@ -22,7 +22,6 @@ export default class TableModal extends React.Component {
   }
 
   renderBody(props) {
-    console.log(props.content);
     if (props.content !== undefined) {
       return (
         <>

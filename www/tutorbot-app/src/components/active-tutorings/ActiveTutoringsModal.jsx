@@ -1,19 +1,25 @@
 import React from "react";
 import styles from './ActiveTutorings.module.css'
 
+import Form from 'react-bootstrap/Form';
+
 
 export default class ActiveTutoringsModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      TutoringsList: props.selectedContent
+      TutoringsList: props.selectedContent,
+      DurationList: []
     }
   }
 
   renderContent(props) {
     const rows = props.selectedList;
+    const durations = props.durations;
 
     const renderBody = rows.map((tutoring) => {
+      const textForm = <Form.Control className={styles.formHours} type="text" placeholder="h" />;
+      durations.push(textForm);
       return (
         <tr key={tutoring.id}>
           <td>{tutoring.tutorNumber}</td>
@@ -22,7 +28,8 @@ export default class ActiveTutoringsModal extends React.Component {
           <td>{tutoring.studentNumber}</td>
           <td>{tutoring.examCode}</td>
           <td>{tutoring.start_date.toLocaleString()}</td>
-        </tr> 
+          <td className={styles.tdHours}>{textForm}</td>
+        </tr>
       );
     });
 
@@ -37,6 +44,7 @@ export default class ActiveTutoringsModal extends React.Component {
               <th scope="col">Cod. Matr. Studente</th >
               <th scope="col">Codice Esame</th >
               <th scope="col">Data Inizio</th >
+              <th scope="col">Durata in Ore</th >
             </tr>
           </thead>
           <tbody>
@@ -52,7 +60,7 @@ export default class ActiveTutoringsModal extends React.Component {
   render() {
     return (
       <>
-        <this.renderContent selectedList={this.state.TutoringsList} />
+        <this.renderContent selectedList={this.state.TutoringsList} durations={this.state.DurationList} />
       </>
     );
   }

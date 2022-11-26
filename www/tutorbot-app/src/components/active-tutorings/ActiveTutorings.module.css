@@ -30,3 +30,14 @@
 .btnDownloadCvs :hover {
   color: rgb(87, 87, 87);
 }
+
+.formHours {
+  width: 6em;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.tdHours {
+  text-align: center;
+}

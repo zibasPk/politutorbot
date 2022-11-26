@@ -89,7 +89,7 @@ class Table extends Component {
                   className={styles.btnConfirmSelected}
                   onClick={() => this.handleModalVisibility()}
                 >
-                 {this.state.ModalProps.modalTitle} {this.state.SelectedContent.length}
+                  {this.state.ModalProps.modalTitle} {this.state.SelectedContent.length}
                 </Button> :
                 <></>
               }
@@ -141,6 +141,10 @@ class Table extends Component {
       }
       if (props.row[key] instanceof Date)
         return <td key={i}>{props.row[key].toLocaleString()}</td>;
+
+      if (Number.isInteger(props.row[key]) && props.row[key].toString().length <= configData.tdMaxLenForCenter)
+        return <td key={i} className={styles.tdCentered}>{props.row[key].toLocaleString()}</td>;
+
       return <td key={i}>{props.row[key].toString()}</td>;
     });
 
