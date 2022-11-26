@@ -8,6 +8,7 @@ import CardContent from '@mui/material/CardContent';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import BlockIcon from '@mui/icons-material/Block';
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { Tooltip } from "react-bootstrap";
@@ -112,14 +113,26 @@ function MailTemplate() {
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
+
+  const icon = !expanded ? <ExpandMoreIcon
+    expand={expanded.toString()}
+    onClick={handleExpandClick}
+    aria-expanded={expanded}
+    aria-label="show more"
+    fontSize='none'
+    className={styles.btnExpand}
+  /> : <ExpandLessIcon
+    expand={expanded.toString()}
+    onClick={handleExpandClick}
+    aria-expanded={expanded}
+    aria-label="show more"
+    fontSize='none'
+    className={styles.btnExpand}
+  />;
+
   return (
     <>
-      <div>Mostra Modello Email<ExpandMoreIcon
-        expand={expanded.toString()}
-        onClick={handleExpandClick}
-        aria-expanded={expanded}
-        aria-label="show more"
-      /></div>
+      <h5>Mostra Modello Email{icon}</h5>
 
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>

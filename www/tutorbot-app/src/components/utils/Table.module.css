@@ -14,7 +14,7 @@
   grid-column: 1;
   grid-row: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto 1fr;
   margin-bottom: 10px;
 }
 
@@ -55,8 +55,6 @@
   text-align: center;
 }
 
-
-
 .btnConfirmSelected{
   width: fit-content;
   height: fit-content;
@@ -90,7 +88,7 @@ td:hover .arrow {
   display: inline-block;
 }
 
-.tableTutorings tr:hover {
+.tableContainer tr:hover {
   background-color: rgba(210, 231, 248, 0.488);
 }
 

@@ -45,3 +45,8 @@ td:hover .arrow {
 .btnRefuse:hover{
   color: rgb(174, 187, 188);
 }
+
+.btnExpand{
+  margin-left: 0.2em;
+  font-size: 1.3em;
+}

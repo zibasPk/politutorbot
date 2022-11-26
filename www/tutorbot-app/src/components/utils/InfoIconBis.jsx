@@ -10,7 +10,7 @@ import Button from 'react-bootstrap/Button';
 export default function InfoIconBis(props) {
   const [show, setShow] = useState(false);
   const target = useRef(null);
-  const text = props.text;
+  const content = props.content;
   return (
     <>
       <ClickAwayListener onClickAway={() => setShow(false)}>
@@ -19,7 +19,7 @@ export default function InfoIconBis(props) {
         <Overlay target={target.current} show={show} placement="right">
           {(props) => (
             <Tooltip id="overlay-example" className='largeToolTip' {...props}>
-              {text}
+              {content}
             </Tooltip>
           )}
         </Overlay>

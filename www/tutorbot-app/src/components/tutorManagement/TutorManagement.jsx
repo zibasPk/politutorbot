@@ -1,64 +1,60 @@
 import React from 'react';
 import styles from './TutorManagement.module.css'
-import Form from 'react-bootstrap/Form';
+import AddTutor from './AddTutor';
+import TutorsList from './TutorsList';
 
-import { Button } from 'react-bootstrap';
-import pic from '../../assets/excel-pic.png';
-import InfoIconBis from '../utils/InfoIconBis';
-import InfoIcon from '../utils/InfoIcon';
+const TutorsArray = [
+  {
+    id: 1,
+    tutorNumber: 111111,
+    tutorSurname: "Mottadelli",
+    tutorName: "Mario"
+  },
+  {
+    id: 2,
+    tutorNumber: 123123,
+    tutorSurname: "Da Vinci",
+    tutorName: "Mario"
+  },
+  {
+    id: 3,
+    tutorNumber: 123456,
+    tutorSurname: "Manganelli",
+    tutorName: "Gino"
+  },
+  {
+    id: 4,
+    tutorNumber: 654321,
+    tutorSurname: "Zanichelli",
+    tutorName: "Franco"
+  },
+  {
+    id: 5,
+    tutorNumber: 987654,
+    tutorSurname: "Machiavelli",
+    tutorName: "Mario"
+  },
+  {
+    id: 6,
+    tutorNumber: 987655,
+    tutorSurname: "Lavario",
+    tutorName: "Dario"
+  },
+]
 
-function TutorManagement() {
+
+const Headers = {
+  tutorNumber: "Cod. Matr. Tutor",
+  tutorSurname: "Cognome Tutor",
+  tutorName: "Nome Tutor"
+};
+
+export default function TutorManagement() {
   return (
     <div className={styles.content}>
-      <div className={styles.functionsHeader}>
-        <h1>Aggiungi Tutor</h1>
-        <div className={styles.newTutorForm}>
-          <Form>
-            <Form.Group controlId="formTutorCode" className="mb-3">
-              <Form.Label>Matricola Tutor</Form.Label>
-              <Form.Control type="text" placeholder="Matr. Studente" />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Corso di studi</Form.Label>
-              <Form.Select>
-                <option>Aereospaziale</option>
-                <option>Informatica</option>
-                <option>Gestionale</option>
-                <option>Automazione</option>
-              </Form.Select>
-            </Form.Group>
-            <Form.Group controlId="formTutorName" className="mb-3">
-              <Form.Label>Nome Tutor</Form.Label>
-              <Form.Control type="text" placeholder="Nome" />
-            </Form.Group>
-            <Form.Group controlId="formTutorSurname" className="mb-3">
-              <Form.Label>Cognome Tutor</Form.Label>
-              <Form.Control type="text" placeholder="Cognome" />
-            </Form.Group>
-            <Form.Group controlId="formExamCode" className="mb-3">
-              <Form.Label>Esame</Form.Label>
-              <Form.Control type="text" placeholder="Codice Esame" />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formOFACheckbox">
-              <Form.Check type="checkbox" label="disponibile per OFA" />
-            </Form.Group>
-            <Button className={styles.addButton} variant="warning" type="submit">
-              Aggiungi
-            </Button>
-          </Form>
-        </div>
-        <Form.Group controlId="formTutorFile" className="mb-3">
-          <Form.Label>Carica File CSV Tutor</Form.Label>
-          <InfoIconBis text={<> 
-          <div>Inserire un file cvs con righe come da figura:</div>
-          <img src={pic}></img>
-          </>}/>
-          {/* <InfoIcon text={<img src={pic}></img>} /> */}
-          <Form.Control type="file" />
-        </Form.Group>
-      </div>
+      <AddTutor />
+      <TutorsList headers={Headers} tutorList={TutorsArray}/>
     </div>
   );
 }
 
-export default TutorManagement;

@@ -1,6 +1,6 @@
 .content {
   margin-top: 1em;
-  max-width: 50%;
+  max-width: 70%;
   margin-left: auto;
   margin-right: auto;
   display: flex;
@@ -17,4 +17,25 @@
 
 .addButton{
   margin-bottom: 16px;
+}
+
+.btnExpand{
+  margin-left: 0.2em;
+  font-size: 1em;
+}
+
+.dropDownContent {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.addTutorContent {
+  max-width: 900px;
+  min-width: 0px;
+}
+
+.tutorListContent {
+  max-width: 900px;
+  min-width: 0px;
 }
