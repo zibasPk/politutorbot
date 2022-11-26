@@ -28,8 +28,8 @@ class ModalBody extends React.Component {
         <tr key={reservation.id}>
           <td >{reservation.id}</td>
           <td >{reservation.tutorNumber}</td>
-          <td >{reservation.tutorName}</td>
           <td >{reservation.tutorSurname}</td>
+          <td >{reservation.tutorName}</td>
           <td >{reservation.examCode}</td>
           <td >{reservation.studentNumber}</td>
           <td >{reservation.timeStamp}</td>
@@ -47,8 +47,8 @@ class ModalBody extends React.Component {
             <tr>
               <th scope="col">Prenotazione</th >
               <th scope="col">Cod. Matr. Tutor</th >
-              <th scope="col">Nome Tutor</th >
               <th scope="col">Cognome Tutor</th >
+              <th scope="col">Nome Tutor</th >
               <th scope="col">Codice Esame</th >
               <th scope="col">Cod. Matr. Studente</th >
               <th scope="col">Data</th >

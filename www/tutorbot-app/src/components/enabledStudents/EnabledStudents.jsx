@@ -38,7 +38,7 @@ export default function EnabledStudents() {
               <Form.Control type="text" placeholder="Matr. Studente" />
             </Form.Group>
             <Form.Group controlId="formFileEnable" className="mb-3">
-              <Form.Label>Carica File CVS</Form.Label>
+              <Form.Label>Carica File CSV</Form.Label>
               <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da abilitare."/>
               <Form.Control type="file" />
             </Form.Group>
@@ -50,7 +50,7 @@ export default function EnabledStudents() {
               <Form.Control type="text" placeholder="Matr. Studente" />
             </Form.Group>
             <Form.Group controlId="formFileRemove" className="mb-3">
-              <Form.Label>Carica File CVS</Form.Label>
+              <Form.Label>Carica File CSV</Form.Label>
               <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da rimuovere."/>
               <Form.Control type="file" />
             </Form.Group>

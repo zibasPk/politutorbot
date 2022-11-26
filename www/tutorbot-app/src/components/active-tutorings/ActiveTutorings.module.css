@@ -13,7 +13,7 @@
   max-width: 75% !important;
 }
 
-.btnCancel{
+.btnCancel {
   background: #fff;
   color: red;
   border: 2px solid red;
@@ -22,3 +22,11 @@
   text-transform: uppercase;
 }
 
+.btnDownloadCvs {
+  margin-left: 0.2em;
+  cursor: pointer;
+}
+
+.btnDownloadCvs :hover {
+  color: rgb(87, 87, 87);
+}

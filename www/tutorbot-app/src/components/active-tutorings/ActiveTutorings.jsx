@@ -1,7 +1,8 @@
 import React from 'react';
 
 import Table from '../utils/Table';
-import ModalBody from './ModalBody';
+import ActiveTutoringsModal from './ActiveTutoringsModal';
+import EndedTutoringsModal from './EndedTutoringsModal';
 
 import styles from "./ActiveTutorings.module.css"
 
@@ -9,8 +10,8 @@ const TutoringsArray = [
   {
     id: 1,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: "09999",
     studentNumber: "938354",
     start_date: new Date('2000-12-17T03:24:00'),
@@ -20,8 +21,8 @@ const TutoringsArray = [
   {
     id: 2,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: "09999",
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -31,8 +32,8 @@ const TutoringsArray = [
   {
     id: 3,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -42,8 +43,8 @@ const TutoringsArray = [
   {
     id: 4,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -53,8 +54,8 @@ const TutoringsArray = [
   {
     id: 5,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -64,8 +65,8 @@ const TutoringsArray = [
   {
     id: 6,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -75,8 +76,8 @@ const TutoringsArray = [
   {
     id: 7,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -86,8 +87,8 @@ const TutoringsArray = [
   {
     id: 8,
     tutorNumber: 321321,
-    tutorName: "Mario Claudiolini",
     tutorSurname: "Brontesi",
+    tutorName: "Mario Claudiolini",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -97,8 +98,8 @@ const TutoringsArray = [
   {
     id: 9,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -108,8 +109,8 @@ const TutoringsArray = [
   {
     id: 10,
     tutorNumber: 321321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -119,8 +120,8 @@ const TutoringsArray = [
   {
     id: 11,
     tutorNumber: 431321,
-    tutorName: "Mario",
     tutorSurname: "Rossi",
+    tutorName: "Mario",
     examCode: 11999,
     studentNumber: "938354",
     start_date: new Date('1995-12-17T03:24:00'),
@@ -131,8 +132,8 @@ const TutoringsArray = [
 
 const ActiveHeaders = {
   tutorNumber: "Cod. Matr. Tutor",
-  tutorName: "Nome Tutor",
   tutorSurname: "Cognome Tutor",
+  tutorName: "Nome Tutor",
   examCode: "Cod. Matr. Studente",
   studentNumber: "Codice Esame",
   start_date: "Data Inizio",
@@ -140,8 +141,8 @@ const ActiveHeaders = {
 
 const EndedHeaders = {
   tutorNumber: "Cod. Matr. Tutor",
-  tutorName: "Nome Tutor",
   tutorSurname: "Cognome Tutor",
+  tutorName: "Nome Tutor",
   examCode: "Cod. Matr. Studente",
   studentNumber: "Codice Esame",
   start_date: "Data Inizio",
@@ -159,13 +160,18 @@ function ActiveTutorings() {
         <Table headers={ActiveHeaders}
           content={activeTutoringsArray} hasChecks={true}
           modalProps={{
-            modalContent: ModalBody,
+            modalContent: ActiveTutoringsModal,
             onConfirm: () => { console.log("azione confermata") },
             modalTitle: "Concludi Tutoraggi selezionati"
           }}/>
         <h1>Tutoraggi Conclusi</h1>
         <Table headers={EndedHeaders}
-          content={endedTutoringsArray} hasChecks={false}/>
+          content={endedTutoringsArray} hasChecks={true}
+          modalProps={{
+            modalContent: EndedTutoringsModal,
+            modalTitle: "Esporta File CSV"
+          }}
+          />
       </div>
     </>
   );

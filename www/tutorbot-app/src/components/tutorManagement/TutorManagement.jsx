@@ -48,7 +48,7 @@ function TutorManagement() {
           </Form>
         </div>
         <Form.Group controlId="formTutorFile" className="mb-3">
-          <Form.Label>Carica File CVS Tutor</Form.Label>
+          <Form.Label>Carica File CSV Tutor</Form.Label>
           <InfoIconBis text={<> 
           <div>Inserire un file cvs con righe come da figura:</div>
           <img src={pic}></img>

@@ -2,7 +2,7 @@ import React from "react";
 import styles from './ActiveTutorings.module.css'
 
 
-export default class ModalBody extends React.Component {
+export default class ActiveTutoringsModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -17,8 +17,8 @@ export default class ModalBody extends React.Component {
       return (
         <tr key={tutoring.id}>
           <td>{tutoring.tutorNumber}</td>
-          <td>{tutoring.tutorName}</td>
           <td>{tutoring.tutorSurname}</td>
+          <td>{tutoring.tutorName}</td>
           <td>{tutoring.studentNumber}</td>
           <td>{tutoring.examCode}</td>
           <td>{tutoring.start_date.toLocaleString()}</td>
@@ -32,8 +32,8 @@ export default class ModalBody extends React.Component {
           <thead>
             <tr>
               <th scope="col">Cod. Matr. Tutor</th >
-              <th scope="col">Nome Tutor</th >
               <th scope="col">Cognome Tutor</th >
+              <th scope="col">Nome Tutor</th >
               <th scope="col">Cod. Matr. Studente</th >
               <th scope="col">Codice Esame</th >
               <th scope="col">Data Inizio</th >
