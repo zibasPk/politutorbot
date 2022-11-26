@@ -20,7 +20,7 @@ const ReservationsArray = [
   {
     id: 2,
     tutorNumber: 321321,
-    tutorSurname: "Bossi",
+    tutorSurname: "Morichetti",
     tutorName: "nario",
     examCode: "09999",
     studentNumber: "838354",
@@ -75,7 +75,7 @@ const ReservationsArray = [
   {
     id: 7,
     tutorNumber: 321321,
-    tutorSurname: "Bossi",
+    tutorSurname: "Morichetti",
     tutorName: "ario",
     examCode: "09999",
     studentNumber: "838354",
@@ -130,7 +130,7 @@ const ReservationsArray = [
   {
     id: 12,
     tutorNumber: 321321,
-    tutorSurname: "Bossi",
+    tutorSurname: "Morichetti",
     tutorName: "ario",
     examCode: "09999",
     studentNumber: "838354",
@@ -185,7 +185,7 @@ const ReservationsArray = [
   {
     id: 17,
     tutorNumber: 321321,
-    tutorSurname: "Bossi",
+    tutorSurname: "Morichetti",
     tutorName: "ario",
     examCode: "09999",
     studentNumber: "838354",
@@ -240,7 +240,7 @@ const ReservationsArray = [
   {
     id: 22,
     tutorNumber: 321321,
-    tutorSurname: "Bossi",
+    tutorSurname: "Ronco",
     tutorName: "ario",
     examCode: "09999",
     studentNumber: "838354",

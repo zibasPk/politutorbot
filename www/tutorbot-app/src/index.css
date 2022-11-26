@@ -19,10 +19,6 @@ code {
   }
 }
 
-.root {
-  background-color: gray;
-}
-
 .helpIcon {
   color: rgb(157, 196, 223);
   padding-left: 3px;
@@ -54,11 +50,21 @@ code {
   top: 2px;
 }
 
-.tooltop > .tooltip {
+.tooltop>.tooltip {
   max-width: 100%;
 }
 
-.largeToolTip > .tooltip-inner {
+.largeToolTip>.tooltip-inner {
   max-width: 100%;
   background-color: rgba(97, 97, 97, 0.92);
+}
+
+.page {
+  width: 100%;
+  position: fixed;
+  top: 50px;
+  bottom: 0;
+  overflow: auto;
+  scrollbar-color: #4a9ce3 rgb(247, 250, 255) ;
+  scrollbar-width: thin;
 }

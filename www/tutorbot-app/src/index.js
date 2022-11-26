@@ -16,13 +16,15 @@ root.render(
   <>
     <BrowserRouter>
       <Navigation />
-      <Routes>
-        <Route path="/" element={<Reservations />} />
-        <Route path="/PoliTutorBot/reservations" element={<Reservations />} />
-        <Route path="/PoliTutorBot/active-tutorings" element={<ActiveTutorings />} />
-        <Route path="/PoliTutorBot/enabled-students" element={<EnabledStudents />} />
-        <Route path="/PoliTutorBot/manage-tutors" element={<TutorManagement />} />
-      </Routes>
+      <div className='page'>
+        <Routes>
+          <Route path="/" element={<Reservations />} />
+          <Route path="/PoliTutorBot/reservations" element={<Reservations />} />
+          <Route path="/PoliTutorBot/active-tutorings" element={<ActiveTutorings />} />
+          <Route path="/PoliTutorBot/enabled-students" element={<EnabledStudents />} />
+          <Route path="/PoliTutorBot/manage-tutors" element={<TutorManagement />} />
+        </Routes>
+      </div>
     </BrowserRouter>
     {/* <Footer/> */}
   </>
