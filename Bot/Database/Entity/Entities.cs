@@ -13,19 +13,26 @@ public record struct TutorToExam(
     int AvailableTutorings
 );
 
-public record struct Reservation(
-    int Id,
-    int Tutor,
-    int Exam,
-    int Student,
-    DateTime ReservationTimestamp,
-    bool IsProcessed,
-    bool IsOFA
-);
+public record Reservation
+{
+    public int Id;
+    public int Tutor;
+    public int? Exam;
+    public int Student;
+    public DateTime ReservationTimestamp;
+    public bool IsProcessed;
+    public bool IsOFA;
+};
+
+public record ExtendedReservation : Reservation
+{
+    public string? TutorName;
+    public string? TutorSurname;
+}
 
 public record struct Exam(
-    int Code, 
-    string Course, 
-    string Name, 
+    int Code,
+    string Course,
+    string Name,
     string Year
 );

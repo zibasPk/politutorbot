@@ -29,6 +29,13 @@ public static class WebServer
 
         var builder = WebApplication.CreateBuilder();
         builder.Host.UseSerilog(serverLog);
+        // CORS handler
+        if (GlobalConfig.WebConfig!.AllowCors)
+        {
+            builder.Services.AddCors(p =>
+                p.AddPolicy("corsapp", builder => { builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader(); }));
+        }
+
         // Authorization handler
         builder.Services.AddAuthentication("BasicAuthentication")
             .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
@@ -36,6 +43,11 @@ public static class WebServer
         builder.Services.AddAuthorization();
 
         var app = builder.Build();
+
+        if (GlobalConfig.WebConfig!.AllowCors)
+        {
+            app.UseCors("corsapp");
+        }
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseHttpsRedirection();
@@ -43,9 +55,11 @@ public static class WebServer
         //Get tutor information
         app.MapGet("/api/tutoring/{tutor:int?}/{exam:int?}", FetchTutors).RequireAuthorization();
         app.MapGet("/api/reservations/{value?}", FetchReservations).RequireAuthorization();
+        ;
 
         // Update a tutors lock
-        app.MapPut("/api/tutoring/{tutor:int}/{exam:int}/{student:int}/{action}", TutoringAction).RequireAuthorization();
+        app.MapPut("/api/tutoring/{tutor:int}/{exam:int}/{student:int}/{action}", TutoringAction)
+            .RequireAuthorization();
         app.MapPut("/api/reservations/{id:int}/{action}", HandleReservationAction).RequireAuthorization();
         //app.MapPut("/api/tutors/{tutor}/{exam}/{action}", ChangeTutorState).RequireAuthorization();
 
@@ -70,7 +84,7 @@ public static class WebServer
 
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
-        
+
         if (reservationService.IsReservationProcessed(id))
         {
             // Reservation already marked as processed
@@ -78,7 +92,7 @@ public static class WebServer
             response.WriteAsync($"reservation {id} already processed");
             return;
         }
-        
+
         if (!reservationService.IsReservationAllowed(id))
         {
             // The exam corresponding to the reservation has no available reservations
@@ -98,7 +112,7 @@ public static class WebServer
             response.StatusCode = StatusCodes.Status404NotFound;
             return;
         }
-        
+
         if (!tutorService.DeactivateTutoring(tutor, exam, student))
         {
             response.StatusCode = StatusCodes.Status400BadRequest;
@@ -126,7 +140,7 @@ public static class WebServer
                 if (int.TryParse(value, out var reservationId))
                 {
                     var reservation = reservationService.FindReservation(reservationId);
-                    if (reservation.HasValue)
+                    if (reservation != null)
                         returnObject = JsonConvert.SerializeObject(reservation);
                 }
 

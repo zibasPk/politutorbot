@@ -13,6 +13,7 @@ public class WebAppConfig : Config
     public int WebLogLevel;
     public string AuthUsr;
     public string AuthPsw;
+    public bool AllowCors;
     public WebAppConfig()
     {
         // default log level 3: information
@@ -22,7 +23,7 @@ public class WebAppConfig : Config
         // default Api authentication
         AuthUsr = "admin";
         AuthPsw = "admin";
-        
+        AllowCors = false;
         FilePath = Paths.WebAppConfig;
     }
 }

@@ -135,58 +135,8 @@ public class UserDAO
         _connection.Close();
     }
 
-    /// <summary>
-    /// Updates the lock_timestamp of the given user to the current time.
-    /// </summary>
-    /// <param name="userId">Telegram userId of user that needs to be updated.</param>
-    public void LockUser(long userId)
-    {
-        _connection.Open();
-        const string query = "UPDATE telegram_user SET lock_timestamp = NOW() WHERE userID=@userId";
-        try
-        {
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@userId", userId);
-            command.Prepare();
-
-            command.ExecuteNonQuery();
-            Log.Debug("User {user} was locked", userId);
-        }
-        catch (Exception)
-        {
-            _connection.Close();
-            throw;
-        }
-
-        _connection.Close();
-    }
-
-    /// <summary>
-    /// Updates the lock_timestamp of the given user to the DEFAULT (0000-00-00 00:00:00) timestamp.
-    /// </summary>
-    /// <param name="userId">Telegram userId of user that needs to be updated.</param>
-    public void UnlockUser(long userId)
-    {
-        _connection.Open();
-        const string query = "UPDATE telegram_user SET lock_timestamp = DEFAULT WHERE userID=@userId";
-        try
-        {
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@userId", userId);
-            command.Prepare();
-
-            command.ExecuteNonQuery();
-            Log.Debug("User {user} was unlocked", userId);
-        }
-        catch (Exception)
-        {
-            _connection.Close();
-            throw;
-        }
-
-        _connection.Close();
-    }
-
+    
+    
     /// <summary>
     /// Checks if the given user is locked from making new requests.
     /// </summary>
