@@ -35,6 +35,8 @@
   max-height: 300px;
   border-style: solid;
   border-color: rgb(169, 170, 171);
+  scrollbar-color: #4a9ce3 rgb(247, 250, 255) ;
+  scrollbar-width: thin;
 }
 
 .resultAlert {

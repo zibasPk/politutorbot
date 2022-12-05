@@ -11,7 +11,10 @@ import TableModal from "./TableModal";
 
 import configData from "../../config/config.json";
 
-
+/**
+ * The Table component will return a table with selection, sorting and search functions and a personalizable modal popup that will receive 
+ * the selected rows. The displayed columns are those in the headers prop, only the elements in the content prop with the same keys of the header prop will be displayed as rows. 
+ */
 class Table extends Component {
   constructor(props) {
     super(props);
@@ -21,7 +24,6 @@ class Table extends Component {
       FilteredContent: props.content,
       ModalProps: props.modalProps,
       HasChecks: props.hasChecks !== undefined ? props.hasChecks : false,
-      ShowId: props.showId !== undefined ? props.showId : true,
       MasterChecked: false,
       SelectedContent: [],
       HeaderArrows: Array(Object.keys(props.content[0]).length - 1).fill(0),
@@ -34,10 +36,6 @@ class Table extends Component {
   render() {
     let i = 0;
     const HeaderRow = Object.keys(this.state.Headers).map((key) => {
-      if ((this.state.ShowId && key == "id")) {
-        return;
-      }
-
       let temp = i;
       const cell = <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[temp]}
         text={this.state.Headers[key]}
@@ -49,9 +47,6 @@ class Table extends Component {
     });
 
     const SearchOptions = Object.keys(this.state.Headers).map((key, i) => {
-      if ((this.state.ShowId && key == "id")) {
-        return;
-      }
       return <option value={key} key={i} > {this.state.Headers[key]}</option>;
     });
 
@@ -117,8 +112,8 @@ class Table extends Component {
               {
                 visibleRows.map((row) =>
                   <this.renderRow row={row}
+                    headers={this.state.Headers}
                     hasChecks={this.state.HasChecks}
-                    showId={this.state.ShowId}
                     key={row.id}
                     onChange={(e) => this.onItemCheck(e, row)}
                   />)
@@ -135,10 +130,7 @@ class Table extends Component {
   }
 
   renderRow(props) {
-    const variableRows = Object.keys(props.row).map((key, i) => {
-      if ((props.showId && key == "id") || key == "selected") {
-        return;
-      }
+    const variableRows = Object.keys(props.headers).map((key, i) => {
       if (props.row[key] instanceof Date)
         return <td key={i}>{props.row[key].toLocaleString()}</td>;
 
