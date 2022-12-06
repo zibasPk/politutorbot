@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/PoliTutorBot/static/css/main.a40ecc0f.css",
-    "main.js": "/PoliTutorBot/static/js/main.1fcd520c.js",
+    "main.js": "/PoliTutorBot/static/js/main.b0edabd4.js",
     "index.html": "/PoliTutorBot/index.html",
     "main.a40ecc0f.css.map": "/PoliTutorBot/static/css/main.a40ecc0f.css.map",
-    "main.1fcd520c.js.map": "/PoliTutorBot/static/js/main.1fcd520c.js.map"
+    "main.b0edabd4.js.map": "/PoliTutorBot/static/js/main.b0edabd4.js.map"
   },
   "entrypoints": [
     "static/css/main.a40ecc0f.css",
-    "static/js/main.1fcd520c.js"
+    "static/js/main.b0edabd4.js"
   ]
 }
