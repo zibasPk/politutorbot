@@ -3,6 +3,8 @@ import React from "react";
 import styles from './Reservations.module.css';
 import Table from "../utils/Table";
 import ModalBody from "./ModalBody";
+import { MakeCall } from "../../MakeCall";
+import CircularProgress from '@mui/material/CircularProgress';
 
 
 const ReservationsArray = [
@@ -295,36 +297,82 @@ const ReservationsArray = [
 ];
 
 const Headers = {
-  id: "Prenotazione",
-  tutorNumber: "Cod. Matr. Tutor",
-  tutorSurname: "Cognome Tutor",
-  tutorName: "Nome Tutor",
-  examCode: "Codice Esame",
-  studentNumber: "Cod. Matr. Studente",
-  timeStamp: "Data"
+  Id: "Prenotazione",
+  Tutor: "Cod. Matr. Tutor",
+  TutorSurname: "Cognome Tutor",
+  TutorName: "Nome Tutor",
+  Exam: "Codice Esame",
+  Student: "Cod. Matr. Studente",
+  ReservationTimestamp: "Data"
 };
 
-function Reservations() {
+class Reservations extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ProcessedReservations: [],
+      PendingReservations: []
+    };
+  }
+
   // prepare object arrays for tables
-  let processedReservations = ReservationsArray.filter((x) => x.state);
-  let pendingReservations = ReservationsArray.filter((x) => !x.state);
-  processedReservations = processedReservations.map(({ state, ...key }) => key);
-  pendingReservations = pendingReservations.map(({ state, ...key }) => key);
+  // let processedReservations = ReservationsArray.filter((x) => x.state);
+  // let pendingReservations = ReservationsArray.filter((x) => !x.state);
+  // processedReservations = processedReservations.map(({ state, ...key }) => key);
+  // pendingReservations = pendingReservations.map(({ state, ...key }) => key);
+
+  // fetch('https://api.npms.io/v2/search?q=react')
+  //   .then(response => response.json())
+  //   .then(data => console.log(data));
 
 
-  return (
-    <div className={styles.content}>
-      <h1>Prenotazioni da Gestire</h1>
-      <Table headers={Headers} content={pendingReservations} hasChecks={true}
-        modalProps={{
-          modalContent: ModalBody,
-          modalTitle: "Conferma prenotazione selezionate"
-        }}
-      />
-      <h1>Storico Prenotazioni</h1>
-      <Table headers={Headers} content={processedReservations} hasChecks={false} />
-    </div>
-  );
+
+  // let reservatiore = MakeCall('GET', false, true, (response) => {
+
+  // })
+  componentDidMount() {
+    MakeCall('GET','/reservations' , false, true, (reservations) => {
+      reservations.map((elem) => {
+        if (elem.Exam === null)
+          elem.Exam = "OFA"
+        elem.ReservationTimestamp = new Date(elem.ReservationTimestamp)
+      }
+
+      );
+      let processedReservations = reservations.filter((x) => x.state)
+        .map(({ state, ...key }) => key);
+      let pendingReservations = reservations.filter((x) => !x.state)
+        .map(({ state, ...key }) => key);
+      this.setState({
+        ProcessedReservations: processedReservations,
+        PendingReservations: pendingReservations
+      })
+    })
+  }
+
+  render() {
+    console.log(this.state.PendingReservations);
+    return (
+      <div className={styles.content}>
+        <h1>Prenotazioni da Gestire</h1>
+
+        {this.state.PendingReservations.length === 0 ? <CircularProgress /> :
+          <>
+            <Table headers={Headers} content={this.state.PendingReservations} hasChecks={true}
+              modalProps={{
+                modalContent: ModalBody,
+                modalTitle: "Conferma prenotazione selezionate"
+              }}
+            />
+          </>
+        }
+        <h1>Storico Prenotazioni</h1>
+        {this.state.ProcessedReservations.length === 0 ? <CircularProgress /> :
+          <Table headers={Headers} content={this.state.ProcessedReservations} hasChecks={false} />
+        }
+      </div>
+    )
+  }
 }
 
 

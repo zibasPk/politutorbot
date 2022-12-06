@@ -131,8 +131,13 @@ class Table extends Component {
 
   renderRow(props) {
     const variableRows = Object.keys(props.headers).map((key, i) => {
-      if (props.row[key] instanceof Date)
+      if (props.row[key] instanceof Date) {
         return <td key={i}>{props.row[key].toLocaleString()}</td>;
+      }
+
+      if (props.row[key] == "OFA") {
+        return <td key={i} className={styles.tdCentered}>OFA</td>;
+      }
 
       if (Number.isInteger(props.row[key]) && props.row[key].toString().length <= configData.tdMaxLenForCenter)
         return <td key={i} className={styles.tdCentered}>{props.row[key].toLocaleString()}</td>;
