@@ -781,6 +781,7 @@ public class TutorDAO
     
     public List<TutorToExam> FindAvailableOFATutors(int lockHours)
     {
+        //TODO: check if tutor is already in an active tutoring
         _connection.Open();
         const string query = "SELECT * FROM tutor " +
                              "WHERE OFA_available = 1";

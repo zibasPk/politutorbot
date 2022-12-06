@@ -95,7 +95,7 @@ public class ReservationDAO
             while (reader.Read())
             {
                 var ordinal = reader.GetOrdinal("name");
-                if (!reader.IsDBNull(ordinal))
+                if (reader.IsDBNull(ordinal))
                     Log.Debug("While preparing extended reservation info, no tutor was found in db with code: {0}",
                         reader.GetInt32("tutor"));
 
@@ -146,7 +146,7 @@ public class ReservationDAO
             while (reader.Read())
             {
                 var ordinal = reader.GetOrdinal("name");
-                if (!reader.IsDBNull(ordinal))
+                if (reader.IsDBNull(ordinal))
                     Log.Debug("While preparing extended reservation info, no tutor was found in db with code: {0}",
                         reader.GetInt32("tutor"));
                 
