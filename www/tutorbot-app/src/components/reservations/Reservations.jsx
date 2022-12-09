@@ -28,6 +28,10 @@ class Reservations extends React.Component {
 
   // prepare object arrays for tables
   componentDidMount() {
+    this.refreshData();
+  }
+
+  refreshData() {
     fetch(configData.botApiUrl + '/reservations', {
       method: 'GET',
       headers: {
@@ -41,10 +45,11 @@ class Reservations extends React.Component {
           elem.ReservationTimestamp = new Date(elem.ReservationTimestamp)
         });
 
-        let processedReservations = reservations.filter((x) => x.IsProcessed)
+        const processedReservations = reservations.filter((x) => x.IsProcessed)
           .map(({ state, ...key }) => key);
-        let pendingReservations = reservations.filter((x) => !x.IsProcessed)
+        const pendingReservations = reservations.filter((x) => !x.IsProcessed)
           .map(({ state, ...key }) => key);
+
         this.setState({
           ProcessedReservations: processedReservations,
           PendingReservations: pendingReservations
@@ -62,8 +67,10 @@ class Reservations extends React.Component {
             <Table headers={Headers} content={this.state.PendingReservations} hasChecks={true}
               modalProps={{
                 modalContent: ModalBody,
-                modalTitle: "Conferma prenotazione selezionate"
+                modalTitle: "Conferma prenotazione selezionate",
+                onModalEvent: () => this.refreshData()
               }}
+              
             />
           </>
         }

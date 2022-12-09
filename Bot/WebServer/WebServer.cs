@@ -76,8 +76,7 @@ public static class WebServer
 
     private static void HandleReservationAction(int id, string action, HttpResponse response)
     {
-        //TODO: action refuse
-        if (action != "confirm")
+        if (action is not ("confirm" or "refuse"))
         {
             response.StatusCode = StatusCodes.Status404NotFound;
             return;
@@ -86,11 +85,25 @@ public static class WebServer
         var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
         var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
 
+        if (reservationService.FindReservation(id) == null)
+        {
+            // There is no Reservation with the given id
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            response.WriteAsync($"no reservation with id: {id} found");
+            return; 
+        }
+        
         if (reservationService.IsReservationProcessed(id))
         {
             // Reservation already marked as processed
             response.StatusCode = StatusCodes.Status400BadRequest;
             response.WriteAsync($"reservation {id} already processed");
+            return;
+        }
+
+        if (action == "refuse")
+        {
+            reservationService.RefuseReservation(id);
             return;
         }
 
@@ -102,7 +115,7 @@ public static class WebServer
             return;
         }
 
-        //tutorService.ActivateTutoring(id);
+        tutorService.ActivateTutoring(id);
     }
 
     private static void TutoringAction(int tutor, int exam, int student, string action, HttpResponse response)

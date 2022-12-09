@@ -19,20 +19,24 @@ class ModalBody extends React.Component {
     this.state = {
       ResList: props.selectedContent,
       AlertText: "",
-      IsAlertVisible: false
+      IsAlertVisible: false,
+      OnModalEvent: props.onModalEvent
     }
   }
 
-  confirmReservation(id) {
-    fetch(configData.botApiUrl + '/reservations/' + id + '/confirm', {
+  handleReservation(id, action) {
+    fetch(configData.botApiUrl + '/reservations/' + id + '/' + action, {
       method: 'PUT',
       headers: {
         'Authorization': 'Basic ' + btoa(configData.authCredentials),
       }
     }).then(resp => {
-    console.log(resp);
       if (!resp.ok)
         return resp.text();
+        this.setState({
+          ResList: this.state.ResList.filter((res) => res.Id !== id),
+        })
+        this.props.onModalEvent()
     })
       .then((text) => {
         if (text !== undefined) {
@@ -50,12 +54,12 @@ class ModalBody extends React.Component {
   }
 
   render() {
-    const AlertDisplay = this.state.IsAlertVisible ? {display:"block"}: {display:"none"};
+    const AlertDisplay = this.state.IsAlertVisible ? { display: "block" } : { display: "none" };
     return (
       <>
         <MailTemplate />
         <div style={AlertDisplay} className={styles.AlertText}>{this.state.AlertText}</div>
-        <this.renderContent resList={this.state.ResList} confirmAction={(id) => this.confirmReservation(id)}/>
+        <this.renderContent resList={this.state.ResList} resAction={(id, action) => this.handleReservation(id, action)} />
       </>
     );
   }
@@ -73,9 +77,8 @@ class ModalBody extends React.Component {
           <td >{reservation.Exam}</td>
           <td >{reservation.Student}</td>
           <td >{reservation.ReservationTimestamp.toLocaleString()}</td>
-          <MailCell action={() => props.confirmAction(reservation.Id)}/>
-          <RefuseCell />
-
+          <MailCell action={() => props.resAction(reservation.Id, "confirm")} />
+          <RefuseCell action={() => props.resAction(reservation.Id, "refuse")} />
         </tr>
       );
     });
@@ -108,34 +111,31 @@ class ModalBody extends React.Component {
 export default ModalBody;
 
 
-function RefuseCell() {
+function RefuseCell(props) {
   return (
     <td className={styles.tdBorderless}>
       <OverlayTrigger
         placement="right"
         overlay={<Tooltip className={styles.modalTooltip}>Rifiuta prenotazione (dopo invio mail)</Tooltip>}
       >
-        <BlockIcon className={styles.btnRefuse} />
+        <BlockIcon className={styles.btnRefuse} onClick={props.action}/>
       </OverlayTrigger>
     </td>
   );
 }
 
 
-class MailCell extends React.Component {
-
-  render() {
-    return (
-      <td className={styles.tdBorderless}>
-        <OverlayTrigger
-          placement="right"
-          overlay={<Tooltip className={styles.modalTooltip}>Conferma prenotazione (dopo invio mail)</Tooltip>}
-        >
-          <MarkEmailReadIcon className={styles.btnMail} onClick={this.props.action} />
-        </OverlayTrigger>
-      </td>
-    );
-  }
+function MailCell(props) {
+  return (
+    <td className={styles.tdBorderless}>
+      <OverlayTrigger
+        placement="right"
+        overlay={<Tooltip className={styles.modalTooltip}>Conferma prenotazione (dopo invio mail)</Tooltip>}
+      >
+        <MarkEmailReadIcon className={styles.btnMail} onClick={props.action} />
+      </OverlayTrigger>
+    </td>
+  );
 }
 
 function MailTemplate() {

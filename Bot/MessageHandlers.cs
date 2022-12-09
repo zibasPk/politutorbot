@@ -135,7 +135,7 @@ public static class MessageHandlers
     }
 
     // lock tutor until email arrive
-    tutorService.ReserveOFATutor(tutorCode.Value, userId, conversation.StudentCode);
+    tutorService.ReserveOFATutor(tutorCode.Value, userId, conversation!.StudentCode);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,

@@ -32,6 +32,7 @@ class Table extends Component {
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false,
       SearchOption: Object.keys(props.headers)[0],
+      SearchValue:""
     };
   }
 
@@ -266,9 +267,14 @@ class Table extends Component {
   }
 
   handleModalVisibility() {
-    var temp = this.state.IsModalVisible;
+    const temp = this.state.IsModalVisible;
+    const tempList = this.props.content.filter(
+      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(this.state.SearchValue)
+    );
     this.setState({
       IsModalVisible: !temp,
+      Content: this.props.content,
+      FilteredContent: tempList
     });
   }
 
@@ -282,13 +288,18 @@ class Table extends Component {
     });
   }
 
+  filterContent(value) {
+    return this.state.Content.filter(
+      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(value)
+    );
+  }
+
   handleSearch(event) {
     let tempList;
-    tempList = this.state.Content.filter(
-      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(event.target.value.toLowerCase())
-    );
+    tempList = this.filterContent(event.target.value.toLowerCase());
     this.setState({
-      FilteredContent: tempList
+      FilteredContent: tempList,
+      SearchValue: event.target.value.toLowerCase()
     })
   }
 
