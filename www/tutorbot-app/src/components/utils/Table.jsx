@@ -18,6 +18,8 @@ import configData from "../../config/config.json";
 class Table extends Component {
   constructor(props) {
     super(props);
+    if (props.hasChecks)
+      props.content.forEach(item => item.selected = false);
     this.state = {
       Headers: props.headers,
       Content: props.content,
@@ -26,7 +28,7 @@ class Table extends Component {
       HasChecks: props.hasChecks !== undefined ? props.hasChecks : false,
       MasterChecked: false,
       SelectedContent: [],
-      HeaderArrows: Array(Object.keys(props.content[0]).length - 1).fill(0),
+      HeaderArrows: Array(Object.keys(props.headers).length - 1).fill(0),
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false,
       SearchOption: Object.keys(props.headers)[0],
@@ -120,6 +122,7 @@ class Table extends Component {
               }
             </tbody>
           </table>
+          {visibleRows.length === 0 ? <div className={styles.noContentAlert}>Nessun contentuto trovato</div> : <></>}
           <ShowMoreButton onClick={() => this.handleShowMoreClick()}
             visibleRows={this.state.VisibleRows}
             maximumRows={this.state.FilteredContent.length}

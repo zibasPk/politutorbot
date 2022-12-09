@@ -2,7 +2,7 @@
 import configData from "./config/config.json"
 
 
-export async function MakeCall(callMethod ,endPoint , hasCache, hasAuth, callBack) {
+export async function MakeCall(callMethod ,endPoint , hasCache, hasAuth,responseCallBack, dataCallBack) {
   const method = callMethod !== undefined ? callMethod : 'GET';
   const cache = hasCache ? 'default' : 'no-cache';
   const auth = hasAuth ? 'Basic ' + btoa(configData.authCredentials) : '';
@@ -17,7 +17,10 @@ export async function MakeCall(callMethod ,endPoint , hasCache, hasAuth, callBac
         'Authorization': auth,
         // 'Content-Type': 'application/x-www-form-urlencoded',
       }
-    }).then((response)=> 
-      response.json()
-    ).then((data) => callBack(data));
+    }).then((response)=> {
+      console.log(response.json());
+      responseCallBack(response)
+    }
+    ).then((data) => {
+      dataCallBack(data)});
 }

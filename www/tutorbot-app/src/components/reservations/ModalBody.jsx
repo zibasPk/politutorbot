@@ -1,7 +1,7 @@
 import React from "react";
 import styles from './ModalBody.module.css';
 
-
+import configData from "../../config/config.json"
 
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import CardContent from '@mui/material/CardContent';
@@ -17,8 +17,47 @@ class ModalBody extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ResList: props.selectedContent
+      ResList: props.selectedContent,
+      AlertText: "",
+      IsAlertVisible: false
     }
+  }
+
+  confirmReservation(id) {
+    fetch(configData.botApiUrl + '/reservations/' + id + '/confirm', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Basic ' + btoa(configData.authCredentials),
+      }
+    }).then(resp => {
+    console.log(resp);
+      if (!resp.ok)
+        return resp.text();
+    })
+      .then((text) => {
+        if (text !== undefined) {
+          this.setState({
+            AlertText: text,
+            IsAlertVisible: true
+          })
+          return;
+        }
+        // Hide alert after a positive response
+        this.setState({
+          IsAlertVisible: false
+        })
+      })
+  }
+
+  render() {
+    const AlertDisplay = this.state.IsAlertVisible ? {display:"block"}: {display:"none"};
+    return (
+      <>
+        <MailTemplate />
+        <div style={AlertDisplay} className={styles.AlertText}>{this.state.AlertText}</div>
+        <this.renderContent resList={this.state.ResList} confirmAction={(id) => this.confirmReservation(id)}/>
+      </>
+    );
   }
 
   renderContent(props) {
@@ -26,15 +65,15 @@ class ModalBody extends React.Component {
 
     const renderBody = rows.map((reservation) => {
       return (
-        <tr key={reservation.id}>
-          <td >{reservation.id}</td>
-          <td >{reservation.tutorNumber}</td>
-          <td >{reservation.tutorSurname}</td>
-          <td >{reservation.tutorName}</td>
-          <td >{reservation.examCode}</td>
-          <td >{reservation.studentNumber}</td>
-          <td >{reservation.timeStamp}</td>
-          <MailCell reservation={reservation} />
+        <tr key={reservation.Id}>
+          <td >{reservation.Id}</td>
+          <td >{reservation.Tutor}</td>
+          <td >{reservation.TutorSurname}</td>
+          <td >{reservation.TutorName}</td>
+          <td >{reservation.Exam}</td>
+          <td >{reservation.Student}</td>
+          <td >{reservation.ReservationTimestamp.toLocaleString()}</td>
+          <MailCell action={() => props.confirmAction(reservation.Id)}/>
           <RefuseCell />
 
         </tr>
@@ -64,15 +103,6 @@ class ModalBody extends React.Component {
     else
       return (<div>Nessuna prenotazione selezionata</div>);
   }
-
-  render() {
-    return (
-      <>
-        <MailTemplate />
-        <this.renderContent resList={this.state.ResList} />
-      </>
-    );
-  }
 }
 
 export default ModalBody;
@@ -93,6 +123,7 @@ function RefuseCell() {
 
 
 class MailCell extends React.Component {
+
   render() {
     return (
       <td className={styles.tdBorderless}>
@@ -100,7 +131,7 @@ class MailCell extends React.Component {
           placement="right"
           overlay={<Tooltip className={styles.modalTooltip}>Conferma prenotazione (dopo invio mail)</Tooltip>}
         >
-          <MarkEmailReadIcon className={styles.btnMail} />
+          <MarkEmailReadIcon className={styles.btnMail} onClick={this.props.action} />
         </OverlayTrigger>
       </td>
     );

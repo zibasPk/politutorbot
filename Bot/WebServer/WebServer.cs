@@ -76,6 +76,7 @@ public static class WebServer
 
     private static void HandleReservationAction(int id, string action, HttpResponse response)
     {
+        //TODO: action refuse
         if (action != "confirm")
         {
             response.StatusCode = StatusCodes.Status404NotFound;
@@ -97,11 +98,11 @@ public static class WebServer
         {
             // The exam corresponding to the reservation has no available reservations
             response.StatusCode = StatusCodes.Status400BadRequest;
-            response.WriteAsync($"reservation {id} hasn't enough available reservations.");
+            response.WriteAsync($"tutor for reservation {id} hasn't enough available reservations for this exam.");
             return;
         }
 
-        tutorService.ActivateTutoring(id);
+        //tutorService.ActivateTutoring(id);
     }
 
     private static void TutoringAction(int tutor, int exam, int student, string action, HttpResponse response)

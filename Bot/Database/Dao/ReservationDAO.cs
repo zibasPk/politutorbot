@@ -176,7 +176,12 @@ public class ReservationDAO
         _connection.Close();
         return reservations;
     }
-
+    
+    /// <summary>
+    /// Will check if a reservation is allowed.
+    /// </summary>
+    /// <param name="reservationId">Id of the reservation to check.</param>
+    /// <returns>False if reservation isn't allowed, true otherwise.</returns>
     public bool IsReservationAllowed(int reservationId)
     {
         _connection.Open();
@@ -191,7 +196,7 @@ public class ReservationDAO
             if (reader.HasRows)
             {
                 // checking if reservation regards an OFA tutoring
-                Log.Debug("Reservation is for OFA");
+                Log.Debug("Reservation {0} is for OFA tutoring", reservationId);
                 _connection.Close();
                 return true;
             }
@@ -208,7 +213,7 @@ public class ReservationDAO
 
             reader = command.ExecuteReader();
             if (!reader.HasRows)
-            {
+            {   // checking if reservation is for tutoring with aviable tutoring
                 Log.Debug("No available reservations with id: {0} found in db ", reservationId);
                 _connection.Close();
                 return false;

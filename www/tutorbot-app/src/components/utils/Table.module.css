@@ -108,6 +108,13 @@ td:hover .arrow {
   text-align: center;
 }
 
+.noContentAlert {
+  position: relative;
+  font-weight: lighter;
+  text-align: center;
+  width: 100%;
+}
+
 .btnShowmore {
   margin: auto;
   width: 20%;
