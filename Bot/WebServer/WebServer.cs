@@ -131,9 +131,7 @@ public static class WebServer
       response.StatusCode = StatusCodes.Status404NotFound;
       return;
     }
-
     
-
     if (!id.HasValue)
     {
       // End all given tutorings
@@ -144,6 +142,16 @@ public static class WebServer
         // invalid request body
         response.StatusCode = StatusCodes.Status400BadRequest;
         await response.WriteAsync($"invalid request body");
+        return;
+      }
+
+      var exceedingDuration = durations.Find(x => x.Duration > 150);
+      if (exceedingDuration != default)
+      {
+        // invalid duration in request body
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsync($"invalid duration for tutoring: {exceedingDuration.Id} in request body the maximum " +
+                                  $"is: {GlobalConfig.BotConfig!.MaxTutoringDuration} hours");
         return;
       }
       
