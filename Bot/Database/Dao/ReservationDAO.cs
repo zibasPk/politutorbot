@@ -1,4 +1,4 @@
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using MySql.Data.MySqlClient;
 using Serilog;
 

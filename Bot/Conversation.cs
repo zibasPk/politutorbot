@@ -1,7 +1,7 @@
 using System.Timers;
 using Bot.configs;
 using Bot.Constants;
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using Bot.Enums;
 using Org.BouncyCastle.Crypto.Modes;
 using Serilog;

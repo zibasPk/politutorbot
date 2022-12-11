@@ -1,4 +1,4 @@
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using MySql.Data.MySqlClient;
 using Serilog;
 
@@ -143,6 +143,11 @@ public class TutorDAO
     }
   }
 
+  /// <summary>
+  /// Finds all possible tutorings from a tutor.
+  /// </summary>
+  /// <param name="tutorCode">Student code of tutor</param>
+  /// <returns>List of tutorings from a tutor.</returns>
   public List<TutorToExam> FindTutorings(int tutorCode)
   {
     _connection.Open();
@@ -193,9 +198,9 @@ public class TutorDAO
   }
 
   /// <summary>
-  /// Finds tutors.
+  /// Finds all possible tutorings.
   /// </summary>
-  /// <returns>List of tutors.</returns>
+  /// <returns>List of possible tutorings.</returns>
   public List<TutorToExam> FindTutorings()
   {
     _connection.Open();
@@ -285,6 +290,60 @@ public class TutorDAO
 
     _connection.Close();
     return tutors;
+  }
+
+  /// <summary>
+  /// Finds tutorings from ActiveTutoring table.
+  /// </summary>
+  /// <param name="active">True to find active tutorings, false to find ended tutorings.</param>
+  /// <returns>List of tutorings from ActiveTutoring table.</returns>
+  public List<ActiveTutoring> FindActiveTutorings(bool active)
+  {
+    _connection.Open();
+    var query = active
+      ? "SELECT * FROM active_tutoring join tutor on tutor=tutor_code " +
+        "WHERE end_date IS NULL"
+      : "SELECT * FROM active_tutoring join tutor on tutor=tutor_code " +
+        "WHERE end_date IS NOT NULL";
+    
+    var tutorings = new List<ActiveTutoring>();
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      var reader = command.ExecuteReader();
+
+      if (!reader.HasRows)
+        Log.Debug($"No active={active} tutorings found");
+
+      while (reader.Read())
+      {
+        var tutoring = new ActiveTutoring
+        {
+          Id = reader.GetInt32("ID"),
+          TutorCode = reader.GetInt32("tutor"),
+          TutorName = reader.GetString("name"),
+          TutorSurname = reader.GetString("surname"),
+          ExamCode = reader.GetInt32("exam"),
+          StudentCode = reader.GetInt32("student"),
+          IsOFA = reader.GetBoolean("is_OFA"),
+          StartDate = reader.GetDateTime("start_date"),
+        };
+        if (!active)
+        {
+          tutoring.EndDate = reader.GetDateTime("end_date");
+          tutoring.Duration = reader.GetInt32("duration");
+        }
+        tutorings.Add(tutoring);
+      }
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+
+    _connection.Close();
+    return tutorings;
   }
 
   /// <summary>
@@ -694,37 +753,57 @@ public class TutorDAO
 
   /// <summary>
   /// Ends a tutoring by adding an end date to an active tutoring,
-  /// and updates the number of available tutorings for the relating exam.
+  /// and if it wasn't for OFA it updates the number of available tutorings for the relative exam.
   /// </summary>
-  /// <param name="tutor">Tutor student number of the tutoring to end.</param>
-  /// <param name="exam">Exam code of the tutoring to end.</param>
-  /// <param name="studentCode">Student number of the tutoring to end.</param>
-  /// <returns>false if now rows where affected, otherwise true</returns>
-  public bool DeactivateTutoring(int tutor, int exam, int studentCode)
+  /// <param name="id">Id of the tutoring to End</param>
+  /// <param name="duration">Duration in hours of the tutoring.</param>
+  /// <returns>false if no rows where affected, otherwise true</returns>
+  public bool EndTutoring(int id, int duration)
   {
     _connection.Open();
     var transaction = _connection.BeginTransaction();
     const string query =
-      "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP WHERE tutor = @tutor AND student = @studentCode";
+      "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP, duration = @duration WHERE ID = @id AND student = @studentCode";
     try
     {
       var command = new MySqlCommand(query, _connection, transaction);
-      command.Parameters.AddWithValue("@tutor", tutor);
-      command.Parameters.AddWithValue("@studentCode", studentCode);
+      command.Parameters.AddWithValue("@id", id);
+      command.Parameters.AddWithValue("@duration", duration);
       command.Prepare();
       var affectedRows = command.ExecuteNonQuery();
       if (affectedRows == 0)
       {
         transaction.Commit();
         _connection.Close();
+        Log.Debug($"Tried ending a tutoring with id: {id} that didn't exist");
         return false;
       }
 
-      command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
-                            "WHERE exam=@exam AND tutor=@tutor";
+      command.CommandText = "SELECT * FROM active_tutoring WHERE ID=@id";
+      command.Parameters.Clear();
+      command.Parameters.AddWithValue("@id", id);
       command.Prepare();
-      command.ExecuteNonQuery();
+      
+      var reader = command.ExecuteReader();
+      reader.Read();
 
+      var tutor = reader.GetInt32("tutor");
+      var studentCode = reader.GetInt32("student");
+      var isOfa = reader.GetBoolean("is_OFA");
+      
+      if (!isOfa)
+      {
+        var exam = reader.GetInt32("exam");;
+        reader.Close();
+        command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
+                              "WHERE exam=@exam AND tutor=@tutor";
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@exam", exam);
+        command.Parameters.AddWithValue("@tutor", tutor);
+        command.Prepare();
+        command.ExecuteNonQuery();
+      }
+      
       transaction.Commit();
       Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was ended", tutor, studentCode);
     }
@@ -740,33 +819,65 @@ public class TutorDAO
   }
 
   /// <summary>
-  /// Ends a tutoring by adding an end date to an active OFA tutoring.
+  /// Ends a tutoring by adding an end date to an active tutoring,
+  /// and if it wasn't for OFA it updates the number of available tutorings for the relative exam.
   /// </summary>
-  /// <param name="tutor">Tutor student number of the tutoring to end.</param>
-  /// <param name="studentCode">Student number of the tutoring to end.</param>
-  /// <returns>false if now rows where affected, otherwise true</returns>
-  public bool DeactivateTutoring(int tutor, int studentCode)
+  /// <param name="id">Id of the tutoring to End</param>
+  /// <param name="duration">Duration in hours of the tutoring.</param>
+  /// <returns>false if no rows where affected, otherwise true</returns>
+  public bool EndTutorings(List<TutoringToDuration> durations)
   {
     _connection.Open();
     var transaction = _connection.BeginTransaction();
     const string query =
-      "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP WHERE tutor = @tutor AND student = @studentCode";
+      "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP, duration = @duration WHERE ID = @id";
     try
     {
-      var command = new MySqlCommand(query, _connection, transaction);
-      command.Parameters.AddWithValue("@tutor", tutor);
-      command.Parameters.AddWithValue("@studentCode", studentCode);
-      command.Prepare();
-      var affectedRows = command.ExecuteNonQuery();
-      if (affectedRows == 0)
+      foreach (var (id, duration) in durations)
       {
-        transaction.Commit();
-        _connection.Close();
-        return false;
-      }
+        var command = new MySqlCommand(query, _connection, transaction);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@duration", duration);
+        command.Prepare();
+        var affectedRows = command.ExecuteNonQuery();
+        if (affectedRows == 0)
+        {
+          transaction.Commit();
+          _connection.Close();
+          Log.Debug($"Tried ending a tutoring with id: {id} that didn't exist");
+          return false;
+        }
 
+        command.CommandText = "SELECT * FROM active_tutoring WHERE ID=@id";
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@id", id);
+        command.Prepare();
+      
+        var reader = command.ExecuteReader();
+        reader.Read();
+
+        var tutor = reader.GetInt32("tutor");
+        var studentCode = reader.GetInt32("student");
+        var isOfa = reader.GetBoolean("is_OFA");
+
+        if (isOfa)
+        {
+          reader.Close();
+          continue;
+        }
+        
+        var exam = reader.GetInt32("exam");;
+        reader.Close();
+        command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
+                              "WHERE exam=@exam AND tutor=@tutor";
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@exam", exam);
+        command.Parameters.AddWithValue("@tutor", tutor);
+        command.Prepare();
+        command.ExecuteNonQuery();
+      }
       transaction.Commit();
-      Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was ended", tutor, studentCode);
+      Log.Debug($"Given tutorings were ended.");
     }
     catch (Exception)
     {
@@ -778,7 +889,7 @@ public class TutorDAO
     _connection.Close();
     return true;
   }
-
+  
   public List<TutorToExam> FindAvailableOFATutors(int lockHours)
   {
     //TODO: check if tutor is already in an active tutoring

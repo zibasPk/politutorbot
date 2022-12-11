@@ -1,6 +1,6 @@
 using Bot.Database;
 using Bot.Database.Dao;
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Bot;
