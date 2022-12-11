@@ -117,7 +117,7 @@ class Table extends Component {
                   <this.renderRow row={row}
                     headers={this.state.Headers}
                     hasChecks={this.state.HasChecks}
-                    key={row.id}
+                    key={row.Id}
                     onChange={(e) => this.onItemCheck(e, row)}
                   />)
               }
@@ -151,7 +151,7 @@ class Table extends Component {
 
     return (
       <>
-        <tr key={props.row.id} className={props.row.selected ? styles.selected : ""}>
+        <tr key={props.row.Id} className={props.row.selected ? styles.selected : ""}>
           {props.hasChecks ? <th scope="row" className={styles.firstCell}>
             <input
               type="checkbox"
@@ -185,7 +185,7 @@ class Table extends Component {
   onItemCheck(e, item) {
     let tempList = this.state.FilteredContent;
     tempList.map((row) => {
-      if (row.id === item.id) {
+      if (row.Id === item.Id) {
         row.selected = e.target.checked;
       }
       return row;
@@ -268,13 +268,18 @@ class Table extends Component {
 
   handleModalVisibility() {
     const temp = this.state.IsModalVisible;
-    const tempList = this.props.content.filter(
-      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(this.state.SearchValue)
-    );
+    if(temp) {
+      const tempList = this.props.content.filter(
+        (item) => item[this.state.SearchOption].toString().toLowerCase().includes(this.state.SearchValue)
+      );
+      this.setState({
+        Content: this.props.content,
+        SelectedContent: [],
+        FilteredContent: tempList
+      });
+    }
     this.setState({
       IsModalVisible: !temp,
-      Content: this.props.content,
-      FilteredContent: tempList
     });
   }
 
