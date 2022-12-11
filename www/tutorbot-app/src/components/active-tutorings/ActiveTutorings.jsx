@@ -1,5 +1,6 @@
 import React from 'react';
 
+import RefreshableComponent from '../Interfaces';
 import Table from '../utils/Table';
 import ActiveTutoringsModal from './ActiveTutoringsModal';
 import EndedTutoringsModal from './EndedTutoringsModal';
@@ -159,6 +160,7 @@ const EndedHeaders = {
   start_date: "Data Inizio",
   end_date: "Data Fine",
   duration: "Ore Durata"
+class ActiveTutorings extends RefreshableComponent {
 }
 
 function ActiveTutorings() {

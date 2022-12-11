@@ -1,5 +1,6 @@
 import React from "react";
 
+import RefreshableComponent from "../Interfaces";
 import configData from "../../config/config.json"
 
 import styles from './Reservations.module.css';
@@ -17,18 +18,13 @@ const Headers = {
   ReservationTimestamp: "Data"
 };
 
-class Reservations extends React.Component {
+class Reservations extends RefreshableComponent {
   constructor(props) {
     super(props);
     this.state = {
       ProcessedReservations: undefined,
       PendingReservations: undefined
     };
-  }
-
-  // prepare object arrays for tables
-  componentDidMount() {
-    this.refreshData();
   }
 
   refreshData() {
@@ -67,7 +63,7 @@ class Reservations extends React.Component {
             <Table headers={Headers} content={this.state.PendingReservations} hasChecks={true}
               modalProps={{
                 modalContent: ModalBody,
-                modalTitle: "Conferma prenotazione selezionate",
+                modalTitle: "Conferma prenotazioni selezionate",
                 onModalEvent: () => this.refreshData()
               }}
               
