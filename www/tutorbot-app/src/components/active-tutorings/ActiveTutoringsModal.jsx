@@ -17,6 +17,16 @@ export default class ActiveTutoringsModal extends React.Component {
     }
   }
 
+  static getDerivedStateFromProps(props, state) {
+    if (props.selectedContent !== state.TutoringsList) {
+      return {
+        TutoringsList: props.selectedContent
+      };
+    }
+    return null; // No change to state
+  }
+
+
   tryEndingTutorings() {
     const temp = this.state.DurationList;
     if (temp.filter((x) => x.Duration === 0).length !== 0) {
@@ -125,7 +135,7 @@ export default class ActiveTutoringsModal extends React.Component {
       <>
         {
           this.state.AlertText !== "" ?
-            <div className={styles.AlertDiv}>{this.state.AlertText}</div>
+            <div className={styles.AlertText}>{this.state.AlertText}</div>
             : <></>
         }
         <this.renderContent

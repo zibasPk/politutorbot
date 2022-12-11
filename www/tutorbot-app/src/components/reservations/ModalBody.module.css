@@ -52,5 +52,6 @@ td:hover .arrow {
 }
 
 .AlertText {
+  text-align: center;
   color: red;
 }

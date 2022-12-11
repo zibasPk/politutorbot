@@ -49,3 +49,8 @@
 .tdHours {
   text-align: center;
 }
+
+.AlertText {
+  text-align: center;
+  color: red;
+}

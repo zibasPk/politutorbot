@@ -32,9 +32,27 @@ class Table extends Component {
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false,
       SearchOption: Object.keys(props.headers)[0],
-      SearchValue:""
+      SearchValue: ""
     };
   }
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.content !== state.Content) {
+      //Change in props
+      props.content.forEach((elem) => elem.selected = false);
+
+      const tempList = props.content.filter(
+        (item) => item[state.SearchOption].toString().toLowerCase().includes(state.SearchValue)
+      );
+      return {
+        Content: props.content,
+        FilteredContent: tempList,
+        SelectedContent: []
+      };
+    }
+    return null; // No change to state
+  }
+
 
   render() {
     let i = 0;
@@ -267,19 +285,8 @@ class Table extends Component {
   }
 
   handleModalVisibility() {
-    const temp = this.state.IsModalVisible;
-    if(temp) {
-      const tempList = this.props.content.filter(
-        (item) => item[this.state.SearchOption].toString().toLowerCase().includes(this.state.SearchValue)
-      );
-      this.setState({
-        Content: this.props.content,
-        SelectedContent: [],
-        FilteredContent: tempList
-      });
-    }
     this.setState({
-      IsModalVisible: !temp,
+      IsModalVisible: !this.state.IsModalVisible,
     });
   }
 

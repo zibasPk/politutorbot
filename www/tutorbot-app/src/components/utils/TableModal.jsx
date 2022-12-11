@@ -22,7 +22,7 @@ export default class TableModal extends React.Component {
     this.props.handleVisibility();
     this.props.onModalEvent();
   }
-
+  
   renderBody(props) {
     if (props.content !== undefined) {
       return (
