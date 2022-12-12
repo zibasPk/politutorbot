@@ -58,7 +58,7 @@ class ModalBody extends React.Component {
     return (
       <>
         <MailTemplate />
-        <div style={AlertDisplay} className={styles.AlertText}>{this.state.AlertText}</div>
+        <div style={AlertDisplay} className={styles.alertText}>{this.state.AlertText}</div>
         <this.renderContent resList={this.state.ResList} resAction={(id, action) => this.handleReservation(id, action)} />
       </>
     );

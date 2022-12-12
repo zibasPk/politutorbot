@@ -1,7 +1,7 @@
 import React from "react";
 
 import RefreshableComponent from "../Interfaces";
-import configData from "../../config/config.json"
+import configData from "../../config/config.json";
 
 import styles from './Reservations.module.css';
 import Table from "../utils/Table";
