@@ -1,5 +1,14 @@
 namespace Bot.Database.Records;
 
+public record struct Tutor(
+  int TutorCode,
+  string Name,
+  string Surname,
+  string Course,
+  bool OfaAvailable,
+  int Ranking
+);
+
 public record struct TutorToExam(
   int TutorCode,
   string Name,

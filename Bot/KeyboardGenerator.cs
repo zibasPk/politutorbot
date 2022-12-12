@@ -26,7 +26,7 @@ public static class KeyboardGenerator
     public static ReplyKeyboardMarkup? CourseKeyboard(string school)
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
-        var courses = courseService.FindCoursesInSchool(school);
+        var courses = courseService.FindCourses(school);
         return courses.Count == 0 ? null : GenerateKeyboardMarkup(courses, true);
     }
 

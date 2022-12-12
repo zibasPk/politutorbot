@@ -13,6 +13,51 @@ public class TutorDAO
     _connection = connection;
   }
 
+  /// <summary>
+  /// Finds all tutors saved in db.
+  /// </summary>
+  /// <returns>List of tutors in db.</returns>
+  public List<Tutor> FindTutors()
+  {
+    _connection.Open();
+    const string query = "SELECT * FROM tutor";
+
+    var tutors = new List<Tutor>();
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      var reader = command.ExecuteReader();
+
+      if (!reader.HasRows)
+      {
+        Log.Debug("No Tutors found in db");
+      }
+      
+      while (reader.Read())
+      {
+        var tutor = new Tutor
+        {
+          TutorCode = reader.GetInt32("tutor_code"),
+          Name = reader.GetString("name"),
+          Surname = reader.GetString("surname"),
+          Course = reader.GetString("course"),
+          Ranking = reader.GetInt32("ranking"),
+          OfaAvailable = reader.GetBoolean("OFA_available")
+        };
+        tutors.Add(tutor);
+      }
+      
+      reader.Close();
+      _connection.Close();
+      return tutors;
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+  }
+
   public int? FindTutorCode(string tutorFullName, int exam)
   {
     var names = tutorFullName.Split(' ');
@@ -305,7 +350,7 @@ public class TutorDAO
         "WHERE end_date IS NULL"
       : "SELECT * FROM active_tutoring join tutor on tutor=tutor_code " +
         "WHERE end_date IS NOT NULL";
-    
+
     var tutorings = new List<ActiveTutoring>();
     try
     {
@@ -333,6 +378,7 @@ public class TutorDAO
           tutoring.EndDate = reader.GetDateTime("end_date");
           tutoring.Duration = reader.GetInt32("duration");
         }
+
         tutorings.Add(tutoring);
       }
     }
@@ -783,17 +829,18 @@ public class TutorDAO
       command.Parameters.Clear();
       command.Parameters.AddWithValue("@id", id);
       command.Prepare();
-      
+
       var reader = command.ExecuteReader();
       reader.Read();
 
       var tutor = reader.GetInt32("tutor");
       var studentCode = reader.GetInt32("student");
       var isOfa = reader.GetBoolean("is_OFA");
-      
+
       if (!isOfa)
       {
-        var exam = reader.GetInt32("exam");;
+        var exam = reader.GetInt32("exam");
+        ;
         reader.Close();
         command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                               "WHERE exam=@exam AND tutor=@tutor";
@@ -803,7 +850,7 @@ public class TutorDAO
         command.Prepare();
         command.ExecuteNonQuery();
       }
-      
+
       transaction.Commit();
       Log.Debug("Tutoring from tutor: {tutor} to student: {studentCode} was ended", tutor, studentCode);
     }
@@ -852,7 +899,7 @@ public class TutorDAO
         command.Parameters.Clear();
         command.Parameters.AddWithValue("@id", id);
         command.Prepare();
-      
+
         var reader = command.ExecuteReader();
         reader.Read();
 
@@ -865,8 +912,9 @@ public class TutorDAO
           reader.Close();
           continue;
         }
-        
-        var exam = reader.GetInt32("exam");;
+
+        var exam = reader.GetInt32("exam");
+        ;
         reader.Close();
         command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                               "WHERE exam=@exam AND tutor=@tutor";
@@ -876,6 +924,7 @@ public class TutorDAO
         command.Prepare();
         command.ExecuteNonQuery();
       }
+
       transaction.Commit();
       Log.Debug($"Given tutorings were ended.");
     }
@@ -889,7 +938,7 @@ public class TutorDAO
     _connection.Close();
     return true;
   }
-  
+
   public List<TutorToExam> FindAvailableOFATutors(int lockHours)
   {
     //TODO: check if tutor is already in an active tutoring

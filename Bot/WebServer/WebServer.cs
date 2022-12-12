@@ -56,9 +56,11 @@ public static class WebServer
     app.UseHttpsRedirection();
 
     //Get tutor information
+    app.MapGet("/api/tutor", FetchTutors).RequireAuthorization();
     app.MapGet("/api/tutoring/{tutorType?}/{exam:int?}", FetchTutorings).RequireAuthorization();
     app.MapGet("/api/reservations/{value?}", FetchReservations).RequireAuthorization();
     app.MapGet("/api/students", FetchStudents).RequireAuthorization();
+    app.MapGet("/api/course", FetchCourses).RequireAuthorization();
 
 
     // Update a tutors lock
@@ -259,6 +261,11 @@ public static class WebServer
     }
   }
 
+  private static void FetchTutors(HttpResponse response)
+  {
+    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+    response.WriteAsync(JsonConvert.SerializeObject(tutorService.FindTutors()));
+  }
   private static void FetchReservations(string? value, HttpResponse response)
   {
     var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
@@ -293,6 +300,12 @@ public static class WebServer
   {
     var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
     response.WriteAsync(JsonConvert.SerializeObject(studentService.FindEnabledStudents()));
+  }
+  
+  private static void FetchCourses(HttpResponse response)
+  {
+    var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
+    response.WriteAsync(JsonConvert.SerializeObject(courseService.FindCourses()));
   }
 
   private static async void SavePersonCode(HttpRequest request, HttpResponse response)
