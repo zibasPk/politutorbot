@@ -28,7 +28,7 @@ class Table extends Component {
       HasChecks: props.hasChecks !== undefined ? props.hasChecks : false,
       MasterChecked: false,
       SelectedContent: [],
-      HeaderArrows: Array(Object.keys(props.headers).length - 1).fill(0),
+      HeaderArrows: Array(Object.keys(props.headers).length).fill(0),
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false,
       SearchOption: Object.keys(props.headers)[0],
@@ -223,7 +223,6 @@ class Table extends Component {
   }
 
   handleHeaderClick(key, i) {
-    console.log(i);
     const arrows = this.state.HeaderArrows;
     switch (arrows[i]) {
       case 0:

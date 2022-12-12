@@ -44,9 +44,11 @@ const TutorsArray = [
 
 
 const Headers = {
-  tutorNumber: "Cod. Matr. Tutor",
-  tutorSurname: "Cognome Tutor",
-  tutorName: "Nome Tutor"
+  TutorCode: "Cod. Matr. Tutor",
+  Surname: "Cognome Tutor",
+  Name: "Nome Tutor",
+  OfaAvailable: "Per OFA",
+  Ranking: "Posizione in graduatoria"
 };
 
 export default function TutorManagement() {
