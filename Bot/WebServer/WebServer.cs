@@ -192,7 +192,19 @@ public static class WebServer
     if (!studentCode.HasValue)
     {
       // Enable all given students
-      var studentCodes = await request.ReadFromJsonAsync<List<int>>();
+      List<int>? studentCodes = null;
+      try
+      {
+        studentCodes = await request.ReadFromJsonAsync<List<int>>();
+      }
+      catch (Exception)
+      {
+        // Invalid request body
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsync($"invalid request body");
+        return;
+      }
+
       if (studentCodes == null)
       {
         // Invalid request body
