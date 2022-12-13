@@ -32,7 +32,7 @@ public class TutorDAO
       {
         Log.Debug("No Tutors found in db");
       }
-      
+
       while (reader.Read())
       {
         var tutor = new Tutor
@@ -46,7 +46,7 @@ public class TutorDAO
         };
         tutors.Add(tutor);
       }
-      
+
       reader.Close();
       _connection.Close();
       return tutors;
@@ -56,6 +56,130 @@ public class TutorDAO
       _connection.Close();
       throw;
     }
+  }
+
+  /// <summary>
+  /// Adds a new possible tutoring to db.
+  /// </summary>
+  /// <param name="tutorings">tutoring to add</param>
+  /// <returns></returns>
+  public bool AddTutor(List<TutorToExam> tutorings)
+  {
+    _connection.Open();
+    var transaction = _connection.BeginTransaction();
+    const string query1 = "SELECT * FROM tutor WHERE ranking=@ranking";
+    const string query2 = "INSERT INTO tutor (tutor_code,name,surname,course,OFA_available,ranking) " +
+                          "VALUES (@tutor,@name,@surname,@course,@OFA_available,@ranking)";
+    const string query3 = "INSERT INTO tutor (tutor,exam,exam_professor,available_tutorings) " +
+                          "VALUES (@tutor,@exam,@professor,@availableTutorings)";
+    try
+    {
+      var command = new MySqlCommand(query1, _connection, transaction);
+
+      
+      foreach (var tutorToExam in tutorings)
+      {
+        // Check if rank is already owned by another tutor
+        command.CommandText = "SELECT * FROM tutor WHERE ranking=@ranking";
+        command.Parameters.AddWithValue("@ranking", tutorToExam.Ranking);
+        command.Prepare();
+        var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+          var code = reader.GetInt32("tutor_code");
+          if (code != tutorToExam.TutorCode)
+          {
+            Log.Warning($"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
+                        $"with the same rank as tutor: {code}");
+            return false;
+          }
+        }
+        
+        reader.Close();
+        // Check if tutor already has another rank
+        command.CommandText = "SELECT * FROM tutor WHERE tutor_code=@tutor";
+        command.Parameters.AddWithValue("@tutor", tutorToExam.TutorCode);
+        command.Prepare();
+        reader = command.ExecuteReader();
+        
+        if (reader.Read())
+        {
+          var ranking = reader.GetInt32("ranking");
+          if (ranking != tutorToExam.Ranking)
+          {
+            Log.Warning($"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
+                        $"with rank: {tutorToExam.Ranking} that is different from the already present {ranking}");
+            return false;
+          }
+        }
+        reader.Close();
+        command.CommandText = query2;
+        command.Parameters.AddWithValue("@tutor", tutorToExam.TutorCode);
+        command.Parameters.AddWithValue("@name", tutorToExam.Name);
+        command.Parameters.AddWithValue("@surname", tutorToExam.Surname);
+        command.Parameters.AddWithValue("@course", tutorToExam.Course);
+        command.Parameters.AddWithValue("@OFA_available", tutorToExam.OfaAvailable);
+        try
+        {
+          command.Prepare();
+          command.ExecuteNonQuery();
+        }
+        catch (Exception e)
+        {
+          if (e is MySqlException { Number: 1062 })
+          {
+            // duplicate key entry
+            _connection.Close();
+            Log.Debug($"Duplicate key entry while adding tutor: {tutorToExam.TutorCode}");
+          }
+          else
+          {
+            Console.WriteLine(e);
+            throw;
+          }
+        }
+
+        command.CommandText = query3;
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@tutor", tutorToExam.TutorCode);
+        command.Parameters.AddWithValue("@exam", tutorToExam.ExamCode);
+        command.Parameters.AddWithValue("@professor", tutorToExam.Professor);
+        command.Parameters.AddWithValue("@availableTutorings", tutorToExam.AvailableTutorings);
+        try
+        {
+          command.Prepare();
+          command.ExecuteNonQuery();
+        }
+        catch (Exception e)
+        {
+          if (e is MySqlException { Number: 1062 })
+          {
+            // duplicate key entry
+            _connection.Close();
+            Log.Warning(
+              $"Duplicate key entry while adding exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}");
+            return false;
+          }
+
+          Console.WriteLine(e);
+          throw;
+        }
+      }
+
+      transaction.Commit();
+      _connection.Close();
+      return true;
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+  }
+
+  public bool AddTutor(Tutor tutor)
+  {
+    throw new NotImplementedException();
   }
 
   public int? FindTutorCode(string tutorFullName, int exam)
