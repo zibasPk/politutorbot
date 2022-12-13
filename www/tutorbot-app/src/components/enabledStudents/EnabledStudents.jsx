@@ -2,11 +2,16 @@ import React from 'react';
 import styles from './EnabledStudents.module.css';
 import configData from "../../config/config.json"
 
+import Papa from "papaparse";
+
 import Form from 'react-bootstrap/Form';
 import InfoIcon from '../utils/InfoIcon';
 import RefreshableComponent from '../Interfaces';
 import { CircularProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+
+const allowedExtensions = ["csv", "vnd.ms-excel"];
 
 export default class EnabledStudents extends RefreshableComponent
 {
@@ -17,10 +22,11 @@ export default class EnabledStudents extends RefreshableComponent
       EnabledStudents: undefined,
       StudentToEnable: null,
       StudentToDisable: null,
+      StudentsToEnableFile: null,
+      StudentsToDisableFile: null,
       AlertText: ""
     };
   }
-
 
   refreshData()
   {
@@ -55,6 +61,36 @@ export default class EnabledStudents extends RefreshableComponent
 
   }
 
+  handleEnabledFileChange(e)
+  {
+    if (e.target.files.length)
+    {
+      const inputFile = e.target.files[0]
+
+      // Check the file extensions, if it not
+      // included in the allowed extensions
+      // we show the error
+      const fileExtension = inputFile?.type.split("/")[1];
+      if (!allowedExtensions.includes(fileExtension))
+      {
+        this.setState(
+          {
+            StudentsToEnableFile: inputFile,
+            AlertText: "File inserito non del formato .csv"
+          }
+        )
+        return;
+      }
+
+      this.setState(
+        {
+          StudentsToEnableFile: inputFile,
+          AlertText: ""
+        }
+      )
+    }
+  }
+
   changeStudentToDisable(value)
   {
     if (isNaN(value))
@@ -72,6 +108,36 @@ export default class EnabledStudents extends RefreshableComponent
 
   }
 
+  handleToDisableFileChange(e)
+  {
+    if (e.target.files.length)
+    {
+      const inputFile = e.target.files[0]
+
+      // Check the file extensions, if it not
+      // included in the allowed extensions
+      // we show the error
+      const fileExtension = inputFile?.type.split("/")[1];
+      if (!allowedExtensions.includes(fileExtension))
+      {
+        this.setState(
+          {
+            StudentsToDisableFile: null,
+            AlertText: "File inserito non del formato .csv"
+          }
+        )
+        return;
+      }
+
+      this.setState(
+        {
+          StudentsToDisableFile: inputFile,
+          AlertText: ""
+        }
+      )
+    }
+  }
+
   enabledStudent()
   {
     if (this.state.StudentToEnable == null || !this.state.StudentToEnable.toString().match(/^[1-9][0-9]{5}$/))
@@ -82,7 +148,8 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
-    if(this.state.EnabledStudents.includes(this.state.StudentToEnable)) {
+    if (this.state.EnabledStudents.includes(this.state.StudentToEnable))
+    {
       this.setState({
         AlertText: "Il codice matricola inserito è già abilitato",
       })
@@ -126,7 +193,8 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
-    if(!this.state.EnabledStudents.includes(this.state.StudentToDisable)) {
+    if (!this.state.EnabledStudents.includes(this.state.StudentToDisable))
+    {
       this.setState({
         AlertText: "Il codice matricola inserito è già non abilitato.",
       })
@@ -160,6 +228,60 @@ export default class EnabledStudents extends RefreshableComponent
       })
   }
 
+  sendStudents(students, action) 
+  {
+    // If user clicks the parse button without
+    // a file we show a error
+    if (!students)
+    {
+      this.setState({
+        AlertText: "Inserire un file valido."
+      })
+    };
+
+    // Initialize a reader which allows user
+    // to read any file or blob.
+    const reader = new FileReader();
+
+    // Event listener on reader when the file
+    // loads, we parse it and send the data.
+    reader.onload = async ({ target }) =>
+    {
+      const csv = Papa.parse(target.result, { header: false, skipEmptyLines: true });
+      const parsedData = csv?.data;
+      const formattedData = parsedData.map((line) => line[0]);
+
+      fetch(configData.botApiUrl + '/students/' + action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + btoa(configData.authCredentials),
+        },
+        body: JSON.stringify(formattedData)
+      }).then(resp =>
+      {
+        if (!resp.ok)
+          return resp.text();
+        this.refreshData();
+      })
+        .then((text) =>
+        {
+          if (text !== undefined)
+          {
+            this.setState({
+              AlertText: text,
+            })
+            return;
+          }
+          // Hide alert after a positive response
+          this.setState({
+            AlertText: ""
+          })
+        })
+    };
+    reader.readAsText(students);
+  }
+
   render()
   {
     return (
@@ -178,14 +300,17 @@ export default class EnabledStudents extends RefreshableComponent
                   <Form.Control type="text" placeholder="Matr. Studente"
                     onChange={(e) => this.changeStudentToEnable(parseInt(e.target.value))}
                   />
-                  <CheckIcon className={styles.actionBox} onClick={() => this.enabledStudent()} />
+                  <FileUploadIcon className={styles.actionBox} onClick={() => this.enabledStudent()} />
                 </div>
-
               </Form.Group>
               <Form.Group controlId="formFileEnable" className="mb-3">
                 <Form.Label>Carica File CSV</Form.Label>
                 <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da abilitare." />
-                <Form.Control type="file" />
+                <div className={styles.inputDiv}>
+                  <Form.Control type="file" onChange={(e) => this.handleEnabledFileChange(e)} />
+                  <FileUploadIcon className={styles.actionBox}
+                    onClick={() => this.sendStudents(this.state.StudentsToEnableFile, "enable")} />
+                </div>
               </Form.Group>
             </div>
             <div className={styles.removeFunctions}>
@@ -196,13 +321,17 @@ export default class EnabledStudents extends RefreshableComponent
                   <Form.Control type="text" placeholder="Matr. Studente"
                     onChange={(e) => this.changeStudentToDisable(parseInt(e.target.value))}
                   />
-                  <CheckIcon className={styles.actionBox} onClick={() => this.disableStudent()}/>
+                  <FileUploadIcon className={styles.actionBox} onClick={() => this.disableStudent()} />
                 </div>
               </Form.Group>
               <Form.Group controlId="formFileRemove" className="mb-3">
                 <Form.Label>Carica File CSV</Form.Label>
                 <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da rimuovere." />
-                <Form.Control type="file" />
+                <div className={styles.inputDiv}>
+                  <Form.Control type="file" onChange={(e) => this.handleToDisableFileChange(e)}/>
+                  <FileUploadIcon className={styles.actionBox}
+                    onClick={() => this.sendStudents(this.state.StudentsToDisableFile, "disable")} />
+                </div>
               </Form.Group>
             </div>
           </div>
@@ -238,9 +367,10 @@ class StudentList extends React.Component
     })
   }
 
-  static getDerivedStateFromProps(props, state) {
-    console.log("hola");
-    if (props.studentArray !== state.Students) {
+  static getDerivedStateFromProps(props, state)
+  {
+    if (props.studentArray !== state.Students)
+    {
       //Change in props
       const tempList = props.studentArray.filter(
         (student) => student.toString().includes(state.ActiveFilter)
