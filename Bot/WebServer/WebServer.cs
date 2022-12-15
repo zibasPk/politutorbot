@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
@@ -89,93 +90,109 @@ public static class WebServer
       return;
     }
 
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
-
-    if (reservationService.FindReservation(id) == null)
+    try
     {
-      // There is no Reservation with the given id
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"no reservation with id: {id} found");
-      return;
-    }
+      var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
+      if (reservationService.FindReservation(id) == null)
+      {
+        // There is no Reservation with the given id
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"no reservation with id: {id} found");
+        return;
+      }
 
-    if (reservationService.IsReservationProcessed(id))
+      if (reservationService.IsReservationProcessed(id))
+      {
+        // Reservation already marked as processed
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"reservation {id} already processed");
+        return;
+      }
+
+      if (action == "refuse")
+      {
+        reservationService.RefuseReservation(id);
+        return;
+      }
+
+      if (!reservationService.IsReservationAllowed(id))
+      {
+        // The exam corresponding to the reservation has no available reservations
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"tutor for reservation {id} hasn't enough available reservations for this exam.");
+        return;
+      }
+
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+      tutorService.ActivateTutoring(id);
+    }
+    catch (MySqlException e)
     {
-      // Reservation already marked as processed
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"reservation {id} already processed");
-      return;
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
     }
-
-    if (action == "refuse")
-    {
-      reservationService.RefuseReservation(id);
-      return;
-    }
-
-    if (!reservationService.IsReservationAllowed(id))
-    {
-      // The exam corresponding to the reservation has no available reservations
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"tutor for reservation {id} hasn't enough available reservations for this exam.");
-      return;
-    }
-
-    tutorService.ActivateTutoring(id);
   }
 
 
   private static async void TutoringAction(string action, int? id, int? duration, HttpResponse response,
     HttpRequest request)
   {
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    if (action != "end")
+    try
     {
-      response.StatusCode = StatusCodes.Status404NotFound;
-      return;
-    }
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
 
-    if (!id.HasValue)
-    {
-      // End all given tutorings
-      var durations = await request.ReadFromJsonAsync<List<TutoringToDuration>>();
-
-      if (durations == null)
+      if (action != "end")
       {
-        // invalid request body
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"invalid request body");
+        response.StatusCode = StatusCodes.Status404NotFound;
         return;
       }
 
-      var exceedingDuration = durations.Find(x => x.Duration > GlobalConfig.BotConfig!.MaxTutoringDuration);
-      if (exceedingDuration != default)
+      if (!id.HasValue)
       {
-        // invalid duration in request body
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync(
-          $"invalid duration for tutoring: {exceedingDuration.Id} in request body the maximum " +
-          $"is: {GlobalConfig.BotConfig!.MaxTutoringDuration} hours");
+        // End all given tutorings
+        var durations = await request.ReadFromJsonAsync<List<TutoringToDuration>>();
+
+        if (durations == null)
+        {
+          // invalid request body
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid request body");
+          return;
+        }
+
+        var exceedingDuration = durations.Find(x => x.Duration > GlobalConfig.BotConfig!.MaxTutoringDuration);
+        if (exceedingDuration != default)
+        {
+          // invalid duration in request body
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync(
+            $"invalid duration for tutoring: {exceedingDuration.Id} in request body the maximum " +
+            $"is: {GlobalConfig.BotConfig!.MaxTutoringDuration} hours");
+          return;
+        }
+
+        tutorService.EndTutorings(durations);
         return;
       }
 
-      tutorService.EndTutorings(durations);
-      return;
-    }
+      if (duration == null || duration > GlobalConfig.BotConfig!.MaxTutoringDuration)
+      {
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsync($"invalid duration parameter");
+        return;
+      }
 
-    if (duration == null || duration > GlobalConfig.BotConfig!.MaxTutoringDuration)
-    {
+      if (tutorService.EndTutoring(id.Value, duration.Value))
+        return;
+
       response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid duration parameter");
-      return;
+      await response.WriteAsync($"no tutoring with id {id.Value} found");
     }
-
-    if (tutorService.EndTutoring(id.Value, duration.Value))
-      return;
-
-    response.StatusCode = StatusCodes.Status400BadRequest;
-    await response.WriteAsync($"no tutoring with id {id.Value} found");
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
   }
 
   private static async void HandleStudentAction(string action, int? studentCode, HttpResponse response,
@@ -187,89 +204,97 @@ public static class WebServer
       return;
     }
 
-    var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
-
-    if (!studentCode.HasValue)
+    try
     {
-      // Enable all given students
-      List<int>? studentCodes = null;
-      try
+      var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
+
+      if (!studentCode.HasValue)
       {
-        studentCodes = await request.ReadFromJsonAsync<List<int>>();
-      }
-      catch (Exception)
-      {
-        // Invalid request body
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"invalid request body");
-        return;
+        // Enable all given students
+        List<int>? studentCodes = null;
+        try
+        {
+          studentCodes = await request.ReadFromJsonAsync<List<int>>();
+        }
+        catch (Exception)
+        {
+          // Invalid request body
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid request body");
+          return;
+        }
+
+        if (studentCodes == null)
+        {
+          // Invalid request body
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid request body");
+          return;
+        }
+
+        var badCode = studentCodes.Find(x => !Regex.IsMatch(x.ToString(), "^[1-9][0-9]{5}$"));
+
+        if (badCode != default)
+        {
+          // Student list contains an invalid student code format
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid student code: {badCode} in request body");
+          return;
+        }
+
+        switch (action)
+        {
+          case "enable":
+            if (studentService.EnableStudent(studentCodes)) return;
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            await response.WriteAsync($"duplicate student code in request body");
+            return;
+          case "disable":
+            if (studentService.DisableStudent(studentCodes)) return;
+            response.StatusCode = StatusCodes.Status400BadRequest;
+            await response.WriteAsync($"tried disabling non enabled student code");
+            return;
+          default:
+            response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
       }
 
-      if (studentCodes == null)
+      if (!Regex.IsMatch(studentCode.Value.ToString(), "^[1-9][0-9]{5}$"))
       {
-        // Invalid request body
+        // Request contains an invalid student code format
         response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"invalid request body");
-        return;
-      }
-
-      var badCode = studentCodes.Find(x => !Regex.IsMatch(x.ToString(), "^[1-9][0-9]{5}$"));
-
-      if (badCode != default)
-      {
-        // Student list contains an invalid student code format
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"invalid student code: {badCode} in request body");
+        await response.WriteAsync($"invalid student code: {studentCode.Value} in request");
         return;
       }
 
       switch (action)
       {
         case "enable":
-          if (studentService.EnableStudent(studentCodes)) return;
+          if (studentService.EnableStudent(studentCode.Value))
+            return;
+
+          // Request contains a duplicate student code
           response.StatusCode = StatusCodes.Status400BadRequest;
-          await response.WriteAsync($"duplicate student code in request body");
+          await response.WriteAsync($"tried enabling already enabled student code: {studentCode.Value}");
           return;
         case "disable":
-          if (studentService.DisableStudent(studentCodes)) return;
+          if (studentService.DisableStudent(studentCode.Value))
+            return;
+
+          // Request contains a duplicate student code
           response.StatusCode = StatusCodes.Status400BadRequest;
-          await response.WriteAsync($"tried disabling non enabled student code");
+          await response.WriteAsync($"tried disabling non enabled student code: {studentCode.Value}");
           return;
         default:
           response.StatusCode = StatusCodes.Status404NotFound;
           return;
       }
     }
-
-    if (!Regex.IsMatch(studentCode.Value.ToString(), "^[1-9][0-9]{5}$"))
+    catch (MySqlException e)
     {
-      // Request contains an invalid student code format
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid student code: {studentCode.Value} in request");
-      return;
-    }
-
-    switch (action)
-    {
-      case "enable":
-        if (studentService.EnableStudent(studentCode.Value))
-          return;
-
-        // Request contains a duplicate student code
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"tried enabling already enabled student code: {studentCode.Value}");
-        return;
-      case "disable":
-        if (studentService.DisableStudent(studentCode.Value))
-          return;
-
-        // Request contains a duplicate student code
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"tried disabling non enabled student code: {studentCode.Value}");
-        return;
-      default:
-        response.StatusCode = StatusCodes.Status404NotFound;
-        return;
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
     }
   }
 
@@ -325,73 +350,112 @@ public static class WebServer
       return;
     }
 
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    
-    switch (action)
+    try
     {
-      case "add":
-        //TODO: complete input validation for all tutors
-        if (tutorService.AddTutor(tutorings, out var errorMessage)) return;
-        response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"invalid tutorings in request body: {errorMessage}");
-        return;
-      case "remove":
-        // if (tutorService.AddTutor(tutorings[0])) return;
-        // response.StatusCode = StatusCodes.Status400BadRequest;
-        // await response.WriteAsync($"tried disabling non enabled student code");
-        return;
-      default:
-        response.StatusCode = StatusCodes.Status404NotFound;
-        return;
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+
+      switch (action)
+      {
+        case "add":
+          if (tutorService.AddTutor(tutorings, out var errorMessage)) return;
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid tutorings in request body: {errorMessage}");
+          return;
+        case "remove":
+          // if (tutorService.AddTutor(tutorings[0])) return;
+          // response.StatusCode = StatusCodes.Status400BadRequest;
+          // await response.WriteAsync($"tried disabling non enabled student code");
+          return;
+        default:
+          response.StatusCode = StatusCodes.Status404NotFound;
+          return;
+      }
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
     }
   }
 
   private static void FetchTutors(HttpResponse response)
   {
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    response.WriteAsync(JsonConvert.SerializeObject(tutorService.FindTutors()));
+    try
+    {
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+      response.WriteAsync(JsonConvert.SerializeObject(tutorService.FindTutors()));
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
   }
 
   private static void FetchReservations(string? value, HttpResponse response)
   {
-    var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
-
-    var returnObject = "";
-    switch (value)
+    try
     {
-      case null:
-        returnObject = JsonConvert.SerializeObject(reservationService.FindReservations());
-        break;
-      case "not-processed":
-        returnObject = JsonConvert.SerializeObject(reservationService.FindReservations(false));
-        break;
-      case "processed":
-        returnObject = JsonConvert.SerializeObject(reservationService.FindReservations(true));
-        break;
-      default:
-        if (int.TryParse(value, out var reservationId))
-        {
-          var reservation = reservationService.FindReservation(reservationId);
-          if (reservation != null)
-            returnObject = JsonConvert.SerializeObject(reservation);
-        }
+      var reservationService = new ReservationDAO(DbConnection.GetMySqlConnection());
 
-        break;
+      var returnObject = "";
+      switch (value)
+      {
+        case null:
+          returnObject = JsonConvert.SerializeObject(reservationService.FindReservations());
+          break;
+        case "not-processed":
+          returnObject = JsonConvert.SerializeObject(reservationService.FindReservations(false));
+          break;
+        case "processed":
+          returnObject = JsonConvert.SerializeObject(reservationService.FindReservations(true));
+          break;
+        default:
+          if (int.TryParse(value, out var reservationId))
+          {
+            var reservation = reservationService.FindReservation(reservationId);
+            if (reservation != null)
+              returnObject = JsonConvert.SerializeObject(reservation);
+          }
+
+          break;
+      }
+
+      response.WriteAsync(returnObject);
     }
-
-    response.WriteAsync(returnObject);
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
   }
 
   private static void FetchStudents(HttpResponse response)
   {
-    var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
-    response.WriteAsync(JsonConvert.SerializeObject(studentService.FindEnabledStudents()));
+    try
+    {
+      var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
+      response.WriteAsync(JsonConvert.SerializeObject(studentService.FindEnabledStudents()));
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
   }
 
   private static void FetchCourses(HttpResponse response)
   {
-    var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
-    response.WriteAsync(JsonConvert.SerializeObject(courseService.FindCourses()));
+    try
+    {
+      var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
+      response.WriteAsync(JsonConvert.SerializeObject(courseService.FindCourses()));
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
   }
 
   private static async void SavePersonCode(HttpRequest request, HttpResponse response)
@@ -431,77 +495,86 @@ public static class WebServer
 
   private static void FetchTutorings(string? tutorType, int? exam, HttpResponse response)
   {
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    if (tutorType == null)
+    try
     {
-      // Return all possible tutorings
-      var tutors = tutorService.FindTutorings();
-      response.WriteAsync(JsonConvert.SerializeObject(tutors));
-      return;
-    }
-
-    List<ActiveTutoring> activeTutoringsList;
-    switch (tutorType)
-    {
-      case "active":
-        // Return all active tutorings
-        activeTutoringsList = tutorService.FindActiveTutorings(true);
-        response.WriteAsync(JsonConvert.SerializeObject(activeTutoringsList));
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+      if (tutorType == null)
+      {
+        // Return all possible tutorings
+        var tutors = tutorService.FindTutorings();
+        response.WriteAsync(JsonConvert.SerializeObject(tutors));
         return;
-      case "ended":
-        // Return all ended tutorings
-        activeTutoringsList = tutorService.FindActiveTutorings(false);
-        response.WriteAsync(JsonConvert.SerializeObject(activeTutoringsList));
+      }
+
+      List<ActiveTutoring> activeTutoringsList;
+      switch (tutorType)
+      {
+        case "active":
+          // Return all active tutorings
+          activeTutoringsList = tutorService.FindActiveTutorings(true);
+          response.WriteAsync(JsonConvert.SerializeObject(activeTutoringsList));
+          return;
+        case "ended":
+          // Return all ended tutorings
+          activeTutoringsList = tutorService.FindActiveTutorings(false);
+          response.WriteAsync(JsonConvert.SerializeObject(activeTutoringsList));
+          return;
+      }
+
+      if (!Regex.IsMatch(tutorType, "^[1-9][0-9]{7}$"))
+      {
+        // Invalid tutorType parameter
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"invalid param: {tutorType}");
         return;
-    }
+      }
 
-    if (!Regex.IsMatch(tutorType, "^[1-9][0-9]{7}$"))
+      var tutorCode = int.Parse(tutorType);
+      var tutoringList = tutorService.FindTutorings(tutorCode);
+
+      if (tutoringList.Count == 0)
+      {
+        // Given tutor has no tutorings
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"no tutorings for tutor with code: {tutorCode} found");
+        return;
+      }
+
+      if (!exam.HasValue)
+      {
+        // Return all possible tutorings from a tutor
+        response.WriteAsync(JsonConvert.SerializeObject(tutoringList));
+        return;
+      }
+
+      var examService = new ExamDAO(DbConnection.GetMySqlConnection());
+
+      if (!examService.FindExam(exam.Value))
+      {
+        // Exam doesn't exist
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"no exam with code: {exam.Value} found");
+        return;
+      }
+      
+      var tutoring = tutorService.FindTutoring(tutorCode, exam.Value);
+
+      if (tutoring == null)
+      {
+        // Tutoring doesn't exist
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        response.WriteAsync($"no tutoring from tutor: {tutorCode} for exam: {exam.Value} found");
+        return;
+      }
+
+      // Return tutoring from tutor for exam
+      response.WriteAsync(JsonConvert.SerializeObject(tutoring));
+    }
+    catch (MySqlException e)
     {
-      // Invalid tutorType parameter
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"invalid param: {tutorType}");
-      return;
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
     }
-
-    var tutorCode = int.Parse(tutorType);
-    var tutoringList = tutorService.FindTutorings(tutorCode);
-
-    if (tutoringList.Count == 0)
-    {
-      // Given tutor has no tutorings
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"no tutorings for tutor with code: {tutorCode} found");
-      return;
-    }
-
-    if (!exam.HasValue)
-    {
-      // Return all possible tutorings from a tutor
-      response.WriteAsync(JsonConvert.SerializeObject(tutoringList));
-      return;
-    }
-
-    var examService = new ExamDAO(DbConnection.GetMySqlConnection());
-    if (!examService.FindExam(exam.Value))
-    {
-      // Exam doesn't exist
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"no exam with code: {exam.Value} found");
-      return;
-    }
-
-    var tutoring = tutorService.FindTutoring(tutorCode, exam.Value);
-
-    if (tutoring == null)
-    {
-      // Tutoring doesn't exist
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"no tutoring from tutor: {tutorCode} for exam: {exam.Value} found");
-      return;
-    }
-
-    // Return tutoring from tutor for exam
-    response.WriteAsync(JsonConvert.SerializeObject(tutoring));
   }
 
   private static async void DeleteTutor(string tutor, HttpResponse response)

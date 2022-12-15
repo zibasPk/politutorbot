@@ -110,7 +110,7 @@ public class Conversation
     }
 
     /// <summary>
-    /// Resets a conversation by erasing all data but the chatId. 
+    /// Resets a conversation after time out by erasing all data but the chatId. 
     /// </summary>
     private async void ResetConversation(object? source, ElapsedEventArgs e)
     {
@@ -126,5 +126,23 @@ public class Conversation
         Tutor = null;
         Monitor.Exit(ConvLock);
         await AsyncResponseHandler.SendMessage(ChatId, ReplyTexts.ConversationReset);
+    }
+
+    /// <summary>
+    /// Resets a conversation by erasing all data but the chatId. 
+    /// </summary>
+    public async void ResetConversation()
+    {
+        if (!Monitor.TryEnter(ConvLock))
+            return;
+        Log.Debug("Resetting conversation in state {state}", State);
+        State = UserState.Start;
+        School = null;
+        Course = null;
+        Year = null;
+        Exam = null;
+        StudentCode = 0;
+        Tutor = null;
+        Monitor.Exit(ConvLock);
     }
 }

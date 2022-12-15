@@ -88,23 +88,31 @@ public static class MessageHandlers
       command = conversation.GetCurrentTopic();
     }
 
-    var action = conversation.State switch
+    try
     {
-      UserState.Start => SendSchoolKeyboard(botClient, message),
-      UserState.School => SendCourseKeyboard(botClient, message, command!),
-      UserState.Course => SendSaveUserData(botClient, message, command!),
-      UserState.Link => ReadStudentCode(botClient, message, command!),
-      UserState.ReLink => ReadReLinkAnswer(botClient, message, command!),
-      UserState.OFA => ReadOFAAnswer(botClient, message, command!),
-      UserState.OFATutor => ReadOFATutor(botClient, message, command!),
-      UserState.Year => SendExamKeyboard(botClient, message, command!),
-      UserState.Exam => SendTutorsKeyboard(botClient, message, command!),
-      UserState.Tutor => ReadTutor(botClient, message, command!),
-      _ => SendEcho(botClient, message)
-    };
-
-
-    await action;
+      var action = conversation.State switch
+      {
+        UserState.Start => SendSchoolKeyboard(botClient, message),
+        UserState.School => SendCourseKeyboard(botClient, message, command!),
+        UserState.Course => SendSaveUserData(botClient, message, command!),
+        UserState.Link => ReadStudentCode(botClient, message, command!),
+        UserState.ReLink => ReadReLinkAnswer(botClient, message, command!),
+        UserState.OFA => ReadOFAAnswer(botClient, message, command!),
+        UserState.OFATutor => ReadOFATutor(botClient, message, command!),
+        UserState.Year => SendExamKeyboard(botClient, message, command!),
+        UserState.Exam => SendTutorsKeyboard(botClient, message, command!),
+        UserState.Tutor => ReadTutor(botClient, message, command!),
+        _ => SendEcho(botClient, message)
+      };
+      
+      await action;
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+      await InternalErrorMessage(botClient, message);
+    }
+    
   }
 
   private static async Task<Message> ReadOFATutor(ITelegramBotClient botClient, Message message, string tutor)
@@ -658,6 +666,16 @@ public static class MessageHandlers
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,
+      replyMarkup: new ReplyKeyboardRemove());
+  }
+
+  private static async Task<Message> InternalErrorMessage(ITelegramBotClient botClient, Message message)
+  {
+    UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
+    conversation!.ResetConversation();
+    
+    return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+      text: ReplyTexts.InternalError,
       replyMarkup: new ReplyKeyboardRemove());
   }
 }

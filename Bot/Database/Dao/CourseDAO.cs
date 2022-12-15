@@ -66,10 +66,10 @@ public class CourseDAO
             while (reader.Read())
                 courses.Add(reader.GetString("name"));
         }
-        catch (Exception)
+        catch (Exception e)
         {
             _connection.Close();
-            throw;
+            Console.WriteLine(e);
         }
 
         _connection.Close();
