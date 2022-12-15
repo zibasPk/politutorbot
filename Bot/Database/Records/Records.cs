@@ -27,7 +27,7 @@ public record struct ActiveTutoring(
   int TutorCode,
   string TutorName,
   string TutorSurname,
-  int ExamCode,
+  int? ExamCode,
   int StudentCode,
   bool IsOFA,
   DateTime StartDate,

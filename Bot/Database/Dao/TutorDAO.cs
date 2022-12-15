@@ -540,11 +540,12 @@ public class TutorDAO
           TutorCode = reader.GetInt32("tutor"),
           TutorName = reader.GetString("name"),
           TutorSurname = reader.GetString("surname"),
-          ExamCode = reader.GetInt32("exam"),
           StudentCode = reader.GetInt32("student"),
           IsOFA = reader.GetBoolean("is_OFA"),
           StartDate = reader.GetDateTime("start_date"),
         };
+        if (!tutoring.IsOFA)
+          tutoring.ExamCode = reader.GetInt32("exam");
         if (!active)
         {
           tutoring.EndDate = reader.GetDateTime("end_date");
