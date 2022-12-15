@@ -54,3 +54,10 @@
   text-align: center;
   color: red;
 }
+
+.endTutoringsBtn {
+  margin-top: 1em;
+  float: right;
+  background-color: rgb(197, 59, 59);
+  border-color: rgb(197, 59, 59);
+}

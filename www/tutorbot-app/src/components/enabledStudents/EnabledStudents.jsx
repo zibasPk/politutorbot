@@ -305,7 +305,7 @@ export default class EnabledStudents extends RefreshableComponent
               </Form.Group>
               <Form.Group controlId="formFileEnable" className="mb-3">
                 <Form.Label>Carica File CSV</Form.Label>
-                <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da abilitare." />
+                <InfoIcon text="Caricare un file CVS contente un elenco (**in colonna**) di codici matricola da abilitare." />
                 <div className={styles.inputDiv}>
                   <Form.Control type="file" onChange={(e) => this.handleEnabledFileChange(e)} />
                   <FileUploadIcon className={styles.actionBox}
@@ -326,7 +326,7 @@ export default class EnabledStudents extends RefreshableComponent
               </Form.Group>
               <Form.Group controlId="formFileRemove" className="mb-3">
                 <Form.Label>Carica File CSV</Form.Label>
-                <InfoIcon text="Caricare un file CVS contente un elenco di codici matricola da rimuovere." />
+                <InfoIcon text="Caricare un file CVS contente un elenco (**in colonna**) di codici matricola da rimuovere." />
                 <div className={styles.inputDiv}>
                   <Form.Control type="file" onChange={(e) => this.handleToDisableFileChange(e)}/>
                   <FileUploadIcon className={styles.actionBox}

@@ -17,8 +17,6 @@ export default class EndedTutoringsModal extends React.Component
     }
   }
 
-
-
   renderContent(props)
   {
     const rows = props.selectedList;

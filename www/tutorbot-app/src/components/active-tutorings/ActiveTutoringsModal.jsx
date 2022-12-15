@@ -6,19 +6,28 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
 
-export default class ActiveTutoringsModal extends React.Component {
-  constructor(props) {
+export default class ActiveTutoringsModal extends React.Component
+{
+  constructor(props)
+  {
     super(props);
     this.state = {
       TutoringsList: props.selectedContent,
-      DurationList: props.selectedContent.map((tutoring) => {return { Id: tutoring.Id,
-         Duration: 0 }}),
+      DurationList: props.selectedContent.map((tutoring) =>
+      {
+        return {
+          Id: tutoring.Id,
+          Duration: 0
+        }
+      }),
       AlertText: "",
     }
   }
 
-  static getDerivedStateFromProps(props, state) {
-    if (props.selectedContent !== state.TutoringsList) {
+  static getDerivedStateFromProps(props, state)
+  {
+    if (props.selectedContent !== state.TutoringsList)
+    {
       return {
         TutoringsList: props.selectedContent
       };
@@ -27,9 +36,11 @@ export default class ActiveTutoringsModal extends React.Component {
   }
 
 
-  tryEndingTutorings() {
+  tryEndingTutorings()
+  {
     const temp = this.state.DurationList;
-    if (temp.filter((x) => x.Duration === 0).length !== 0) {
+    if (temp.filter((x) => x.Duration === 0).length !== 0)
+    {
       // Some tutorings have no attached duration
       this.setState({
         AlertText: "Alcuni tutoraggi non hanno un valore valido nel campo Durata in Ore",
@@ -44,13 +55,16 @@ export default class ActiveTutoringsModal extends React.Component {
         'Authorization': 'Basic ' + btoa(configData.authCredentials),
       },
       body: JSON.stringify(this.state.DurationList)
-    }).then(resp => {
+    }).then(resp =>
+    {
       if (!resp.ok)
         return resp.text();
       this.props.onModalEvent()
     })
-      .then((text) => {
-        if (text !== undefined) {
+      .then((text) =>
+      {
+        if (text !== undefined)
+        {
           this.setState({
             AlertText: text
           })
@@ -63,7 +77,8 @@ export default class ActiveTutoringsModal extends React.Component {
       })
   }
 
-  changeDuration(index, value) {
+  changeDuration(index, value)
+  {
     const temp = this.state.DurationList;
     if (isNaN(value))
       temp[index].Duration = 0;
@@ -74,11 +89,13 @@ export default class ActiveTutoringsModal extends React.Component {
     })
   }
 
-  renderContent(props) {
+  renderContent(props)
+  {
     const rows = props.selectedList;
     const durations = props.durations;
 
-    const renderBody = rows.map((tutoring, i) => {
+    const renderBody = rows.map((tutoring, i) =>
+    {
       var formClass = durations[i].Duration === 0 ? styles.formHoursEmpty : styles.formHours;
       const textForm = <Form.Control
         className={formClass}
@@ -99,7 +116,8 @@ export default class ActiveTutoringsModal extends React.Component {
       );
     });
 
-    if (rows.length !== 0) {
+    if (rows.length !== 0)
+    {
       return (
         <>
 
@@ -119,9 +137,12 @@ export default class ActiveTutoringsModal extends React.Component {
               {renderBody}
             </tbody>
           </table>
-          <Button variant="warning" onClick={() => props.tryEndingTutorings()}>
-            Concludi
-          </Button>
+          <div>
+            <Button className={styles.endTutoringsBtn} variant="warning" onClick={() => props.tryEndingTutorings()}>
+              Concludi
+            </Button>
+          </div>
+
         </>
 
       )
@@ -130,7 +151,8 @@ export default class ActiveTutoringsModal extends React.Component {
       return (<div>Nessun Tutoraggio Selezionato</div>);
   }
 
-  render() {
+  render()
+  {
     return (
       <>
         {

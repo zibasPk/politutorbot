@@ -259,9 +259,10 @@ export default function AddTutor(props)
               <Form.Label>Carica File CSV Tutor</Form.Label>
               <InfoIconBis content={<>
                 <div>Inserire un file cvs con righe come da figura:</div>
+                <div><strong>Attenzione i nomi dell'intestazione deve essere come da figura **comprese maiuscole**</strong></div>
                 <img src={pic}></img>
               </>} />
-              {/* <InfoIcon text={<img src={pic}></img>} /> */}
+
               <div className={styles.inputDiv}>
                 <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
                 <FileUploadIcon className={styles.actionBox} onClick={() => sendFile(tutoringFile, "add")} />

@@ -16,7 +16,7 @@ export default function InfoIconBis(props) {
       <ClickAwayListener onClickAway={() => setShow(false)}>
         <>
         <HelpIcon ref={target} className="helpIcon" onClick={() => setShow(!show)} />
-        <Overlay target={target.current} show={show} placement="right">
+        <Overlay target={target.current} show={show} placement="top">
           {(props) => (
             <Tooltip id="overlay-example" className='largeToolTip' {...props}>
               {content}
