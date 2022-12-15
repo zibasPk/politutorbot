@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import styles from './TutorManagement.module.css'
 import configData from "../../config/config.json";
+import validationConfig from "../../config/validation-config.json";
 import pic from '../../assets/excel-pic.png';
 
 import Papa from "papaparse";
@@ -120,10 +121,13 @@ export default function AddTutor(props)
     // to read any file or blob.
     const reader = new FileReader();
 
+
     // Event listener on reader when the file
     // loads, we parse it and send the data.
     reader.onload = async ({ target }) =>
     {
+      let alertMsg = null;
+
       const csv = Papa.parse(target.result, { header: true, skipEmptyLines: true });
       const parsedData = csv?.data;
       parsedData.forEach((tutoring) =>
@@ -132,10 +136,17 @@ export default function AddTutor(props)
           tutoring.OfaAvailable = true;
         else
           tutoring.OfaAvailable = false;
-      }
 
-      )
-      sendTutorings(parsedData, action);
+        alertMsg = validateTutoring(tutoring);
+        if (alertMsg != null)
+        {
+          setFileAlertText("Errore nei dati per tutor " + tutoring.TutorCode + ": " + alertMsg);
+          return;
+        }
+      });
+
+      if (alertMsg == null)
+        sendTutorings(parsedData, action);
     };
     reader.readAsText(tutoringsFile);
   }
@@ -143,7 +154,13 @@ export default function AddTutor(props)
 
   const handleSubmit = (e) =>
   {
-    sendTutorings([formData], "add")
+    let alertMsg = validateTutoring(formData);
+    if (alertMsg == null)
+    {
+      sendTutorings([formData], "add");
+      return;
+    }
+    setFileAlertText(alertMsg);
   }
 
   const handleFormChange = (e) =>
@@ -162,6 +179,44 @@ export default function AddTutor(props)
         [e.target.name]: value
       }
     )
+  }
+
+  const validateTutoring = (tutoring) =>
+  {
+    if (tutoring.Name && tutoring.Name.length > validationConfig.maxNameLength)
+      return 'La massima lunghezza per il Nome del tutor è ' + validationConfig.maxNameLength + " caratteri";
+
+    if (tutoring.Surname && tutoring.Surname.length > validationConfig.maxSurnameLength)
+      return 'La massima lunghezza per il Cognome del tutor è ' + validationConfig.maxSurnameLength + " caratteri";
+
+    if (tutoring.Professor && tutoring.Professor.length > validationConfig.maxProfessorFullNameLength)
+      return 'La massima lunghezza per il nome del Professore è ' + validationConfig.maxProfessorFullNameLength + " caratteri";
+
+    if (!tutoring.TutorCode)
+      return 'Codice matricola Tutor mancante';
+
+    if (!tutoring.TutorCode.match(validationConfig.studentCodeRegex))
+      return 'Codice matricola Tutor non valido';
+
+    if (!tutoring.ExamCode)
+      return 'Codice esame mancante';
+
+    if (!tutoring.ExamCode.match(validationConfig.examCodeRegex))
+      return 'Codice esame inserito non valido';
+
+    if (!courses.includes(tutoring.Course))
+      return 'Nome corso <' + tutoring.Course + '> non valido';
+
+    if (isNaN(tutoring.Ranking))
+      return 'Posizione in graduatoria <' + tutoring.Ranking + '> non valida';
+
+    if (isNaN(tutoring.AvailableTutorings))
+      return 'Diponibalità massima <' + tutoring.AvailableTutorings + '> non valida';
+
+    if (typeof tutoring.OfaAvailable != "boolean")
+      return 'Valore non valido per disponibilità OFA';
+
+    return null;
   }
 
   const handleExpandClick = () =>

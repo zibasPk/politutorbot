@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './EnabledStudents.module.css';
 import configData from "../../config/config.json"
+import validationConfig from "../../config/validation-config.json"
 
 import Papa from "papaparse";
 
@@ -185,7 +186,7 @@ export default class EnabledStudents extends RefreshableComponent
 
   disableStudent()
   {
-    if (this.state.StudentToDisable == null || !this.state.StudentToDisable.toString().match(/^[1-9][0-9]{5}$/))
+    if (this.state.StudentToDisable == null || !this.state.StudentToDisable.toString().match(validationConfig.studentCodeRegex))
     {
       this.setState({
         AlertText: "Inserire un codice matricola valido",
@@ -230,6 +231,7 @@ export default class EnabledStudents extends RefreshableComponent
 
   sendStudents(students, action) 
   {
+    console.log(students);
     // If user clicks the parse button without
     // a file we show a error
     if (!students)
