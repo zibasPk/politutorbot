@@ -148,8 +148,8 @@ const ActiveHeaders = {
   TutorCode: "Cod. Matr. Tutor",
   TutorSurname: "Cognome Tutor",
   TutorName: "Nome Tutor",
-  ExamCode: "Cod. Matr. Studente",
-  StudentCode: "Codice Esame",
+  ExamCode: "Codice Esame",
+  StudentCode: "Cod. Matr. Studente",
   StartDate: "Data Inizio",
 }
 
@@ -157,8 +157,8 @@ const EndedHeaders = {
   TutorCode: "Cod. Matr. Tutor",
   TutorSurname: "Cognome Tutor",
   TutorName: "Nome Tutor",
-  ExamCode: "Cod. Matr. Studente",
-  StudentCode: "Codice Esame",
+  ExamCode: "Codice Esame",
+  StudentCode: "Cod. Matr. Studente",
   StartDate: "Data Inizio",
   EndDate: "Data Fine",
   Duration: "Durata in Ore"
@@ -174,7 +174,6 @@ class ActiveTutorings extends RefreshableComponent {
   }
 
   refreshData() {
-    console.log("refreshing data");
     fetch(configData.botApiUrl + '/tutoring/active', {
       method: 'GET',
       headers: {
@@ -235,7 +234,7 @@ class ActiveTutorings extends RefreshableComponent {
                 content={this.state.EndedTutoringsArray} hasChecks={true}
                 modalProps={{
                   modalContent: EndedTutoringsModal,
-                  modalTitle: "Esporta File CSV"
+                  modalTitle: "Esporta File CSV",
                 }}
               />
             </>}
