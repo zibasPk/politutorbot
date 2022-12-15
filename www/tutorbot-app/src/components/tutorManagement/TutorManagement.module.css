@@ -47,12 +47,12 @@
 
 .actionBox {
   font-size: 2.5em !important;
-  color: #4A9CE3;
+  color: var(--primary-color);
 }
 
 .actionBox :hover{
   cursor: pointer;
-  color: rgb(255, 193, 7);
+  color: var(--contrast-color);
 }
 
 .tutorFileAlert {
