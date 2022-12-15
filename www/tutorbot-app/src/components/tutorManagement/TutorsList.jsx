@@ -31,7 +31,7 @@ export default function TutorsList(props) {
           tutor.Id = i;
         });
         setTutors(tutors);
-      })
+      });
   }, [])
 
   const icon = !expanded ? <ExpandMoreIcon
@@ -56,7 +56,7 @@ export default function TutorsList(props) {
         <h1>Lista Tutor{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <div className={styles.tutorListContent}>
-            <Table headers={props.headers} content={tutors} hasChecks={false}
+            <Table headers={props.headers} content={props.tutorList} hasChecks={false}
               modalProps={{
                 modalTitle: "Cambia stato tutor selezionati"
               }} />

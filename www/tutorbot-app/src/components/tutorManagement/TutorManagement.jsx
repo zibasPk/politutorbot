@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import configData from "../../config/config.json"
 import styles from './TutorManagement.module.css'
+
 import AddTutor from './AddTutor';
 import TutorsList from './TutorsList';
 
@@ -51,11 +53,39 @@ const Headers = {
   Ranking: "Posizione in graduatoria"
 };
 
-export default function TutorManagement() {
+export default function TutorManagement()
+{
+
+  const [tutorsArray, setTutors] = useState([]);
+
+  useEffect(() =>
+  {
+    refreshData();
+  }, [])
+
+  const refreshData = () =>
+  {
+    fetch(configData.botApiUrl + '/tutor', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Basic ' + btoa(configData.authCredentials),
+      }
+    }).then(resp => resp.json())
+      .then((tutors) =>
+      {
+        tutors.forEach((tutor, i) =>
+        {
+          tutor.OfaAvailable ? tutor.OfaAvailable = "SI" : tutor.OfaAvailable = "NO";
+          tutor.Id = i;
+        });
+        setTutors(tutors);
+      });
+  }
+
   return (
     <div className={styles.content}>
-      <AddTutor />
-      <TutorsList headers={Headers} tutorList={TutorsArray}/>
+      <AddTutor onChange={() => refreshData()} />
+      <TutorsList headers={Headers} tutorList={tutorsArray} />
     </div>
   );
 }

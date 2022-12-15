@@ -11,7 +11,7 @@ import { CircularProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 
-const allowedExtensions = ["csv", "vnd.ms-excel"];
+export const allowedExtensions = ["csv", "vnd.ms-excel"];
 
 export default class EnabledStudents extends RefreshableComponent
 {
@@ -75,7 +75,7 @@ export default class EnabledStudents extends RefreshableComponent
       {
         this.setState(
           {
-            StudentsToEnableFile: inputFile,
+            StudentsToEnableFile: null,
             AlertText: "File inserito non del formato .csv"
           }
         )
