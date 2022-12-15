@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Bot.Database.Records;
 using MySql.Data.MySqlClient;
 using Serilog;
@@ -51,8 +52,9 @@ public class TutorDAO
       _connection.Close();
       return tutors;
     }
-    catch (Exception)
+    catch (Exception e)
     {
+      Console.WriteLine(e);
       _connection.Close();
       throw;
     }
@@ -62,23 +64,37 @@ public class TutorDAO
   /// Adds a new possible tutoring to db.
   /// </summary>
   /// <param name="tutorings">tutoring to add</param>
-  /// <returns></returns>
+  /// <returns>false if anything goes wrong, otherwise true.</returns>
   public bool AddTutor(List<TutorToExam> tutorings)
   {
+    return AddTutor(tutorings, out _);
+  }
+
+  /// <summary>
+  /// Adds a new possible tutoring to db.
+  /// </summary>
+  /// <param name="tutorings">tutoring to add</param>
+  /// <param name="errorMessage">error message</param>
+  /// <returns>false if anything goes wrong, otherwise true.</returns>
+  public bool AddTutor(List<TutorToExam> tutorings, out string errorMessage)
+  {
+    errorMessage = "";
     _connection.Open();
     var transaction = _connection.BeginTransaction();
     const string query1 = "SELECT * FROM tutor WHERE ranking=@ranking";
     const string query2 = "INSERT INTO tutor (tutor_code,name,surname,course,OFA_available,ranking) " +
                           "VALUES (@tutor,@name,@surname,@course,@OFA_available,@ranking)";
-    const string query3 = "INSERT INTO tutor (tutor,exam,exam_professor,available_tutorings) " +
+    const string query3 = "INSERT INTO tutor_to_exam (tutor,exam,exam_professor,available_tutorings) " +
                           "VALUES (@tutor,@exam,@professor,@availableTutorings)";
     try
     {
       var command = new MySqlCommand(query1, _connection, transaction);
 
-      
+
       foreach (var tutorToExam in tutorings)
       {
+        // Clear parameters from last loop
+        command.Parameters.Clear();
         // Check if rank is already owned by another tutor
         command.CommandText = "SELECT * FROM tutor WHERE ranking=@ranking";
         command.Parameters.AddWithValue("@ranking", tutorToExam.Ranking);
@@ -89,32 +105,34 @@ public class TutorDAO
           var code = reader.GetInt32("tutor_code");
           if (code != tutorToExam.TutorCode)
           {
-            Log.Warning($"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
-                        $"with the same rank as tutor: {code}");
+            errorMessage = $"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
+                           $"with the same rank as tutor: {code}";
+            Log.Warning(errorMessage);
             return false;
           }
         }
-        
+
         reader.Close();
         // Check if tutor already has another rank
         command.CommandText = "SELECT * FROM tutor WHERE tutor_code=@tutor";
         command.Parameters.AddWithValue("@tutor", tutorToExam.TutorCode);
         command.Prepare();
         reader = command.ExecuteReader();
-        
+
         if (reader.Read())
         {
           var ranking = reader.GetInt32("ranking");
           if (ranking != tutorToExam.Ranking)
           {
-            Log.Warning($"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
-                        $"with rank: {tutorToExam.Ranking} that is different from the already present {ranking}");
+            errorMessage = $"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
+                           $"with rank: {tutorToExam.Ranking} that is different from the already present rank: {ranking}";
+            Log.Warning(errorMessage);
             return false;
           }
         }
+
         reader.Close();
         command.CommandText = query2;
-        command.Parameters.AddWithValue("@tutor", tutorToExam.TutorCode);
         command.Parameters.AddWithValue("@name", tutorToExam.Name);
         command.Parameters.AddWithValue("@surname", tutorToExam.Surname);
         command.Parameters.AddWithValue("@course", tutorToExam.Course);
@@ -126,16 +144,29 @@ public class TutorDAO
         }
         catch (Exception e)
         {
-          if (e is MySqlException { Number: 1062 })
+          switch (e)
           {
-            // duplicate key entry
-            _connection.Close();
-            Log.Debug($"Duplicate key entry while adding tutor: {tutorToExam.TutorCode}");
-          }
-          else
-          {
-            Console.WriteLine(e);
-            throw;
+            case MySqlException { Number: 1062 }:
+              // duplicate key entry
+              Log.Debug($"Duplicate key entry while adding tutor: {tutorToExam.TutorCode}");
+              break;
+            case MySqlException { Number: 1452 }:
+              // foreign key fail
+              _connection.Close();
+              errorMessage =
+                $"Adding new tutor: {tutorToExam.TutorCode} with non-existing course: {tutorToExam.Course}";
+              Log.Warning(errorMessage);
+              return false;
+            case MySqlException { Number: 1048 }:
+              // null value
+              _connection.Close();
+              errorMessage =
+                $"Tried adding new tutor: {tutorToExam.TutorCode} with no name or surname";
+              Log.Warning(errorMessage);
+              return false;
+            default:
+              Console.WriteLine(e);
+              throw;
           }
         }
 
@@ -152,17 +183,33 @@ public class TutorDAO
         }
         catch (Exception e)
         {
-          if (e is MySqlException { Number: 1062 })
+          switch (e)
           {
-            // duplicate key entry
-            _connection.Close();
-            Log.Warning(
-              $"Duplicate key entry while adding exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}");
-            return false;
+            case MySqlException { Number: 1062 }:
+              // duplicate key entry
+              _connection.Close();
+              errorMessage =
+                $"Duplicate key entry while adding exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}";
+              Log.Warning(errorMessage);
+              return false;
+            case MySqlException { Number: 1452 }:
+              // foreign key fail
+              _connection.Close();
+              errorMessage =
+                $"Adding tutoring for non-existing exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}";
+              Log.Warning(errorMessage);
+              return false;
+            case MySqlException { Number: 1048 }:
+              // null value
+              _connection.Close();
+              errorMessage =
+                $"Tried adding new tutoring for tutor: {tutorToExam.TutorCode} with missing exam, professor or available tutorings";
+              Log.Warning(errorMessage);
+              return false;
+            default:
+              Console.WriteLine(e);
+              throw;
           }
-
-          Console.WriteLine(e);
-          throw;
         }
       }
 
@@ -170,14 +217,15 @@ public class TutorDAO
       _connection.Close();
       return true;
     }
-    catch (Exception)
+    catch (Exception e)
     {
+      Console.WriteLine(e);
       _connection.Close();
       throw;
     }
   }
 
-  public bool AddTutor(Tutor tutor)
+  public bool AddTutor(Tutor tutor, out string errorMessage)
   {
     throw new NotImplementedException();
   }

@@ -3,7 +3,6 @@ using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Records;
-using Bot.Database.Records;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -73,7 +72,7 @@ public static class WebServer
     //app.MapDelete("/api/tutors/{tutor}", DeleteTutor).RequireAuthorization();
 
     // Map Post requests end points
-    app.MapPost("/api/tutor/{action}", HandleTutorAction);
+    app.MapPost("/api/tutor/{action}", HandleTutorAction).RequireAuthorization();
     app.MapPost("/api/students/{action}/{studentCode:int?}", HandleStudentAction).RequireAuthorization();
     // app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
 
@@ -289,9 +288,10 @@ public static class WebServer
     {
       tutorings = await request.ReadFromJsonAsync<List<TutorToExam>>();
     }
-    catch (Exception)
+    catch (Exception e)
     {
       // Invalid request body
+      Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status400BadRequest;
       await response.WriteAsync($"invalid request body");
       return;
@@ -311,7 +311,7 @@ public static class WebServer
     {
       // Student list contains an invalid student code format
       response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid tutor code: {badCode} in request body");
+      await response.WriteAsync($"invalid tutor code: {badCode.TutorCode} in request body");
       return;
     }
 
@@ -330,9 +330,10 @@ public static class WebServer
     switch (action)
     {
       case "add":
-        if (tutorService.AddTutor(tutorings)) return;
+        //TODO: complete input validation for all tutors
+        if (tutorService.AddTutor(tutorings, out var errorMessage)) return;
         response.StatusCode = StatusCodes.Status400BadRequest;
-        await response.WriteAsync($"invalid tutorings in request body");
+        await response.WriteAsync($"invalid tutorings in request body: {errorMessage}");
         return;
       case "remove":
         // if (tutorService.AddTutor(tutorings[0])) return;

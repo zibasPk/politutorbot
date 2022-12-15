@@ -18,7 +18,7 @@ public record struct TutorToExam(
   string Professor,
   int Ranking,
   bool OfaAvailable,
-  DateTime LastReservation,
+  DateTime? LastReservation,
   int AvailableTutorings
 );
 
