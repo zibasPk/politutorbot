@@ -69,7 +69,7 @@ public static class WebServer
     app.MapPut("/api/reservations/{id:int}/{action}", HandleReservationAction).RequireAuthorization();
 
     // Post endpoints
-    app.MapPost("/api/tutoring/start/{tutorCode:int?}/{studentCode:int}/{examCode:int?}", StartTutoringAction).RequireAuthorization();
+    app.MapPost("/api/tutoring/start/{tutorCode:int?}/{studentCode:int?}/{examCode:int?}", StartTutoringAction).RequireAuthorization();
     app.MapPost("/api/tutor/{action}", HandleTutorAction).RequireAuthorization();
     app.MapPost("/api/students/{action}/{studentCode:int?}", HandleStudentAction).RequireAuthorization();
     // app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
@@ -197,7 +197,7 @@ public static class WebServer
     }
   }
 
-  private static async void StartTutoringAction(int? tutorCode, int studentCode, int? examCode, HttpResponse response,
+  private static async void StartTutoringAction(int? tutorCode, int? studentCode, int? examCode, HttpResponse response,
     HttpRequest request)
   {
     try
@@ -212,9 +212,10 @@ public static class WebServer
           // Try parsing body
           tutorings = await request.ReadFromJsonAsync<List<TutorToStudentToExam>>();
         }
-        catch (Exception)
+        catch (Exception e)
         {
           // Invalid request body
+          Console.Write(e);
           response.StatusCode = StatusCodes.Status400BadRequest;
           await response.WriteAsync($"invalid request body");
           return;
@@ -222,13 +223,22 @@ public static class WebServer
 
         foreach (var data in tutorings!)
         {
-          if (!await StartTutoring(data, response))
+          if (!await StartTutoring(data, response)) {}
             return;
         }
+        return;
+      }
+
+      if (!studentCode.HasValue)
+      {
+        // Invalid request body
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsync($"student code missing in url");
+        return;
       }
 
       await StartTutoring(
-        new TutorToStudentToExam(examCode == null, tutorCode!.Value, studentCode, examCode!.Value), 
+        new TutorToStudentToExam(examCode.HasValue, tutorCode!.Value, studentCode.Value, examCode), 
         response);
       return;
     }

@@ -990,7 +990,7 @@ public class TutorDAO
                             "WHERE ID=@reservationId;";
       command.Prepare();
       command.ExecuteNonQuery();
-      
+
       command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                             "WHERE student_code IN (select student FROM reservation WHERE ID=@reservationId);";
       command.Prepare();
@@ -1024,6 +1024,10 @@ public class TutorDAO
     const string query =
       "UPDATE tutor_to_exam as t SET available_tutorings = available_tutorings - 1, last_reservation = DEFAULT " +
       "WHERE exam = @examCode AND tutor = @tutorCode";
+    
+    // Find out if the same tutoring is already active
+    const string query2 = "SELECT * FROM active_tutoring WHERE tutor=@tutorCode " +
+                          "AND student=@studentCode AND duration IS NULL";
     try
     {
       var command = new MySqlCommand(query, _connection, transaction);
@@ -1031,11 +1035,21 @@ public class TutorDAO
       command.Parameters.AddWithValue("@tutorCode", tutor);
       command.Prepare();
       command.ExecuteNonQuery();
-
+  
       command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                             "WHERE student_code = @studentCode";
-
+      
+      command.CommandText = query2;
       command.Parameters.AddWithValue("@studentCode", student);
+      command.Prepare();
+      var result = command.ExecuteScalar();
+      if (result != null)
+      {
+        Log.Error($"Tried activating an already active tutoring for tutor: {tutor} and student: {student}");
+        _connection.Close();
+        return;
+      }
+      
       command.Prepare();
       command.ExecuteNonQuery();
 
@@ -1070,8 +1084,13 @@ public class TutorDAO
   {
     _connection.Open();
     var transaction = _connection.BeginTransaction();
+    // Find out if tutor is available for OFA
     const string query =
       "SELECT * FROM tutor WHERE tutor_code = @tutorCode AND OFA_available = 1 ";
+
+    // Find out if the same tutoring is already active
+    const string query2 = "SELECT * FROM active_tutoring WHERE tutor=@tutorCode " +
+                          "AND student=@studentCode AND duration IS NULL";
     try
     {
       var command = new MySqlCommand(query, _connection, transaction);
@@ -1081,13 +1100,24 @@ public class TutorDAO
       if (result == null)
       {
         Log.Error($"Tried activating an OFA tutoring for tutor:{tutor} who isn't OFA available");
+        _connection.Close();
+        return;
+      }
+
+      command.CommandText = query2;
+      command.Parameters.AddWithValue("@studentCode", student);
+      command.Prepare();
+      result = command.ExecuteScalar();
+      if (result != null)
+      {
+        Log.Error($"Tried activating an already active tutoring for tutor: {tutor} and student: {student}");
+        _connection.Close();
         return;
       }
       
       command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                             "WHERE student_code = @studentCode";
 
-      command.Parameters.AddWithValue("@studentCode", student);
       command.Prepare();
       command.ExecuteNonQuery();
 
