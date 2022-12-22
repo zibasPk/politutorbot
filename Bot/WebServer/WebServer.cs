@@ -55,7 +55,7 @@ public static class WebServer
     app.UseAuthorization();
     app.UseHttpsRedirection();
 
-    //Get tutor information
+    // Get endpoints
     app.MapGet("/api/tutor", FetchTutors).RequireAuthorization();
     app.MapGet("/api/tutoring/{tutorType?}/{exam:int?}", FetchTutorings).RequireAuthorization();
     app.MapGet("/api/reservations/{value?}", FetchReservations).RequireAuthorization();
@@ -63,16 +63,13 @@ public static class WebServer
     app.MapGet("/api/course", FetchCourses).RequireAuthorization();
 
 
-    // Update a tutors lock
-    app.MapPut("/api/tutoring/{action}/{id:int?}/{duration:int?}", TutoringAction)
+    // Put endpoint
+    app.MapPut("/api/tutoring/end/{id:int?}/{duration:int?}", EndTutoringAction)
       .RequireAuthorization();
     app.MapPut("/api/reservations/{id:int}/{action}", HandleReservationAction).RequireAuthorization();
-    //app.MapPut("/api/tutors/{tutor}/{exam}/{action}", ChangeTutorState).RequireAuthorization();
 
-    // delete a tutor
-    //app.MapDelete("/api/tutors/{tutor}", DeleteTutor).RequireAuthorization();
-
-    // Map Post requests end points
+    // Post endpoints
+    app.MapPost("/api/tutoring/start/{tutorCode:int?}/{studentCode:int}/{examCode:int?}", StartTutoringAction).RequireAuthorization();
     app.MapPost("/api/tutor/{action}", HandleTutorAction).RequireAuthorization();
     app.MapPost("/api/students/{action}/{studentCode:int?}", HandleStudentAction).RequireAuthorization();
     // app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
@@ -134,23 +131,28 @@ public static class WebServer
   }
 
 
-  private static async void TutoringAction(string action, int? id, int? duration, HttpResponse response,
+  private static async void EndTutoringAction(int? id, int? duration, HttpResponse response,
     HttpRequest request)
   {
     try
     {
       var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
 
-      if (action != "end")
-      {
-        response.StatusCode = StatusCodes.Status404NotFound;
-        return;
-      }
-
       if (!id.HasValue)
       {
         // End all given tutorings
-        var durations = await request.ReadFromJsonAsync<List<TutoringToDuration>>();
+        List<TutoringToDuration>? durations;
+        try
+        {
+          durations = await request.ReadFromJsonAsync<List<TutoringToDuration>>();
+        }
+        catch (Exception)
+        {
+          // Invalid request body
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid request body");
+          return;
+        }
 
         if (durations == null)
         {
@@ -193,6 +195,103 @@ public static class WebServer
       Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status502BadGateway;
     }
+  }
+
+  private static async void StartTutoringAction(int? tutorCode, int studentCode, int? examCode, HttpResponse response,
+    HttpRequest request)
+  {
+    try
+    {
+      // Check if not for a single request
+      if (!tutorCode.HasValue)
+      {
+        // End all given tutorings
+        List<TutorToStudentToExam>? tutorings;
+        try
+        {
+          // Try parsing body
+          tutorings = await request.ReadFromJsonAsync<List<TutorToStudentToExam>>();
+        }
+        catch (Exception)
+        {
+          // Invalid request body
+          response.StatusCode = StatusCodes.Status400BadRequest;
+          await response.WriteAsync($"invalid request body");
+          return;
+        }
+
+        foreach (var data in tutorings!)
+        {
+          if (!await StartTutoring(data, response))
+            return;
+        }
+      }
+
+      await StartTutoring(
+        new TutorToStudentToExam(examCode == null, tutorCode!.Value, studentCode, examCode!.Value), 
+        response);
+      return;
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
+  }
+
+  private static async Task<bool> StartTutoring(TutorToStudentToExam tutoringData, HttpResponse response)
+  {
+    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+    var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
+    // Check if student is enabled
+    if (!studentService.IsStudentEnabled(tutoringData.StudentCode))
+    {
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      await response.WriteAsync($"Student: {tutoringData.StudentCode} isn't enabled for tutoring");
+      return false;
+    }
+
+    if (tutoringData.IsOFA)
+    {
+      // OFA tutoring
+      var tutor = tutorService.FindTutor(tutoringData.TutorCode);
+
+      // Check if tutor exists and is available for OFA
+      if (tutor is not { OfaAvailable: true })
+      {
+        // Tutor isn't available for OFA or doesn't exist
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsync($"Tutor: {tutoringData.TutorCode} isn't available for OFA");
+        return false;
+      }
+
+      // Start tutoring
+      tutorService.ActivateTutoring(tutoringData.TutorCode, tutoringData.StudentCode);
+      return true;
+    }
+
+    // Normal tutoring
+    var tutoring = tutorService.FindTutoring(tutoringData.TutorCode, tutoringData.ExamCode!.Value);
+
+    if (!tutoring.HasValue)
+    {
+      // tutoring doesn't exist
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      await response.WriteAsync($"Tutor: {tutoringData.TutorCode} doesn't exist");
+      return false;
+    }
+
+    if (tutoring.Value.AvailableTutorings < 1)
+    {
+      // tutoring doesn't have enough available tutorings
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      await response.WriteAsync($"Tutor: {tutoringData.TutorCode} doesn't have enough available tutorings");
+      return false;
+    }
+
+    // Start tutoring
+    tutorService.ActivateTutoring(tutoringData.TutorCode, tutoringData.StudentCode, tutoringData.ExamCode.Value);
+    return true;
   }
 
   private static async void HandleStudentAction(string action, int? studentCode, HttpResponse response,
@@ -556,7 +655,7 @@ public static class WebServer
         response.WriteAsync($"no exam with code: {exam.Value} found");
         return;
       }
-      
+
       var tutoring = tutorService.FindTutoring(tutorCode, exam.Value);
 
       if (tutoring == null)

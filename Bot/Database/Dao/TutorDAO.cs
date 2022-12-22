@@ -15,6 +15,50 @@ public class TutorDAO
   }
 
   /// <summary>
+  /// Finds a tutor saved in db.
+  /// </summary>
+  /// <returns>Tutor if found, otherwise null.</returns>
+  public Tutor? FindTutor(int tutorStudentCode)
+  {
+    _connection.Open();
+    const string query = "SELECT * FROM tutor WHERE tutor_code=@tutorCode";
+
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@tutorCode", tutorStudentCode);
+      command.Prepare();
+      var reader = command.ExecuteReader();
+
+      if (!reader.Read())
+      {
+        Log.Debug("No Tutors found in db");
+        return null;
+      }
+
+      var tutor = new Tutor
+      {
+        TutorCode = reader.GetInt32("tutor_code"),
+        Name = reader.GetString("name"),
+        Surname = reader.GetString("surname"),
+        Course = reader.GetString("course"),
+        Ranking = reader.GetInt32("ranking"),
+        OfaAvailable = reader.GetBoolean("OFA_available")
+      };
+
+
+      reader.Close();
+      _connection.Close();
+      return tutor;
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+  }
+
+  /// <summary>
   /// Finds all tutors saved in db.
   /// </summary>
   /// <returns>List of tutors in db.</returns>
@@ -923,6 +967,10 @@ public class TutorDAO
   }
 
 
+  /// <summary>
+  /// Activates a tutoring from a given reservation.
+  /// </summary>
+  /// <param name="reservationId">Id of the given reservation</param>
   public void ActivateTutoring(int reservationId)
   {
     _connection.Open();
@@ -942,11 +990,7 @@ public class TutorDAO
                             "WHERE ID=@reservationId;";
       command.Prepare();
       command.ExecuteNonQuery();
-
-      command.CommandText = "UPDATE tutor_to_exam SET last_reservation = DEFAULT " +
-                            "WHERE exam IN (select exam FROM reservation WHERE ID=@reservationId)";
-      command.Prepare();
-
+      
       command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                             "WHERE student_code IN (select student FROM reservation WHERE ID=@reservationId);";
       command.Prepare();
@@ -965,6 +1009,107 @@ public class TutorDAO
       transaction.Rollback();
       _connection.Close();
       throw;
+    }
+
+    _connection.Close();
+  }
+
+  /// <summary>
+  /// Activates a tutoring from a given tutor, student and exam.
+  /// </summary>
+  public void ActivateTutoring(int tutor, int student, int exam)
+  {
+    _connection.Open();
+    var transaction = _connection.BeginTransaction();
+    const string query =
+      "UPDATE tutor_to_exam as t SET available_tutorings = available_tutorings - 1, last_reservation = DEFAULT " +
+      "WHERE exam = @examCode AND tutor = @tutorCode";
+    try
+    {
+      var command = new MySqlCommand(query, _connection, transaction);
+      command.Parameters.AddWithValue("@examCode", exam);
+      command.Parameters.AddWithValue("@tutorCode", tutor);
+      command.Prepare();
+      command.ExecuteNonQuery();
+
+      command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
+                            "WHERE student_code = @studentCode";
+
+      command.Parameters.AddWithValue("@studentCode", student);
+      command.Prepare();
+      command.ExecuteNonQuery();
+
+      command.CommandText = "INSERT INTO active_tutoring (tutor, exam, student) " +
+                            "VALUES (@tutorCode, @examCode, @studentCode)";
+      command.Prepare();
+      command.ExecuteNonQuery();
+      transaction.Commit();
+    }
+    catch (Exception e)
+    {
+      switch (e)
+      {
+        case MySqlException { Number: 1062 }:
+          // duplicate key entry
+          Log.Debug($"Duplicate key entry while activating tutoring for student: {student}");
+          break;
+        default:
+          Console.WriteLine(e);
+          throw;
+      }
+      _connection.Close();
+    }
+
+    _connection.Close();
+  }
+  
+  /// <summary>
+  /// Activates an OFA tutoring from a tutor for a given student.
+  /// </summary>
+  public void ActivateTutoring(int tutor, int student)
+  {
+    _connection.Open();
+    var transaction = _connection.BeginTransaction();
+    const string query =
+      "SELECT * FROM tutor WHERE tutor_code = @tutorCode AND OFA_available = 1 ";
+    try
+    {
+      var command = new MySqlCommand(query, _connection, transaction);
+      command.Parameters.AddWithValue("@tutorCode", tutor);
+      command.Prepare();
+      var result = command.ExecuteScalar();
+      if (result == null)
+      {
+        Log.Error($"Tried activating an OFA tutoring for tutor:{tutor} who isn't OFA available");
+        return;
+      }
+      
+      command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
+                            "WHERE student_code = @studentCode";
+
+      command.Parameters.AddWithValue("@studentCode", student);
+      command.Prepare();
+      command.ExecuteNonQuery();
+
+      command.CommandText = "INSERT INTO active_tutoring (tutor, student, is_OFA) " +
+                            "VALUES (@tutorCode, @studentCode, 1)";
+      command.Prepare();
+      command.ExecuteNonQuery();
+      transaction.Commit();
+    }
+    catch (Exception e)
+    {
+      switch (e)
+      {
+        case MySqlException { Number: 1062 }:
+          // duplicate key entry
+          Log.Debug($"Duplicate key entry while activating tutoring for student: {student}");
+          break;
+        default:
+          Console.WriteLine(e);
+          throw;
+      }
+      _connection.Close();
     }
 
     _connection.Close();

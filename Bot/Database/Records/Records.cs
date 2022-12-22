@@ -60,3 +60,5 @@ public record struct Exam(
 );
 
 public record struct TutoringToDuration(int Id, int Duration);
+
+public record struct TutorToStudentToExam(bool IsOFA, int TutorCode, int StudentCode, int? ExamCode);
