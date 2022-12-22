@@ -15,6 +15,15 @@
   margin-bottom: 10px;
 }
 
+.ofaSwitchGroup {
+  display: flex;
+  flex-direction: row;
+}
+
+.ofaSwitch {
+  margin-left: 1em;
+}
+
 .addButton{
   margin-bottom: 16px;
 }

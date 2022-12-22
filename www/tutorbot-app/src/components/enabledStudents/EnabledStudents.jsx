@@ -231,14 +231,14 @@ export default class EnabledStudents extends RefreshableComponent
 
   sendStudents(students, action) 
   {
-    console.log(students);
     // If user clicks the parse button without
     // a file we show a error
     if (!students)
     {
       this.setState({
         AlertText: "Inserire un file valido."
-      })
+      });
+      return;
     };
 
     // Initialize a reader which allows user

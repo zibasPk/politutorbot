@@ -296,9 +296,11 @@ export default function AddTutor(props)
                     onChange={handleFormChange}
                   />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="formOFACheckbox">
-                  <Form.Check label="disponibile per OFA" type="switch" name="OfaAvailable"
+                <Form.Group className={styles.ofaSwitchGroup} controlId="formOFACheckbox">
+                <Form.Label>Disponibile per OFA</Form.Label>
+                  <Form.Check type="switch" name="OfaAvailable"
                     onChange={handleFormChange}
+                    className={styles.ofaSwitch}
                   />
                 </Form.Group>
                 <Button className={styles.addButton} variant="warning" type="button"
