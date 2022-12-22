@@ -15,6 +15,40 @@ public class TutorDAO
   }
 
   /// <summary>
+  /// Changes the contract state of a given tutor.
+  /// </summary>
+  /// <param name="tutorCode">Student code of the tutor whose state must be changed.</param>
+  /// <param name="newState">New contract state for tutor.</param>
+  /// <returns></returns>
+  public bool ChangeContractState(int tutorCode, int newState)
+  {
+    _connection.Open();
+    const string query = "UPDATE tutor SET contract_state = @state " +
+                         "WHERE tutor_code=@tutorCode";
+
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@tutorCode", tutorCode);
+      command.Parameters.AddWithValue("@state", newState);
+      command.Prepare();
+      var result = command.ExecuteNonQuery();
+
+      if (result != 0) 
+        return true;
+      
+      Log.Debug($"Tried changing contract of non existing tutor: {tutorCode}");
+      _connection.Close();
+      return false;
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+  }
+  
+  /// <summary>
   /// Finds a tutor saved in db.
   /// </summary>
   /// <returns>Tutor if found, otherwise null.</returns>
@@ -33,6 +67,7 @@ public class TutorDAO
       if (!reader.Read())
       {
         Log.Debug("No Tutors found in db");
+        _connection.Close();
         return null;
       }
 
@@ -87,7 +122,8 @@ public class TutorDAO
           Surname = reader.GetString("surname"),
           Course = reader.GetString("course"),
           Ranking = reader.GetInt32("ranking"),
-          OfaAvailable = reader.GetBoolean("OFA_available")
+          OfaAvailable = reader.GetBoolean("OFA_available"),
+          ContractState = reader.GetInt32("contract_state")
         };
         tutors.Add(tutor);
       }

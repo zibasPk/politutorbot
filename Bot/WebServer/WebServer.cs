@@ -66,6 +66,7 @@ public static class WebServer
     // Put endpoint
     app.MapPut("/api/tutoring/end/{id:int?}/{duration:int?}", EndTutoringAction)
       .RequireAuthorization();
+    app.MapPut("/api/tutor/{tutorCode:int}/contract/{state:int}", HandleContractAction).RequireAuthorization();
     app.MapPut("/api/reservations/{id:int}/{action}", HandleReservationAction).RequireAuthorization();
 
     // Post endpoints
@@ -78,7 +79,32 @@ public static class WebServer
     app.Run(url);
   }
 
+  private static void HandleContractAction(int tutorCode, int state, HttpResponse response)
+  {
+    if (state is > 2 or < 0)
+    {
+      // There is no Reservation with the given id
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      response.WriteAsync($"invalid state for with tutor: {tutorCode}");
+      return;
+    }
 
+    try
+    {
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+      if (tutorService.ChangeContractState(tutorCode, state)) 
+        return; // There is no Reservation with the given id
+      response.StatusCode = StatusCodes.Status502BadGateway;
+      response.WriteAsync($"Error in contract state change for tutor: {tutorCode}");
+      return;
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+      return;
+    }
+  }
   private static void HandleReservationAction(int id, string action, HttpResponse response)
   {
     if (action is not ("confirm" or "refuse"))

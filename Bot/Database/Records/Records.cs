@@ -6,7 +6,8 @@ public record struct Tutor(
   string Surname,
   string Course,
   bool OfaAvailable,
-  int Ranking
+  int Ranking,
+  int? ContractState
 );
 
 public record struct TutorToExam(
