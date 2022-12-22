@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './TutorManagement.module.css'
 import configData from "../../config/config.json";
 import validationConfig from "../../config/validation-config.json";
-import pic from '../../assets/excel-pic.png';
+import examplePic from '../../assets/new-tutor-example.png';
 
 import Papa from "papaparse";
 
@@ -316,8 +316,8 @@ export default function AddTutor(props)
               <Form.Label>Carica File CSV Tutor</Form.Label>
               <InfoIconBis content={<>
                 <div>Inserire un file cvs con righe come da figura:</div>
-                <div><strong>Attenzione i nomi dell'intestazione deve essere come da figura **comprese maiuscole**</strong></div>
-                <img src={pic}></img>
+                <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+                <img src={examplePic}></img>
               </>} />
 
               <div className={styles.inputDiv}>

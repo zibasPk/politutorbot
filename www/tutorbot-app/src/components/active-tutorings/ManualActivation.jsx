@@ -3,10 +3,10 @@ import React, { Component, useState } from 'react';
 import styles from "./ActiveTutorings.module.css";
 import configData from "../../config/config.json";
 import validationConfig from "../../config/validation-config.json";
+import examplePic from "../../assets/activate-tutoring-example.png"
 import Papa from "papaparse";
 
-
-import InfoIcon from '../utils/InfoIcon';
+import InfoIconBis from '../utils/InfoIconBis';
 
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
@@ -21,9 +21,11 @@ function ManualActivation(props)
   const [alertText, setAlert] = useState("");
 
 
-  const handleSubmit = () => { 
+  const handleSubmit = () =>
+  {
     let alertMsg = validateTutoring(formData);
-    if(alertMsg != null ) {
+    if (alertMsg != null)
+    {
       setAlert("Errore nei dati inseriti: " + alertMsg);
       return;
     }
@@ -106,8 +108,9 @@ function ManualActivation(props)
 
       const csv = Papa.parse(target.result, { header: true, skipEmptyLines: true });
       const parsedData = csv?.data;
-      
-      for (const tutoring of parsedData) {
+
+      for (const tutoring of parsedData)
+      {
         if (tutoring.IsOFA == "1")
           tutoring.IsOFA = true;
         else
@@ -126,7 +129,7 @@ function ManualActivation(props)
           return;
         }
       }
-      
+
       if (alertMsg == null)
         sendTutorings(parsedData);
     };
@@ -152,7 +155,7 @@ function ManualActivation(props)
       {
         if (text !== undefined)
         {
-          setAlert("Errore nella richiesta: " +text);
+          setAlert("Errore nella richiesta: " + text);
           return;
         }
         // Hide alert after a positive response
@@ -219,7 +222,13 @@ function ManualActivation(props)
       <div className={styles.AlertText}>{alertText}</div>
       <Form.Group controlId="formFileEnable" className="mb-3">
         <Form.Label>Carica File CSV</Form.Label>
-        <InfoIcon text="Caricare un file CVS contente un elenco (**in colonna**) di codici matricola da abilitare." />
+        <InfoIconBis content={
+          <>
+            <div>Inserire un file cvs con righe come da figura:</div>
+            <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+            <img src={examplePic}></img>
+          </>
+        } />
         <div className={styles.inputDiv}>
           <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
           <FileUploadIcon className={styles.actionBox}
