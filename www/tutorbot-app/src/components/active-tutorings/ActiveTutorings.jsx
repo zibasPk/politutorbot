@@ -1,6 +1,6 @@
 import React from 'react';
-import styles from "./ActiveTutorings.module.css"
-import configData from "../../config/config.json"
+import styles from "./ActiveTutorings.module.css";
+import configData from "../../config/config.json";
 
 import RefreshableComponent from '../Interfaces';
 import Table from '../utils/Table';
@@ -8,6 +8,7 @@ import ActiveTutoringsModal from './ActiveTutoringsModal';
 import EndedTutoringsModal from './EndedTutoringsModal';
 
 import CircularProgress from '@mui/material/CircularProgress';
+import ManualActivation from './ManualActivation';
 
 const ActiveHeaders = {
   TutorCode: "Cod. Matr. Tutor",
@@ -29,8 +30,12 @@ const EndedHeaders = {
   Duration: "Durata in Ore"
 }
 
-class ActiveTutorings extends RefreshableComponent {
-  constructor(props) {
+
+
+class ActiveTutorings extends RefreshableComponent
+{
+  constructor(props)
+  {
     super(props);
     this.state = {
       ActiveTutoringsArray: undefined,
@@ -38,15 +43,18 @@ class ActiveTutorings extends RefreshableComponent {
     }
   }
 
-  refreshData() {
+  refreshData()
+  {
     fetch(configData.botApiUrl + '/tutoring/active', {
       method: 'GET',
       headers: {
         'Authorization': 'Basic ' + btoa(configData.authCredentials),
       }
     }).then(resp => resp.json())
-      .then((tutorings) => {
-        tutorings.forEach((elem) => {
+      .then((tutorings) =>
+      {
+        tutorings.forEach((elem) =>
+        {
           if (elem.ExamCode === null)
             elem.ExamCode = "OFA"
           elem.StartDate = new Date(elem.StartDate);
@@ -62,8 +70,10 @@ class ActiveTutorings extends RefreshableComponent {
         'Authorization': 'Basic ' + btoa(configData.authCredentials),
       }
     }).then(resp => resp.json())
-      .then((tutorings) => {
-        tutorings.forEach((elem) => {
+      .then((tutorings) =>
+      {
+        tutorings.forEach((elem) =>
+        {
           if (elem.ExamCode === null)
             elem.ExamCode = "OFA"
           elem.StartDate = new Date(elem.StartDate);
@@ -73,13 +83,16 @@ class ActiveTutorings extends RefreshableComponent {
         this.setState({
           EndedTutoringsArray: tutorings,
         })
-      })
+      });
   }
 
-  render() {
+  render()
+  {
     return (
       <>
         <div className={styles.content} >
+          <h1>Attivazione Manuale</h1>
+          <ManualActivation onChange={() => this.refreshData()}/>
           <h1>Tutoraggi Attivi</h1>
           {this.state.ActiveTutoringsArray === undefined ? <CircularProgress /> :
             <>
@@ -103,6 +116,7 @@ class ActiveTutorings extends RefreshableComponent {
                 }}
               />
             </>}
+
         </div>
       </>
     );

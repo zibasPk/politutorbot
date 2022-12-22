@@ -99,7 +99,7 @@ export default function AddTutor(props)
       {
         if (text !== undefined)
         {
-          setFileAlertText(text)
+          setFileAlertText("Errore nella richiesta: " + text)
           return;
         }
         // Hide alert after a positive response
@@ -130,7 +130,7 @@ export default function AddTutor(props)
 
       const csv = Papa.parse(target.result, { header: true, skipEmptyLines: true });
       const parsedData = csv?.data;
-      parsedData.forEach((tutoring) =>
+      for (const tutoring of parsedData)
       {
         if (tutoring.OfaAvailable == "1")
           tutoring.OfaAvailable = true;
@@ -141,9 +141,9 @@ export default function AddTutor(props)
         if (alertMsg != null)
         {
           setFileAlertText("Errore nei dati per tutor " + tutoring.TutorCode + ": " + alertMsg);
-          return;
+          return false;
         }
-      });
+      }
 
       if (alertMsg == null)
         sendTutorings(parsedData, action);
@@ -297,7 +297,7 @@ export default function AddTutor(props)
                   />
                 </Form.Group>
                 <Form.Group className={styles.ofaSwitchGroup} controlId="formOFACheckbox">
-                <Form.Label>Disponibile per OFA</Form.Label>
+                  <Form.Label>Disponibile per OFA</Form.Label>
                   <Form.Check type="switch" name="OfaAvailable"
                     onChange={handleFormChange}
                     className={styles.ofaSwitch}
