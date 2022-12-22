@@ -44,10 +44,10 @@
   min-width: 0px;
 }
 
-.tutorListContent {
+/* .tutorListContent {
   max-width: 900px;
   min-width: 0px;
-}
+} */
 
 .inputDiv {
   display: flex;
