@@ -59,7 +59,7 @@ export default class ActiveTutoringsModal extends React.Component
     {
       if (!resp.ok)
         return resp.text();
-      this.props.onModalEvent()
+      this.props.onModalEvent();
     })
       .then((text) =>
       {
@@ -120,7 +120,6 @@ export default class ActiveTutoringsModal extends React.Component
     {
       return (
         <>
-
           <table className={styles.table}>
             <thead>
               <tr>
@@ -142,9 +141,7 @@ export default class ActiveTutoringsModal extends React.Component
               Concludi
             </Button>
           </div>
-
         </>
-
       )
     }
     else

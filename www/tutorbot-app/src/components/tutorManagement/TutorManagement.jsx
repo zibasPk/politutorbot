@@ -88,7 +88,7 @@ export default function TutorManagement()
   return (
     <div className={styles.content}>
       <AddTutor onChange={() => refreshData()} />
-      <TutorsList headers={TutorHeaders} tutorList={tutorsArray} />
+      <TutorsList headers={TutorHeaders} tutorList={tutorsArray} refreshData={()=> refreshData()}/>
       <TutoringList headers={TutoringHeaders} tutoringList={tutoringArray} />
     </div>
   );

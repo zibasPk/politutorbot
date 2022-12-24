@@ -68,3 +68,16 @@
   color: red;
   text-align: center;
 }
+
+.confirmStateChangeBtn {
+  float: right;
+}
+
+.alertText {
+  color: red;
+  text-align: center; 
+}
+
+.unalteredSelect {
+  background-color: var(--contrast-color);
+}
