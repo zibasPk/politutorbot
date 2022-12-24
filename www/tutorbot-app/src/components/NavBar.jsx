@@ -9,11 +9,9 @@ import { Link } from 'react-router-dom';
 function Navigation() {
   const [cards,setCards] = useState([false, false, false, false]);
   const selectCard = (index) => {
-    console.log("clicked");
     let temp = [false, false, false, false];
     temp[index] = true;
     setCards(temp);
-    console.log(cards);
   }
 
   const itemClass = (index) => {
