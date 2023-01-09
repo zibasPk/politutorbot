@@ -49,7 +49,10 @@ export default function AddTutor(props)
       {
         courses.sort((a, b) => a.localeCompare(b));
         setCourses(courses);
-        setFormData({ Course: courses[0] });
+        setFormData(params => ({
+          ...params,
+          Course: courses[0]
+        }));
       })
   }
 
@@ -183,6 +186,7 @@ export default function AddTutor(props)
 
   const validateTutoring = (tutoring) =>
   {
+    console.log(tutoring);
     if (tutoring.Name && tutoring.Name.length > validationConfig.maxNameLength)
       return 'La massima lunghezza per il Nome del tutor è ' + validationConfig.maxNameLength + " caratteri";
 
