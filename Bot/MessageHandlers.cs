@@ -3,6 +3,7 @@ using Bot.configs;
 using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Records;
 using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
@@ -61,8 +62,6 @@ public static class MessageHandlers
     var userId = message.From.Id;
     Log.Information("Received message '{text}' by user {userId}", message.Text, userId);
 
-    // Check if user is already locked for finalizing a tutor reques
-
 
     if (!UserIdToConversation.TryGetValue(userId, out var conversation))
     {
@@ -104,36 +103,43 @@ public static class MessageHandlers
         UserState.Tutor => ReadTutor(botClient, message, command!),
         _ => SendEcho(botClient, message)
       };
-      
+
       await action;
     }
     catch (Exception e)
     {
       Console.WriteLine(e);
+      if (Monitor.IsEntered(conversation.ConvLock))
+        Monitor.Exit(conversation.ConvLock);
       await InternalErrorMessage(botClient, message);
     }
-    
   }
 
   private static async Task<Message> ReadOFATutor(ITelegramBotClient botClient, Message message, string tutor)
   {
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
+    var userService = new UserDAO(DbConnection.GetMySqlConnection());
+    // Check if user has an already ongoing tutoring
+    if (userService.HasUserOngoingTutoring(userId))
+    {
+      return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+        text: ReplyTexts.AlreadyOngoingTutoring,
+        replyMarkup: new ReplyKeyboardRemove());
+    }
 
     // Check if user is already locked for finalizing a tutor request
-    var userService = new UserDAO(DbConnection.GetMySqlConnection());
     if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
-        text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
-              $"ore dalla tua precedente richiesta " +
-              $"o fino a che la segreteria non l'avrà elaborata.",
+        text: ReplyTexts.LockedUser,
         replyMarkup: new ReplyKeyboardRemove());
     }
 
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
 
     var tutorCode = tutorService.FindTutorCode(tutor);
+
     //TODO: also check if tutor is for OFA
     if (tutorCode == null)
     {
@@ -234,8 +240,16 @@ public static class MessageHandlers
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
 
-    // Check if user is already locked for finalizing a tutor request
     var userService = new UserDAO(DbConnection.GetMySqlConnection());
+    // Check if user has an already ongoing tutoring
+    if (userService.HasUserOngoingTutoring(userId))
+    {
+      return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+        text: ReplyTexts.AlreadyOngoingTutoring,
+        replyMarkup: new ReplyKeyboardRemove());
+    }
+
+    // Check if user is already locked for finalizing a tutor request
     if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
@@ -619,6 +633,10 @@ public static class MessageHandlers
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
 
+    tutors = tutors.OrderBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
+      .ThenBy(tutor => tutor.Ranking)
+      .ToList();
+
     var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
     var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +
                                          "\nprof: " + x.Professor + "\n \n")
@@ -640,14 +658,20 @@ public static class MessageHandlers
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
 
-    // Check if user is already locked for finalizing a tutor request
     var userService = new UserDAO(DbConnection.GetMySqlConnection());
+    // Check if user has an already ongoin tutoring
+    if (userService.HasUserOngoingTutoring(userId))
+    {
+      return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+        text: ReplyTexts.AlreadyOngoingTutoring,
+        replyMarkup: new ReplyKeyboardRemove());
+    }
+
+    // Check if user is already locked for finalizing a tutor request
     if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
-        text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
-              $"ore dalla tua precedente richiesta " +
-              $"o fino a che la segreteria non l'avrà elaborata.",
+        text: ReplyTexts.LockedUser,
         replyMarkup: new ReplyKeyboardRemove());
     }
 
@@ -673,7 +697,7 @@ public static class MessageHandlers
   {
     UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
     conversation!.ResetConversation();
-    
+
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.InternalError,
       replyMarkup: new ReplyKeyboardRemove());

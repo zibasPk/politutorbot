@@ -700,6 +700,7 @@ public class TutorDAO
   /// <summary>
   /// Finds tutors, that are available, for a specific exam.
   /// A tutor is available if it hasn't had a reservation in the last 24 hours and if it has
+  /// enough available tutorings.
   /// </summary>
   /// <param name="exam">The code of the exam for which to find tutors.</param>
   /// <param name="lockHours">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
@@ -709,7 +710,7 @@ public class TutorDAO
     _connection.Open();
     const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code=tutor " +
                          "WHERE exam=@exam AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
-                         "AND available_reservations > 0 ORDER BY ranking ASC";
+                         "AND available_tutorings > 0 ORDER BY ranking ASC";
     var tutors = new List<TutorToExam>();
     try
     {
@@ -1323,12 +1324,21 @@ public class TutorDAO
     return true;
   }
 
+  /// <summary>
+  /// Finds al OFA non locked tutors that don't already have an active tutoring.
+  /// The tutors are given in ranking order.
+  /// </summary>
+  /// <param name="lockHours">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
+  /// <returns></returns>
   public List<TutorToExam> FindAvailableOFATutors(int lockHours)
   {
-    //TODO: check if tutor is already in an active tutoring
     _connection.Open();
+    // Finds all OFA available tutorings that don't 
     const string query = "SELECT * FROM tutor " +
-                         "WHERE OFA_available = 1";
+                         "WHERE OFA_available = 1 AND tutor_code NOT IN " +
+                         "(SELECT tutor FROM active_tutoring " +
+                         "WHERE end_date IS NULL) " +
+                         "ORDER BY ranking ASC";
     var tutors = new List<TutorToExam>();
     try
     {

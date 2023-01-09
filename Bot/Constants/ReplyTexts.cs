@@ -14,6 +14,8 @@ public static class ReplyTexts
                                              $"ore dalla tua precedente richiesta " +
                                              $"o fino a che la segreteria non l'avrà elaborata.";
 
+  public const string AlreadyOngoingTutoring = "Sei bloccato dal fare nuove richieste fino alla conclusione del tuo tutoraggi corrente.";
+
   public const string TutorSelected = "Tutor selezionato; " +
                                       "\nRiceverai a breve conferma via mail dell’abbinamento con il tutor e ulteriori istruzioni dalla segreteria del tutorato.";
 
