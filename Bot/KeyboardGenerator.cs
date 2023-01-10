@@ -44,9 +44,11 @@ public static class KeyboardGenerator
         return exams.Count == 0 ? null : GenerateKeyboardMarkup(examsNames, true);
     }
 
-    public static ReplyKeyboardMarkup YearKeyboard()
+    public static ReplyKeyboardMarkup YearKeyboard(string course)
     {
-        var items = new List<string>() { "Y1", "Y2", "Y3" };
+        var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
+        var items = courseService.AvailableYearsInCourse(course);
+       
         return GenerateKeyboardMarkup(items, 2, true);
     }
 

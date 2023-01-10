@@ -120,4 +120,43 @@ public class CourseDAO
         _connection.Close();
         return false;
     }
+    
+    /// <summary>
+    /// Finds available years for a course. 
+    /// </summary>
+    /// <param name="course">The Course for which to check.</param> 
+    /// <returns>Available years for course.</returns>
+    public List<string> AvailableYearsInCourse(string course)
+    {
+        _connection.Open();
+        const string query = "SELECT DISTINCT year from exam WHERE course=@course";
+        var years = new List<string>();
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@course", course);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+            
+            if (!reader.HasRows)
+            {
+                Log.Error("No years found in DB");
+            }
+            
+            while (reader.Read())
+            {
+                years.Add(reader.GetString("year"));
+            }
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return years;
+    }
+    
 }

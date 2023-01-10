@@ -3,7 +3,6 @@ using Bot.configs;
 using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
-using Bot.Database.Records;
 using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
@@ -356,7 +355,7 @@ public static class MessageHandlers
     // Show typing action to client
     await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
-    var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard();
+    var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard(conversation.Course!);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.SelectYear,
