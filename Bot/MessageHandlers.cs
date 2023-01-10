@@ -145,7 +145,7 @@ public static class MessageHandlers
     {
       Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un tutor della lista");
+        text: ReplyTexts.InvalidTutor);
     }
 
     // lock tutor until email arrive
@@ -192,7 +192,7 @@ public static class MessageHandlers
       default:
         Log.Debug("Invalid {studentCode} chosen in chat {id}.", studentCode, message.Chat.Id);
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-          text: "Inserisci una risposta valida");
+          text: ReplyTexts.InvalidStudentCode);
     }
   }
 
@@ -220,7 +220,7 @@ public static class MessageHandlers
     var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
     var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course + "\n \n")
       .ToList();
-    var text = $"Scegli uno dei tutor disponibili per recupero OFA (NO OFA ENG):\n \n";
+    var text = ReplyTexts.SelectOFATutor;
     foreach (var tutorsText in tutorsTexts)
     {
       text += tutorsText;
@@ -273,7 +273,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Errore Interno al Bot");
+        text: ReplyTexts.InternalError);
     }
 
     // Change conversation state
@@ -287,7 +287,7 @@ public static class MessageHandlers
     await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli la tua scuola",
+      text: ReplyTexts.SelectSchool,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -307,7 +307,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
+        text: ReplyTexts.SchoolNotICAT);
     }
 
     var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
@@ -319,7 +319,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci una scuola valida");
+        text: ReplyTexts.InvalidSchool);
     }
 
     // Show typing action to client
@@ -333,7 +333,7 @@ public static class MessageHandlers
 
     Log.Debug("Sending Course inline keyboard for school {school} to chat: {id}.", school, message.Chat.Id);
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli il tuo corso di studi",
+      text: ReplyTexts.SelectCourse,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -359,7 +359,7 @@ public static class MessageHandlers
     var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard();
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli il tuo anno di corso",
+      text: ReplyTexts.SelectYear,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -377,7 +377,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un anno valido");
+        text: ReplyTexts.InvalidYear);
     }
 
     // Change conversation state to Subject and save chosen year
@@ -391,7 +391,7 @@ public static class MessageHandlers
     await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli l’insegnamento per cui ti serve un tutorato",
+      text: ReplyTexts.SelectExam,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -414,7 +414,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un corso valido");
+        text: ReplyTexts.InvalidCourse);
     }
 
     conversation.Course = course;
@@ -439,7 +439,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci il tuo codice matricola (NO CODICE PERSONA):",
+        text: ReplyTexts.LinkStudentCode,
         replyMarkup: new ReplyKeyboardRemove());
     }
 
@@ -452,8 +452,7 @@ public static class MessageHandlers
     var replyKeyboardMarkup = KeyboardGenerator.YesOrNoKeyboard();
     return await
       botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: $"Il tuo id Telegram è già associato al codice matricola {studentCode}.\n" +
-              "Vuoi reinserire la matricola?",
+        text: ReplyTexts.AlreadyLinkedAccount(studentCode.Value),
         replyMarkup: replyKeyboardMarkup);
   }
 
@@ -488,7 +487,7 @@ public static class MessageHandlers
         {
           Monitor.Exit(conversation.ConvLock);
           return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Associazione rimossa. \nReinserisci il tuo codice matricola:",
+            text: ReplyTexts.ReLinkStudentCode,
             replyMarkup: new ReplyKeyboardRemove());
         }
 
@@ -512,7 +511,7 @@ public static class MessageHandlers
       default:
         Log.Debug("Invalid {studentCode} chosen in chat {id}.", studentCode, message.Chat.Id);
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-          text: "Inserisci una risposta valida");
+          text: ReplyTexts.InvalidStudentCode);
     }
   }
 
@@ -564,7 +563,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un codice matricola valido");
+        text: ReplyTexts.InvalidStudentCode);
     }
 
     var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
@@ -574,7 +573,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.",
+        text: ReplyTexts.NotEnabledStudentCode,
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
 
@@ -619,7 +618,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci una materia valida");
+        text: ReplyTexts.InvalidExam);
     }
 
     conversation.Exam = exam;
@@ -641,7 +640,7 @@ public static class MessageHandlers
     var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +
                                          "\nprof: " + x.Professor + "\n \n")
       .ToList();
-    var text = $"Scegli uno dei tutor disponibili per {conversation.Exam.Value.Name}:\n \n";
+    var text = ReplyTexts.SelectTutor(conversation.Exam.Value.Name);
     foreach (var tutorsText in tutorsTexts)
     {
       text += tutorsText;
@@ -682,7 +681,7 @@ public static class MessageHandlers
     {
       Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un tutor della lista");
+        text: ReplyTexts.InvalidTutor);
     }
 
     // lock tutor until email arrive
