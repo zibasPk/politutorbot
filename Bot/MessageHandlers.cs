@@ -3,6 +3,7 @@ using Bot.configs;
 using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Records;
 using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
@@ -114,7 +115,7 @@ public static class MessageHandlers
     }
   }
 
-  private static async Task<Message> ReadOFATutor(ITelegramBotClient botClient, Message message, string tutor)
+  private static async Task<Message> ReadOFATutor(ITelegramBotClient botClient, Message message, string tutorIndexStr)
   {
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
@@ -135,20 +136,30 @@ public static class MessageHandlers
         replyMarkup: new ReplyKeyboardRemove());
     }
 
+    // Check if received message has a valid value
+    if (!int.TryParse(tutorIndexStr, out var tutorIdx) ||
+        tutorIdx > GlobalConfig.BotConfig.ShownTutorsInList || tutorIdx < 1)
+    {
+      Log.Debug("Invalid {tutor} index chosen in chat {id}.", tutorIndexStr, message.Chat.Id);
+      return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+        text: ReplyTexts.InvalidTutorIndex);
+    }
+
+
+    var tutor = conversation!.ShownTutors[tutorIdx - 1];
+
+
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
 
-    var tutorCode = tutorService.FindTutorCode(tutor);
-
-    //TODO: also check if tutor is for OFA
-    if (tutorCode == null)
+    if (!tutor.OfaAvailable)
     {
-      Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
+      Log.Error("Invalid {tutor} chosen in chat {id}.", tutor.TutorCode, message.Chat.Id);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
         text: ReplyTexts.InvalidTutor);
     }
 
     // lock tutor until email arrive
-    tutorService.ReserveOFATutor(tutorCode.Value, userId, conversation!.StudentCode);
+    tutorService.ReserveOFATutor(tutor.TutorCode, userId, conversation!.StudentCode);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,
@@ -216,14 +227,15 @@ public static class MessageHandlers
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
 
-    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors.Take(GlobalConfig.BotConfig.ShownTutorsInOFAList));
-    var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course + "\n \n")
+    var shownTutors = tutors.GetRange(0, Math.Min(GlobalConfig.BotConfig.ShownTutorsInOFAList, tutors.Count));
+
+    conversation.ShownTutors = shownTutors;
+
+    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(shownTutors);
+    var tutorsTexts = shownTutors.Select(x => shownTutors.IndexOf(x) + 1 + " )" + "\ncorso di studi tutor: " + x.Course + "\n \n")
       .ToList();
-    var text = ReplyTexts.SelectOFATutor;
-    foreach (var tutorsText in tutorsTexts)
-    {
-      text += tutorsText;
-    }
+
+    var text = tutorsTexts.Aggregate(ReplyTexts.SelectOFATutor, (current, tutorsText) => current + tutorsText);
 
     Monitor.Exit(conversation.ConvLock);
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -636,15 +648,20 @@ public static class MessageHandlers
       .ThenBy(tutor => tutor.Ranking)
       .ToList();
 
-    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors.Take(GlobalConfig.BotConfig.ShownTutorsInList));
-    var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +
-                                         "\nprof: " + x.Professor + "\n \n")
-      .ToList();
+    var shownTutors = tutors.GetRange(0, Math.Min(GlobalConfig.BotConfig.ShownTutorsInList, tutors.Count));
+
+    // Save shown tutors for conversation
+    conversation.ShownTutors = shownTutors;
+
+    var tutorsTexts = shownTutors.Select(x => (shownTutors.IndexOf(x) + 1) + ") " + 
+                                              "\ncorso di studi tutor: " + x.Course +
+                                              "\nprofessore avuto: " + x.Professor + "\n \n").ToList();
     var text = ReplyTexts.SelectTutor(conversation.Exam.Value.Name);
-    foreach (var tutorsText in tutorsTexts)
-    {
-      text += tutorsText;
-    }
+
+    text = tutorsTexts.Aggregate(text, (current, tutorsText) => current + tutorsText);
+
+    // Generate keyboard
+    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(shownTutors);
 
     Monitor.Exit(conversation.ConvLock);
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -652,13 +669,13 @@ public static class MessageHandlers
       replyMarkup: keyboardMarkup);
   }
 
-  private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutor)
+  private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutorIndex)
   {
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
 
     var userService = new UserDAO(DbConnection.GetMySqlConnection());
-    // Check if user has an already ongoin tutoring
+    // Check if user has an already ongoing tutoring
     if (userService.HasUserOngoingTutoring(userId))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
@@ -674,18 +691,30 @@ public static class MessageHandlers
         replyMarkup: new ReplyKeyboardRemove());
     }
 
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    var exam = conversation!.Exam!.Value;
-    var tutorCode = tutorService.FindTutorCode(tutor, exam.Code);
-    if (tutorCode == null || !tutorService.IsTutorForExam(tutorCode.Value, exam.Code))
+    // Check if received message has a valid value
+    if (!int.TryParse(tutorIndex, out var tutorIdx) ||
+        tutorIdx > GlobalConfig.BotConfig.ShownTutorsInList || tutorIdx < 1)
     {
-      Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
+      Log.Debug("Invalid {tutor} index chosen in chat {id}.", tutorIndex, message.Chat.Id);
+      return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+        text: ReplyTexts.InvalidTutorIndex);
+    }
+
+
+    var tutor = conversation!.ShownTutors[tutorIdx - 1];
+
+    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+    var exam = conversation.Exam!.Value;
+    if (!tutorService.IsTutorForExam(tutor.TutorCode, exam.Code))
+    {
+      // This should never happen in the current state of things
+      Log.Error("Invalid {tutor} chosen in chat {id}.", tutor.TutorCode, message.Chat.Id);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
         text: ReplyTexts.InvalidTutor);
     }
 
-    // lock tutor until email arrive
-    tutorService.ReserveTutor(tutorCode.Value, exam.Code, userId, conversation.StudentCode);
+    // Reserve tutor
+    tutorService.ReserveTutor(tutor.TutorCode, exam.Code, userId, conversation.StudentCode);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,
