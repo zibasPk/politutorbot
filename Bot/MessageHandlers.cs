@@ -380,9 +380,13 @@ public static class MessageHandlers
     // Check if conversation has been reset or is locked by a reset if not acquire lock
     if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
       return await SendEcho(botClient, message);
-    // Check course validity
-    var replyKeyboardMarkup = KeyboardGenerator.SubjectKeyboard(conversation.Course!, year);
-    if (replyKeyboardMarkup == null)
+    
+    
+    var examService = new ExamDAO(DbConnection.GetMySqlConnection());
+    var exams = examService.FindExamsInYear(conversation.Course!, year);
+    
+    // Check if the input was valid
+    if (exams.Count == 0)
     {
       Log.Debug("Invalid {year} chosen in chat {id}.", year, message.Chat.Id);
       // Release lock from conversation
@@ -390,10 +394,15 @@ public static class MessageHandlers
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
         text: ReplyTexts.InvalidYear);
     }
-
+    
+    // Save shown exams in conversation
+    conversation.ShownExams = exams;
     // Change conversation state to Subject and save chosen year
     conversation.State = UserState.Exam;
     conversation.Year = year;
+    
+    var replyKeyboardMarkup = KeyboardGenerator.ExamsKeyboard(exams);
+    
     // Release lock on conversation
     Monitor.Exit(conversation.ConvLock);
 
@@ -618,12 +627,10 @@ public static class MessageHandlers
       return await SendEcho(botClient, message);
     }
 
-
-    var examService = new ExamDAO(DbConnection.GetMySqlConnection());
-    var exam = examService.FindExam(examName, conversation.Course!);
+    var exam = conversation.ShownExams!.Find(exam => exam.Name == examName);
+    
     // Check if exam valid
-    if (exam == null ||
-        !examService.IsExamInCourse(exam.Value.Code, conversation.Course!, conversation.Year!))
+    if (exam == default)
     {
       Log.Debug("Invalid Exam {exam} chosen in chat {id}.", examName, message.Chat.Id);
       // Release lock from conversation
@@ -635,19 +642,26 @@ public static class MessageHandlers
     conversation.Exam = exam;
     conversation.State = UserState.Tutor;
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    var tutors = tutorService.FindAvailableTutors(exam.Value.Code, GlobalConfig.BotConfig!.TutorLockHours);
+    var tutors = tutorService.FindAvailableTutors(exam.Code, GlobalConfig.BotConfig!.TutorLockHours);
+    
+    tutors = tutors.OrderBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
+      .ThenBy(tutor => tutor.School == conversation.School ? 0 : 1)
+      .ThenBy(tutor => tutor.Ranking)
+      .ToList();
+    
+    // If tutors aren't enough search for additional "similar" tutorings
+    if(tutors.Count < GlobalConfig.BotConfig.ShownTutorsInList)
+    {
+      tutors.AddRange(tutorService.FindAdditionalAvailableTutors(exam.Code, examName,GlobalConfig.BotConfig.TutorLockHours));
+    }
+    
     if (tutors.Count == 0)
     {
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
         text: ReplyTexts.NoTutoring,
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
-
-    tutors = tutors.OrderBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
-      .ThenBy(tutor => tutor.School == conversation.School ? 0 : 1)
-      .ThenBy(tutor => tutor.Ranking)
-      .ToList();
-
+    
     var shownTutors = tutors.GetRange(0, Math.Min(GlobalConfig.BotConfig.ShownTutorsInList, tutors.Count));
 
     // Save shown tutors for conversation

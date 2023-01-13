@@ -40,7 +40,8 @@ public class Conversation
     public Exam? Exam { get; set; }
     public int StudentCode { get; set; }
 
-    public List<TutorToExam> ShownTutors { get; set; }
+    public List<TutorToExam>? ShownTutors { get; set; }
+    public List<Exam>? ShownExams { get; set; }
     public string? Tutor { get; set; }
 
     public Conversation(long chatId)
@@ -79,6 +80,7 @@ public class Conversation
                 break;
             case UserState.Year:
                 Year = null;
+                ShownExams = null;
                 break;
             case UserState.Exam:
                 Exam = null;
@@ -126,6 +128,7 @@ public class Conversation
         Exam = null;
         StudentCode = 0;
         Tutor = null;
+        ShownExams = null;
         ShownTutors = null;
         Monitor.Exit(ConvLock);
         await AsyncResponseHandler.SendMessage(ChatId, ReplyTexts.ConversationReset);

@@ -31,24 +31,20 @@ public static class KeyboardGenerator
     }
 
     /// <summary>
-    /// Generate a keyboard containing Subjects for a specific course in a year.
+    /// Generate a keyboard containing given exams
     /// </summary>
-    /// <param name="course">The course for which it generates the keyboard.</param>
-    /// <param name="year">The year for which to look for exams.</param>
-    /// <returns>null if course doesn't exist.</returns>
-    public static ReplyKeyboardMarkup? SubjectKeyboard(string course, string year)
+    /// <param name="exams">exams to display on the keyboard</param>
+    public static ReplyKeyboardMarkup ExamsKeyboard(List<Exam> exams)
     {
-        var examService = new ExamDAO(DbConnection.GetMySqlConnection());
-        var exams = examService.FindExamsInYear(course, year);
         var examsNames = exams.Select(x => x.Name).ToList();
-        return exams.Count == 0 ? null : GenerateKeyboardMarkup(examsNames, true);
+        return GenerateKeyboardMarkup(examsNames, true);
     }
 
     public static ReplyKeyboardMarkup YearKeyboard(string course)
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
         var items = courseService.AvailableYearsInCourse(course);
-       
+        items.Sort();
         return GenerateKeyboardMarkup(items, 2, true);
     }
 

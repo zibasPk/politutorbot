@@ -755,6 +755,58 @@ public class TutorDAO
 
     return tutors;
   }
+  public List<TutorToExam> FindAdditionalAvailableTutors(int exam, string examName, int lockHours)
+  {
+    _connection.Open();
+    const string query = "SELECT * FROM tutor_to_exam as te " +
+                         "JOIN tutor as t on t.tutor_code=te.tutor " +
+                         "JOIN course as c on c.name=t.course " +
+                         "JOIN exam as e on e.code=te.exam " +
+                         "WHERE exam!=@exam AND e.name == @examName AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
+                         "AND available_tutorings > 0 ORDER BY ranking ASC";
+    var tutors = new List<TutorToExam>();
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@exam", exam);
+      command.Parameters.AddWithValue("@examName", examName);
+      command.Parameters.AddWithValue("@hours", lockHours);
+      command.Prepare();
+
+      var reader = command.ExecuteReader();
+
+      if (!reader.HasRows)
+        Log.Debug("No unlocked tutors found for {exam} in db", exam);
+
+      while (reader.Read())
+      {
+        var tutor = new TutorToExam
+        {
+          TutorCode = reader.GetInt32("tutor"),
+          Name = reader.GetString("name"),
+          Surname = reader.GetString("surname"),
+          ExamCode = reader.GetInt32("exam"),
+          Professor = reader.GetString("exam_professor"),
+          Course = reader.GetString("course"),
+          Ranking = reader.GetInt32("ranking"),
+          OfaAvailable = reader.GetBoolean("OFA_available"),
+          LastReservation = reader.GetDateTime("last_reservation"),
+          AvailableTutorings = reader.GetInt32("available_tutorings"),
+          School = reader.GetString("school")
+        };
+        tutors.Add(tutor);
+      }
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+
+    _connection.Close();
+
+    return tutors;
+  }
 
 
   /// <summary>
