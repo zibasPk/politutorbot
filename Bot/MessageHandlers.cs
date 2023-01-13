@@ -216,7 +216,7 @@ public static class MessageHandlers
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
 
-    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
+    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors.Take(GlobalConfig.BotConfig.ShownTutorsInOFAList));
     var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course + "\n \n")
       .ToList();
     var text = ReplyTexts.SelectOFATutor;
@@ -632,10 +632,11 @@ public static class MessageHandlers
     }
 
     tutors = tutors.OrderBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
+      .ThenBy(tutor => tutor.School == conversation.School ? 0 : 1)
       .ThenBy(tutor => tutor.Ranking)
       .ToList();
 
-    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
+    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors.Take(GlobalConfig.BotConfig.ShownTutorsInList));
     var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +
                                          "\nprof: " + x.Professor + "\n \n")
       .ToList();

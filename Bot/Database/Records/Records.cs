@@ -16,6 +16,7 @@ public record struct TutorToExam(
   string Surname,
   int ExamCode,
   string Course,
+  string? School,
   string Professor,
   int Ranking,
   bool OfaAvailable,

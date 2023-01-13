@@ -708,7 +708,9 @@ public class TutorDAO
   public List<TutorToExam> FindAvailableTutors(int exam, int lockHours)
   {
     _connection.Open();
-    const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code=tutor " +
+    const string query = "SELECT * FROM tutor_to_exam as e " +
+                         "JOIN tutor as t on t.tutor_code=e.tutor " +
+                         "JOIN course as c on c.name=t.course " +
                          "WHERE exam=@exam AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
                          "AND available_tutorings > 0 ORDER BY ranking ASC";
     var tutors = new List<TutorToExam>();
@@ -737,7 +739,8 @@ public class TutorDAO
           Ranking = reader.GetInt32("ranking"),
           OfaAvailable = reader.GetBoolean("OFA_available"),
           LastReservation = reader.GetDateTime("last_reservation"),
-          AvailableTutorings = reader.GetInt32("available_tutorings")
+          AvailableTutorings = reader.GetInt32("available_tutorings"),
+          School = reader.GetString("school")
         };
         tutors.Add(tutor);
       }
