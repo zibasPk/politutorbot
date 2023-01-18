@@ -73,6 +73,9 @@
   border: 0;
 }
 
+.tableContainer tr:hover {
+  background-color: rgba(210, 231, 248, 0.488);
+}
 
 table,
 th,
@@ -87,10 +90,6 @@ th {
 
 td:hover .arrow {
   display: inline-block;
-}
-
-.tableContainer tr:hover {
-  background-color: rgba(210, 231, 248, 0.488);
 }
 
 .firstCell {

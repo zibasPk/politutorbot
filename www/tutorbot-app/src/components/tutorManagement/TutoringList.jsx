@@ -7,6 +7,7 @@ import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Table from '../utils/Table';
+import TutoringListModal from './TutoringListModal';
 
 
 export default function TutoringList(props) {
@@ -38,7 +39,14 @@ export default function TutoringList(props) {
         <h1>Lista Tutoraggi{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <div className={styles.tutorListContent}>
-            <Table headers={props.headers} content={props.tutoringList} hasChecks={false}/>
+            <Table headers={props.headers} content={props.tutoringList} hasChecks={true}
+              modalProps={{
+                modalTitle: "Elimina Tutoraggi selezionati",
+                modalContent: TutoringListModal,
+                contentHeaders: props.headers,
+                onModalEvent: props.refreshData
+              }}
+            />
           </div>
         </Collapse>
       </div>

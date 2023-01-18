@@ -73,9 +73,6 @@ function ContractManagementModal(props)
   {
     if (key === "ContractState")
     {
-
-      console.log(changedTutorings);
-      console.log(row);
       const formClass = changedTutorings.filter((tutoring) => tutoring.TutorCode === row.TutorCode).length > 0 ?
         "" : styles.unalteredSelect;
       console.log(formClass);

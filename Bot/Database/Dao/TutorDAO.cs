@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using Bot.Database.Records;
 using MySql.Data.MySqlClient;
@@ -19,7 +20,7 @@ public class TutorDAO
   /// </summary>
   /// <param name="tutorCode">Student code of the tutor whose state must be changed.</param>
   /// <param name="newState">New contract state for tutor.</param>
-  /// <returns></returns>
+  /// <returns>true if contract state change was a success, otherwise false.</returns>
   public bool ChangeContractState(int tutorCode, int newState)
   {
     _connection.Open();
@@ -310,41 +311,40 @@ public class TutorDAO
     throw new NotImplementedException();
   }
 
-  public int? FindTutorCode(string tutorFullName, int exam)
+  /// <summary>
+  /// Tries to delete a list of tutorings.
+  /// </summary>
+  /// <param name="tutorToExamList">List of tutorings to delete.</param>
+  /// <param name="errorMessage">Deletion error.</param>
+  /// <returns>true if deletion worked for all tutorings, otherwise false.</returns>
+  public bool DeleteTutorings(List<TutorCodeToExamCode> tutorToExamList, out string errorMessage)
   {
-    var names = tutorFullName.Split(' ');
-    if (names.Length < 2)
-    {
-      Log.Debug("Failed to properly split name: {t}", tutorFullName);
-      return null;
-    }
-
-    var firstName = names[0];
-    var lastName = names[1];
     _connection.Open();
-    const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code = tutor " +
-                         "WHERE name=@firstName AND surname=@lastName AND exam=@exam;";
+    const string query = "DELETE FROM tutor_to_exam " +
+                         "WHERE tutor=@tutor AND exam=@exam;";
 
-    var tutors = new List<TutorToExam>();
+    var transaction = _connection.BeginTransaction();
     try
     {
-      var command = new MySqlCommand(query, _connection);
-      command.Parameters.AddWithValue("@firstName", firstName);
-      command.Parameters.AddWithValue("@lastName", lastName);
-      command.Parameters.AddWithValue("@exam", exam);
-      command.Prepare();
-
-      var reader = command.ExecuteReader();
-      if (!reader.Read())
+      var command = new MySqlCommand(query, _connection, transaction);
+      foreach (var tutorToExam in tutorToExamList)
       {
-        Log.Debug("No tutor code found for {name} in db", tutorFullName);
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@tutor", tutorToExam.TutorCode);
+        command.Parameters.AddWithValue("@exam", tutorToExam.ExamCode);
+        command.Prepare();
+        var result = command.ExecuteNonQuery();
+        if (result != 0) 
+          continue;
+        errorMessage = $"No tutoring found in db with code {tutorToExam.TutorCode} for exam {tutorToExam.ExamCode}";
+        Log.Error(errorMessage);
         _connection.Close();
-        return null;
+        return false;
       }
 
-      var tudorCode = reader.GetInt32("tutor");
-      _connection.Close();
-      return tudorCode;
+      errorMessage = "";
+      transaction.Commit();
+      return true;
     }
     catch (Exception)
     {
@@ -352,48 +352,7 @@ public class TutorDAO
       throw;
     }
   }
-
-  public int? FindTutorCode(string tutorFullName)
-  {
-    var names = tutorFullName.Split(' ');
-    if (names.Length < 2)
-    {
-      Log.Debug("Failed to properly split name: {t}", tutorFullName);
-      return null;
-    }
-
-    var firstName = names[0];
-    var lastName = names[1];
-    _connection.Open();
-    const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code = tutor " +
-                         "WHERE name=@firstName AND surname=@lastName AND OFA_available = 1";
-
-    var tutors = new List<TutorToExam>();
-    try
-    {
-      var command = new MySqlCommand(query, _connection);
-      command.Parameters.AddWithValue("@firstName", firstName);
-      command.Parameters.AddWithValue("@lastName", lastName);
-      command.Prepare();
-
-      var reader = command.ExecuteReader();
-      if (!reader.Read())
-      {
-        Log.Debug("No tutor code found for {name} in db", tutorFullName);
-        _connection.Close();
-        return null;
-      }
-
-      var tudorCode = reader.GetInt32("tutor");
-      _connection.Close();
-      return tudorCode;
-    }
-    catch (Exception)
-    {
-      _connection.Close();
-      throw;
-    }
-  }
+  
 
   public TutorToExam? FindTutoring(int tutor, int exam)
   {
@@ -501,7 +460,9 @@ public class TutorDAO
   public List<TutorToExam> FindTutorings()
   {
     _connection.Open();
-    const string query = "SELECT * FROM tutor join tutor_to_exam";
+    const string query = "SELECT  *, tutor.name as tutorName,exam.name as examName " +
+                         "FROM tutor join tutor_to_exam on tutor_code = tutor " +
+                         "join exam on exam=code";
     var tutors = new List<TutorToExam>();
     try
     {
@@ -516,9 +477,10 @@ public class TutorDAO
         var tutor = new TutorToExam
         {
           TutorCode = reader.GetInt32("tutor"),
-          Name = reader.GetString("name"),
+          Name = reader.GetString("tutorName"),
           Surname = reader.GetString("surname"),
           ExamCode = reader.GetInt32("exam"),
+          ExamName = reader.GetString("examName"),
           Professor = reader.GetString("exam_professor"),
           Course = reader.GetString("course"),
           Ranking = reader.GetInt32("ranking"),

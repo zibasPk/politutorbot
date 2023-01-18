@@ -21,6 +21,7 @@ const TutoringHeaders = {
   Surname: "Cognome Tutor",
   Name: "Nome Tutor",
   ExamCode: "Codice Esame",
+  ExamName: "Nome Esame",
   AvailableTutorings: "# Tutoraggi disponibili"
 };
 
@@ -89,7 +90,7 @@ export default function TutorManagement()
     <div className={styles.content}>
       <AddTutor onChange={() => refreshData()} />
       <TutorsList headers={TutorHeaders} tutorList={tutorsArray} refreshData={()=> refreshData()}/>
-      <TutoringList headers={TutoringHeaders} tutoringList={tutoringArray} />
+      <TutoringList headers={TutoringHeaders} tutoringList={tutoringArray} refreshData={()=> refreshData()}/>
     </div>
   );
 }

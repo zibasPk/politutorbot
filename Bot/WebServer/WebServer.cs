@@ -74,26 +74,81 @@ public static class WebServer
     app.MapPost("/api/tutor/{action}", HandleTutorAction).RequireAuthorization();
     app.MapPost("/api/students/{action}/{studentCode:int?}", HandleStudentAction).RequireAuthorization();
     // app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
+    app.MapDelete("/api/tutoring/", RemoveTutoring).RequireAuthorization();
+
 
     var url = "https://localhost:" + GlobalConfig.WebConfig!.Port;
     app.Run(url);
   }
 
-  private static void HandleContractAction(int tutorCode, int state, HttpResponse response)
+  private static async void RemoveTutoring(HttpResponse response, HttpRequest request)
   {
-    if (state is > 2 or < 0)
+    // Enable all given students
+    List<TutorCodeToExamCode>? tutorings = null;
+    try
     {
-      // There is no Reservation with the given id
+      tutorings = await request.ReadFromJsonAsync<List<TutorCodeToExamCode>>();
+    }
+    catch (Exception e)
+    {
+      // Invalid request body
+      Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status400BadRequest;
-      response.WriteAsync($"invalid state for with tutor: {tutorCode}");
+      await response.WriteAsync($"invalid request body");
+      return;
+    }
+
+    if (tutorings == null)
+    {
+      // Invalid request body
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      await response.WriteAsync($"invalid request body");
+      return;
+    }
+    
+    var badCode = tutorings.Find(x => !Regex.IsMatch(x.TutorCode.ToString(), "^[1-9][0-9]{5}$"));
+    
+    if (badCode != default)
+    {
+      // Student list contains an invalid student code format
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      await response.WriteAsync($"invalid tutor code: {badCode.TutorCode} in request body");
       return;
     }
 
     try
     {
       var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-      if (tutorService.ChangeContractState(tutorCode, state)) 
-        return; // There is no Reservation with the given id
+      
+      if (tutorService.DeleteTutorings(tutorings, out var errorMessage)) 
+        return;
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      await response.WriteAsync($"Invalid tutorings in request body: {errorMessage}");
+      return;
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
+  }
+
+
+  private static void HandleContractAction(int tutorCode, int state, HttpResponse response)
+  {
+    if (state is > 2 or < 0)
+    {
+      // Not a valid contract state
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      response.WriteAsync($"Invalid state for contract with tutor: {tutorCode}");
+      return;
+    }
+
+    try
+    {
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+      if (tutorService.ChangeContractState(tutorCode, state))
+        return; 
       response.StatusCode = StatusCodes.Status502BadGateway;
       response.WriteAsync($"Error in contract state change for tutor: {tutorCode}");
       return;
@@ -105,6 +160,7 @@ public static class WebServer
       return;
     }
   }
+
   private static void HandleReservationAction(int id, string action, HttpResponse response)
   {
     if (action is not ("confirm" or "refuse"))
@@ -249,9 +305,13 @@ public static class WebServer
 
         foreach (var data in tutorings!)
         {
-          if (!await StartTutoring(data, response)) {}
-            return;
+          if (!await StartTutoring(data, response))
+          {
+          }
+
+          return;
         }
+
         return;
       }
 
@@ -264,7 +324,7 @@ public static class WebServer
       }
 
       await StartTutoring(
-        new TutorToStudentToExam(examCode.HasValue, tutorCode!.Value, studentCode.Value, examCode), 
+        new TutorToStudentToExam(examCode.HasValue, tutorCode!.Value, studentCode.Value, examCode),
         response);
       return;
     }
@@ -302,7 +362,21 @@ public static class WebServer
       }
 
       // Start tutoring
-      tutorService.ActivateTutoring(tutoringData.TutorCode, tutoringData.StudentCode);
+      try
+      {
+        tutorService.ActivateTutoring(tutoringData.TutorCode, tutoringData.StudentCode);
+      }
+      catch (MySqlException e)
+      {
+        // This should be caused by a trigger on the active_tutoring table
+        if (e.Number != 45000)
+          throw;
+        // Tutor isn't available for OFA or doesn't exist
+        response.StatusCode = StatusCodes.Status400BadRequest;
+        await response.WriteAsync($"Tutoring from Tutor: {tutoringData.TutorCode} for Student: {tutoringData.StudentCode} is already active");
+        return false;
+      }
+
       return true;
     }
 
@@ -441,8 +515,7 @@ public static class WebServer
       return;
     }
 
-
-    // Enable all given students
+    // Read request body
     List<TutorToExam>? tutorings = null;
     try
     {

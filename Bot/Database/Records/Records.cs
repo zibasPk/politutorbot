@@ -15,6 +15,7 @@ public record struct TutorToExam(
   string Name,
   string Surname,
   int ExamCode,
+  string? ExamName,
   string Course,
   string? School,
   string Professor,
@@ -22,6 +23,12 @@ public record struct TutorToExam(
   bool OfaAvailable,
   DateTime? LastReservation,
   int AvailableTutorings
+);
+
+public record struct TutorCodeToExamCode
+(
+  int TutorCode,
+  int ExamCode
 );
 
 public record struct ActiveTutoring(

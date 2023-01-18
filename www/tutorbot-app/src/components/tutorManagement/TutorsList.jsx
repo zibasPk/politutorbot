@@ -48,6 +48,7 @@ export default function TutorsList(props) {
                 onModalEvent: props.refreshData
               }} />
           </div>
+          
         </Collapse>
       </div>
     </>
