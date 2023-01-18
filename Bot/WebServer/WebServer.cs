@@ -73,13 +73,31 @@ public static class WebServer
     app.MapPost("/api/tutoring/start/{tutorCode:int?}/{studentCode:int?}/{examCode:int?}", StartTutoringAction).RequireAuthorization();
     app.MapPost("/api/tutor/{action}", HandleTutorAction).RequireAuthorization();
     app.MapPost("/api/students/{action}/{studentCode:int?}", HandleStudentAction).RequireAuthorization();
+    
     // app.MapPost("/api/SavePersonCode", SavePersonCode).RequireAuthorization();
     app.MapDelete("/api/tutoring/", RemoveTutoring).RequireAuthorization();
+    app.MapDelete("/api/tutors", DeleteTutors).RequireAuthorization();
 
 
     var url = "https://localhost:" + GlobalConfig.WebConfig!.Port;
     app.Run(url);
   }
+
+  private static async void DeleteTutors(HttpResponse response, HttpRequest request)
+  {
+    try
+    {
+      var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+      
+      tutorService.DeleteTutors();
+    }
+    catch (MySqlException e)
+    {
+      Console.WriteLine(e);
+      response.StatusCode = StatusCodes.Status502BadGateway;
+    }
+  }
+  
 
   private static async void RemoveTutoring(HttpResponse response, HttpRequest request)
   {
@@ -307,9 +325,8 @@ public static class WebServer
         {
           if (!await StartTutoring(data, response))
           {
+            return;
           }
-
-          return;
         }
 
         return;
@@ -784,19 +801,7 @@ public static class WebServer
       response.StatusCode = StatusCodes.Status502BadGateway;
     }
   }
-
-  private static async void DeleteTutor(string tutor, HttpResponse response)
-  {
-    if (string.IsNullOrEmpty(tutor))
-    {
-      response.StatusCode = StatusCodes.Status400BadRequest;
-      return;
-    }
-
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    tutorService.DeleteTutor(tutor);
-  }
-
+  
   private static async void ChangeTutorState(string tutor, string exam, string action, HttpResponse response)
   {
     if (string.IsNullOrEmpty(exam) || string.IsNullOrEmpty(tutor) || string.IsNullOrEmpty(action))

@@ -34,7 +34,7 @@ export default function AddTutor(props)
   });
   const [tutorFileAlert, setFileAlertText] = useState("");
   const [tutoringFile, setTutoringFile] = useState(null);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [checkBoxState, setCheckBox] = useState(0);
 
   const refreshData = () =>

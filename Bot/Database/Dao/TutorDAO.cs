@@ -353,6 +353,30 @@ public class TutorDAO
     }
   }
   
+  /// <summary>
+  /// Tries to delete all tutors
+  /// </summary>
+  /// <returns>true if deletion worked, otherwise false.</returns>
+  public bool DeleteTutors()
+  {
+    _connection.Open();
+    const string query = "DELETE FROM tutor ";
+
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.ExecuteNonQuery();
+      Log.Debug("All tutors where deleted from db");
+      return true;
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+  }
+  
+  
 
   public TutorToExam? FindTutoring(int tutor, int exam)
   {

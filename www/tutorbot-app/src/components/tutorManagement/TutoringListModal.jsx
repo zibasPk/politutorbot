@@ -13,7 +13,6 @@ function TutoringListModal(props)
 
   const removeTutorings = () =>
   {
-    console.log(props.selectedContent);
     let toDelete = props.selectedContent.map((tutoring) =>
     {
       return { "TutorCode": tutoring.TutorCode, "ExamCode": tutoring.ExamCode }
@@ -53,7 +52,7 @@ function TutoringListModal(props)
   {
     return <td key={i}>{row[key]}</td>;
   });
-
+  
   if (props.selectedContent.length !== 0) 
   {
     return (

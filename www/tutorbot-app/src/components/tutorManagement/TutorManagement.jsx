@@ -5,6 +5,7 @@ import styles from './TutorManagement.module.css'
 import AddTutor from './AddTutor';
 import TutorsList from './TutorsList';
 import TutoringList from './TutoringList';
+import DeleteTutors from './DeleteTutors';
 
 const TutorHeaders = {
   TutorCode: "Cod. Matr. Tutor",
@@ -91,6 +92,7 @@ export default function TutorManagement()
       <AddTutor onChange={() => refreshData()} />
       <TutorsList headers={TutorHeaders} tutorList={tutorsArray} refreshData={()=> refreshData()}/>
       <TutoringList headers={TutoringHeaders} tutoringList={tutoringArray} refreshData={()=> refreshData()}/>
+      <DeleteTutors refreshData={() => refreshData()}/>
     </div>
   );
 }
