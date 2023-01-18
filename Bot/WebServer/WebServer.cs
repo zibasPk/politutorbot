@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Bot.configs;
+using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Records;
@@ -124,7 +125,7 @@ public static class WebServer
       return;
     }
     
-    var badCode = tutorings.Find(x => !Regex.IsMatch(x.TutorCode.ToString(), "^[1-9][0-9]{5}$"));
+    var badCode = tutorings.Find(x => !Regex.IsMatch(x.TutorCode.ToString(), RegularExpr.StudentCode));
     
     if (badCode != default)
     {
@@ -458,7 +459,7 @@ public static class WebServer
           return;
         }
 
-        var badCode = studentCodes.Find(x => !Regex.IsMatch(x.ToString(), "^[1-9][0-9]{5}$"));
+        var badCode = studentCodes.Find(x => !Regex.IsMatch(x.ToString(), RegularExpr.StudentCode));
 
         if (badCode != default)
         {
@@ -486,7 +487,7 @@ public static class WebServer
         }
       }
 
-      if (!Regex.IsMatch(studentCode.Value.ToString(), "^[1-9][0-9]{5}$"))
+      if (!Regex.IsMatch(studentCode.Value.ToString(), RegularExpr.StudentCode))
       {
         // Request contains an invalid student code format
         response.StatusCode = StatusCodes.Status400BadRequest;
@@ -555,7 +556,7 @@ public static class WebServer
       return;
     }
 
-    var badCode = tutorings.Find(x => !Regex.IsMatch(x.TutorCode.ToString(), "^[1-9][0-9]{5}$"));
+    var badCode = tutorings.Find(x => !Regex.IsMatch(x.TutorCode.ToString(), RegularExpr.StudentCode));
 
     if (badCode != default)
     {
@@ -694,14 +695,14 @@ public static class WebServer
         return;
       }
 
-      if (!Regex.IsMatch(pair.UserId, "^[1-9][0-9]{1,20}$"))
+      if (!Regex.IsMatch(pair.UserId, RegularExpr.TelegramUserId))
       {
         Log.Debug("Api Request with invalid userId: {id}", pair.UserId);
         response.StatusCode = StatusCodes.Status400BadRequest;
         return;
       }
 
-      if (!Regex.IsMatch(pair.PersonCode, "^[1-9][0-9]{7}$"))
+      if (!Regex.IsMatch(pair.PersonCode, RegularExpr.PersonCode))
       {
         Log.Debug("Api Request with invalid PersonCode: {code}", pair.PersonCode);
         response.StatusCode = StatusCodes.Status400BadRequest;
@@ -746,9 +747,9 @@ public static class WebServer
           return;
       }
 
-      if (!Regex.IsMatch(tutorType, "^[1-9][0-9]{7}$"))
+      if (!Regex.IsMatch(tutorType, RegularExpr.StudentCode))
       {
-        // Invalid tutorType parameter
+        // Tutor type isn't a studentCode
         response.StatusCode = StatusCodes.Status400BadRequest;
         response.WriteAsync($"invalid param: {tutorType}");
         return;

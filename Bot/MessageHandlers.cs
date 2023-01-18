@@ -577,7 +577,7 @@ public static class MessageHandlers
         text: "Accedi ad Aunica per continuare.");
     }
 
-    if (!Regex.IsMatch(studentCodeStr, "^[1-9][0-9]{5}$"))
+    if (!Regex.IsMatch(studentCodeStr, RegularExpr.StudentCode))
     {
       Log.Debug("Invalid student number {studentCode} typed in chat {id}.", studentCodeStr, message.Chat.Id);
       // Release lock from conversation
