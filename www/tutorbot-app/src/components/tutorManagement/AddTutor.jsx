@@ -9,12 +9,10 @@ import Papa from "papaparse";
 
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
-import InfoIconBis from '../utils/InfoIconBis';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import { allowedExtensions } from '../enabledStudents/EnabledStudents';
+import UploadForm from '../utils/UploadForm';
 
 
 export default function AddTutor(props)
@@ -61,28 +59,6 @@ export default function AddTutor(props)
     refreshData();
   }, [])
 
-  const handleFileChange = (e) =>
-  {
-    if (e.target.files.length)
-    {
-      const inputFile = e.target.files[0]
-
-      // Check the file extensions, if it not
-      // included in the allowed extensions
-      // we show the error
-      const fileExtension = inputFile?.type.split("/")[1];
-      if (!allowedExtensions.includes(fileExtension))
-      {
-        setTutoringFile(null);
-        setFileAlertText("File inserito non del formato .csv");
-        return;
-      }
-
-      setTutoringFile(inputFile);
-      setFileAlertText("");
-    }
-  }
-
   const sendTutorings = (tutorings, action) =>
   {
     fetch(configData.botApiUrl + '/tutor/' + action, {
@@ -110,13 +86,13 @@ export default function AddTutor(props)
       })
   }
 
-  const sendFile = (tutoringsFile, action) =>
+  const parseTutorFile = (file, alertSetter, sendFile) =>
   {
     // If user clicks the parse button without
     // a file 
-    if (!tutoringsFile)
+    if (!file)
     {
-      setFileAlertText("Inserire un file valido.");
+      alertSetter("Inserire un file valido.");
       return;
     }
 
@@ -143,15 +119,15 @@ export default function AddTutor(props)
         alertMsg = validateTutoring(tutoring);
         if (alertMsg != null)
         {
-          setFileAlertText("Errore nei dati per tutor " + tutoring.TutorCode + ": " + alertMsg);
+          alertSetter("Errore nei dati per tutor " + tutoring.TutorCode + ": " + alertMsg);
           return false;
         }
       }
-
       if (alertMsg == null)
-        sendTutorings(parsedData, action);
+        sendFile(parsedData);
+      return;
     };
-    reader.readAsText(tutoringsFile);
+    reader.readAsText(file);
   }
 
 
@@ -186,7 +162,6 @@ export default function AddTutor(props)
 
   const validateTutoring = (tutoring) =>
   {
-    console.log(tutoring);
     if (tutoring.Name && tutoring.Name.length > validationConfig.maxNameLength)
       return 'La massima lunghezza per il Nome del tutor è ' + validationConfig.maxNameLength + " caratteri";
 
@@ -315,20 +290,18 @@ export default function AddTutor(props)
                 <div className={styles.tutorFileAlert}>{tutorFileAlert}</div>
               </Form>
             </div>
-            <Form.Group controlId="formTutorFile" className="mb-3">
-
-              <Form.Label>Carica File CSV Tutor</Form.Label>
-              <InfoIconBis content={<>
-                <div>Inserire un file cvs con righe come da figura:</div>
-                <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-                <img src={examplePic}></img>
-              </>} />
-
-              <div className={styles.inputDiv}>
-                <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
-                <FileUploadIcon className={styles.actionBox} onClick={() => sendFile(tutoringFile, "add")} />
-              </div>
-            </Form.Group>
+            <UploadForm
+              formText="Carica File CSV Tutor"
+              infoContent={
+                <>
+                  <div>Inserire un file .csv con righe come da figura:</div>
+                  <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+                  <img src={examplePic}></img>
+                </>}
+              uploadEndPoint="/tutor/add"
+              parseData={(file, alertSetter, sendFile) => parseTutorFile(file, alertSetter, sendFile)}
+              callBack={() => props.onChange()}
+            />
           </div>
         </Collapse>
       </div>

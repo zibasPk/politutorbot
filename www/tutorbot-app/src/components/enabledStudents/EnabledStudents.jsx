@@ -295,7 +295,7 @@ export default class EnabledStudents extends RefreshableComponent
           }
           <div className={styles.functionsHeader}>
             <div className={styles.addFunctions}>
-              <h1>Abilita studenti</h1>
+              <h1>Abilita Studenti</h1>
               <Form.Group controlId="formTextEnable" className="mb-3">
                 <Form.Label>Abilita Studente</Form.Label>
                 <div className={styles.inputDiv}>
@@ -316,7 +316,7 @@ export default class EnabledStudents extends RefreshableComponent
               </Form.Group>
             </div>
             <div className={styles.removeFunctions}>
-              <h1>Rimuovi studenti</h1>
+              <h1>Rimuovi Studenti</h1>
               <Form.Group controlId="formTextRemove" className="mb-3">
                 <Form.Label>Rimuovi Studente</Form.Label>
                 <div className={styles.inputDiv}>
