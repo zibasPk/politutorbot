@@ -7,6 +7,8 @@
 :root {
   --primary-color: #4a9ce3;
   --contrast-color: #FFCA2C;
+  --success-color: #2ECC71;
+  --alert-color: #C0392B;
   --tooltip-background-color: rgba(97, 97, 97, 0.92);
   --background-color-primary: rgb(247, 250, 255);
   --navbar-height: 4em;

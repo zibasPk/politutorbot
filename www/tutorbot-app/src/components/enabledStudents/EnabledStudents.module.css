@@ -73,6 +73,6 @@
 }
 
 .alertText {
-  color: red;
+  color: var(--alert-color);
   text-align: center;
 }

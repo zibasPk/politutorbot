@@ -14,14 +14,14 @@
 }
 
 .deletionAlert {
-  color: #C0392B;
+  color: var(--alert-color);
   font-size: 1.3em;
   font-weight: bold;
   text-align: center; 
 }
 
 .successAlert {
-  color: #2ECC71;
+  color: var(--success-color);
   font-size: 1.3em;
   font-weight: bold;
   text-align: center; 

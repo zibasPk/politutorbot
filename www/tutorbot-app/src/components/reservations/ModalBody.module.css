@@ -53,5 +53,5 @@ td:hover .arrow {
 
 .alertText {
   text-align: center;
-  color: red;
+  color: var(--alert-color);
 }

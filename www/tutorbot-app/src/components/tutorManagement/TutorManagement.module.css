@@ -24,11 +24,11 @@
   margin-left: 1em;
 }
 
-.addButton{
+.addButton {
   margin-bottom: 16px;
 }
 
-.btnExpand{
+.btnExpand {
   margin-left: 0.2em;
   font-size: 1em;
 }
@@ -59,13 +59,13 @@
   color: var(--primary-color);
 }
 
-.actionBox :hover{
+.actionBox :hover {
   cursor: pointer;
   color: var(--contrast-color);
 }
 
 .tutorFileAlert {
-  color: red;
+  color: var(--alert-color);
   text-align: center;
 }
 
@@ -75,8 +75,8 @@
 }
 
 .alertText {
-  color: red;
-  text-align: center; 
+  color: var(--alert-color);
+  text-align: center;
 }
 
 .unalteredSelect {
