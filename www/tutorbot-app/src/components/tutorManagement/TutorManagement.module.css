@@ -83,26 +83,3 @@
   background-color: var(--contrast-color);
 }
 
-.deleteTutorModal {
-  width: fit-content;
-  max-width: 75% !important;
-}
-
-.deletionAlert {
-  color: #C0392B;
-  font-size: 1.3em;
-  font-weight: bold;
-  text-align: center; 
-}
-
-.successAlert {
-  color: #2ECC71;
-  font-size: 1.3em;
-  font-weight: bold;
-  text-align: center; 
-}
-
-.btnDeleteTutors{
-  margin-top: 1em;
-}
-

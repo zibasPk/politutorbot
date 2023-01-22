@@ -146,7 +146,7 @@ public static class MessageHandlers
     }
 
 
-    var tutor = conversation!.ShownTutors[tutorIdx - 1];
+    var tutor = conversation!.ShownTutors![tutorIdx - 1];
 
 
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());

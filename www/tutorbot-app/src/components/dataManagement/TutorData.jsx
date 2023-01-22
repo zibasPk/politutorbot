@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import styles from './TutorManagement.module.css'
+import styles from './DataManagement.module.css'
 import configData from "../../config/config.json";
 
 import Collapse from '@mui/material/Collapse';
@@ -9,7 +9,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-export default function DeleteTutors(props)
+export default function TutorData(props)
 {
   const [expanded, setExpanded] = useState(false);
 
@@ -34,6 +34,22 @@ export default function DeleteTutors(props)
     className={styles.btnExpand}
   />;
 
+  return (
+    <>
+      <div className={styles.dropDownContent}>
+        <h1>Reset dati Tutor{icon}</h1>
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
+          <div className={styles.tutorListContent}>
+            <DeleteTutors/>
+          </div>
+        </Collapse>
+      </div>
+    </>
+  );
+}
+
+function DeleteTutors()
+{
   const [show, setShow] = useState(false);
   const [modalText, setText] = useState("");
   const [textClass, setTextClass] = useState(styles.deletionAlert);
@@ -58,7 +74,6 @@ export default function DeleteTutors(props)
     {
       if (!resp.ok)
         return resp.text();
-      props.refreshData();
     })
       .then((text) =>
       {
@@ -75,32 +90,24 @@ export default function DeleteTutors(props)
 
   return (
     <>
-      <div className={styles.dropDownContent}>
-        <h1>Reset dati Tutor{icon}</h1>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <div className={styles.tutorListContent}>
-            <div>Usa questa funzionalità per eliminare tutti i tutor e tutoraggi dal sistema</div>
-            <Button className={styles.btnDeleteTutors}variant="danger" onClick={handleShow}>
-              Resetta Tutor e Tutoraggi
+      <div>Usa questa funzionalità per eliminare tutti i tutor e tutoraggi dal sistema</div>
+      <Button className={styles.btnDeleteTutors} variant="danger" onClick={handleShow}>
+        Resetta Tutor e Tutoraggi
+      </Button>
+      <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Eliminazione Tutor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className={textClass}>{modalText}</Modal.Body>
+        {
+          showButton ? <Modal.Footer>
+            <Button variant="danger" onClick={handleConfirm}>
+              Conferma
             </Button>
-            <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
-              <Modal.Header closeButton>
-                <Modal.Title>Eliminazione Tutor</Modal.Title>
-              </Modal.Header>
-              <Modal.Body className={textClass}>{modalText}</Modal.Body>
-              {
-                showButton ? <Modal.Footer>
-                  <Button variant="danger" onClick={handleConfirm}>
-                    Conferma
-                  </Button>
-                </Modal.Footer>
-                  :
-                  <></>
-              }
-            </Modal>
-          </div>
-        </Collapse>
-      </div>
-    </>
-  );
+          </Modal.Footer>
+            :
+            <></>
+        }
+      </Modal>
+    </>);
 }

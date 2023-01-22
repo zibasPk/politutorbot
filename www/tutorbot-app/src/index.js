@@ -9,6 +9,7 @@ import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
 import EnabledStudents from './components/enabledStudents/EnabledStudents';
 import TutorManagement from './components/tutorManagement/TutorManagement';
 import Reservations from './components/reservations/Reservations';
+import DataManagement from './components/dataManagement/DataManagement';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -22,6 +23,7 @@ root.render(
           <Route path="/PoliTutorBot/active-tutorings" element={<ActiveTutorings />} />
           <Route path="/PoliTutorBot/enabled-students" element={<EnabledStudents />} />
           <Route path="/PoliTutorBot/manage-tutors" element={<TutorManagement />} />
+          <Route path="/PoliTutorBot/manage-data" element={<DataManagement />} />
         </Routes>
       </div>
     </BrowserRouter>
