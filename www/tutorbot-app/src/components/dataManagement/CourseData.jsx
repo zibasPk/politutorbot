@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './DataManagement.module.css'
 import configData from "../../config/config.json";
 import validationConfig from "../../config/validation-config.json";
-import examplePic from "../../assets/new-exam-example.png";
+import examplePic from "../../assets/new-course-example.png";
 
 import Papa from "papaparse";
 
@@ -14,7 +14,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-export default function ExamData()
+export default function CourseData()
 {
   const [expanded, setExpanded] = useState(false);
 
@@ -39,9 +39,8 @@ export default function ExamData()
     className={styles.btnExpand}
   />;
 
-  const parseExamFile = (file, alertSetter, sendFile) =>
-  {
-
+  const parseCourseFile = (file, alertSetter, sendFile) => {
+    
     // If user clicks the parse button without
     // a file 
     if (!file)
@@ -65,10 +64,10 @@ export default function ExamData()
       const parsedData = csv?.data;
       for (const exam of parsedData)
       {
-        alertMsg = validateExam(exam);
+        alertMsg = validateCourse(exam);
         if (alertMsg != null)
         {
-          alertSetter("Errore nei dati per l'esame " + exam.Code + " in corso" + exam.Course + ": " + alertMsg);
+          alertSetter("Errore nei dati per corso " + exam.Course + ": " + alertMsg);
           return false;
         }
       }
@@ -80,25 +79,17 @@ export default function ExamData()
 
   }
 
-  const validateExam = (exam) =>
+  const validateCourse = (course) =>
   {
-    if (!exam.Code)
-      return 'Codice Esame mancante';
+    console.log(course);
+    if (!course.Name)
+      return 'Nome Corso mancante';
 
-    if (!exam.Code.match(validationConfig.examCodeRegex))
-      return 'Codice Esame inserito non valido';
+    if (!course.School)
+      return 'Sigla Scuola mancante';
 
-    if (!exam.Course)
-      return 'Corso mancante';
-
-    if (!exam.Name)
-      return 'Nome Esame mancante';
-
-    if (!exam.Year)
-      return 'Anno Esame mancante';
-
-    if (!validationConfig.validYears.includes(exam.Year))
-      return 'Anno Esame invalido';
+    if(!validationConfig.validSchools.includes(course.School))
+      return 'Sigla Scuola invalida, può essere solo: ' + validationConfig.validSchools.toString();
 
     return null;
   }
@@ -107,27 +98,27 @@ export default function ExamData()
   return (
     <>
       <div className={styles.dropDownContent}>
-        <h1>Gestione Dati Esami{icon}</h1>
-        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.examDataCont}>
-          <UploadForm
-            formText="Carica File CSV Esami da aggiungere"
-            infoContent={
-              <>
-                <div>Inserire un file .csv con righe come da figura:</div>
-                <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-                <img src={examplePic}></img>
-              </>}
-            uploadEndPoint="/exam/add"
-            parseData={(file, alertSetter, sendFile) => parseExamFile(file, alertSetter, sendFile)}
-          />
-          <DeleteExams />
+        <h1>Gestione Dati Corsi di Studi{icon}</h1>
+        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.courseDataCont}>
+        <UploadForm
+              formText="Carica File CSV Corsi da aggiungere"
+              infoContent={
+                <>
+                  <div>Inserire un file .csv con righe come da figura:</div>
+                  <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+                  <img src={examplePic}></img>
+                </>}
+              uploadEndPoint="/course/add"
+              parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
+            />
+          <DeleteCourses />
         </Collapse>
       </div>
     </>
   );
 }
 
-function DeleteExams()
+function DeleteCourses()
 {
   const [show, setShow] = useState(false);
   const [modalText, setText] = useState("");
@@ -144,7 +135,7 @@ function DeleteExams()
 
   const handleConfirm = () =>
   {
-    fetch(configData.botApiUrl + '/exams/', {
+    fetch(configData.botApiUrl + '/courses/', {
       method: 'DELETE',
       headers: {
         'Authorization': 'Basic ' + btoa(configData.authCredentials),
@@ -158,7 +149,7 @@ function DeleteExams()
       {
         if (text !== undefined)
         {
-          if (text == "")
+          if(text == "") 
             return;
           setText(text);
         }
@@ -170,13 +161,13 @@ function DeleteExams()
 
   return (
     <>
-      <div>Usa questa funzionalità per eliminare tutti i dati sugli Esami dal sistema</div>
+      <div>Usa questa funzionalità per eliminare tutti i dati sui Corsi di Studio dal sistema</div>
       <Button className={styles.btnDeleteTutors} variant="danger" onClick={handleShow}>
-        Reset dati Esami
+        Reset dati Corsi di Studio
       </Button>
       <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Eliminazione Esami</Modal.Title>
+          <Modal.Title>Eliminazione datu Corsi di Studio</Modal.Title>
         </Modal.Header>
         <Modal.Body className={textClass}>{modalText}</Modal.Body>
         {

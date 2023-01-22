@@ -9,9 +9,9 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-export default function TutorData(props)
+export default function TutorData()
 {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const handleExpandClick = () =>
   {
@@ -37,11 +37,9 @@ export default function TutorData(props)
   return (
     <>
       <div className={styles.dropDownContent}>
-        <h1>Reset dati Tutor{icon}</h1>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <div className={styles.tutorListContent}>
-            <DeleteTutors/>
-          </div>
+        <h1>Gestione Dati Tutor{icon}</h1>
+        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.tutorDataCont}>
+          <DeleteTutors />
         </Collapse>
       </div>
     </>
@@ -92,11 +90,11 @@ function DeleteTutors()
     <>
       <div>Usa questa funzionalità per eliminare tutti i tutor e tutoraggi dal sistema</div>
       <Button className={styles.btnDeleteTutors} variant="danger" onClick={handleShow}>
-        Resetta Tutor e Tutoraggi
+        Reset dati Tutor e Tutoraggi
       </Button>
       <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Eliminazione Tutor</Modal.Title>
+          <Modal.Title>Eliminazione Tutor e Tutoraggi</Modal.Title>
         </Modal.Header>
         <Modal.Body className={textClass}>{modalText}</Modal.Body>
         {

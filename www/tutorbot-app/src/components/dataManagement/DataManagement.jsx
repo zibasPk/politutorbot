@@ -1,7 +1,9 @@
 
 import styles from "./DataManagement.module.css";
 
+import ExamData from "./ExamData";
 import TutorData from "./TutorData";
+import CourseData from "./CourseData";
 
 function DataManagement()
 {
@@ -9,6 +11,8 @@ function DataManagement()
     <>
       <div className={styles.content}>
         <TutorData />
+        <ExamData />
+        <CourseData />
       </div>
     </>
   );
