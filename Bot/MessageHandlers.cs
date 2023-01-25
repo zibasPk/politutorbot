@@ -3,6 +3,7 @@ using Bot.configs;
 using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.Database.Records;
 using Bot.Enums;
 using Serilog;
 using Telegram.Bot;
@@ -61,8 +62,6 @@ public static class MessageHandlers
     var userId = message.From.Id;
     Log.Information("Received message '{text}' by user {userId}", message.Text, userId);
 
-    // Check if user is already locked for finalizing a tutor reques
-
 
     if (!UserIdToConversation.TryGetValue(userId, out var conversation))
     {
@@ -88,54 +87,79 @@ public static class MessageHandlers
       command = conversation.GetCurrentTopic();
     }
 
-    var action = conversation.State switch
+    try
     {
-      UserState.Start => SendSchoolKeyboard(botClient, message),
-      UserState.School => SendCourseKeyboard(botClient, message, command!),
-      UserState.Course => SendSaveUserData(botClient, message, command!),
-      UserState.Link => ReadStudentCode(botClient, message, command!),
-      UserState.ReLink => ReadReLinkAnswer(botClient, message, command!),
-      UserState.OFA => ReadOFAAnswer(botClient, message, command!),
-      UserState.OFATutor => ReadOFATutor(botClient, message, command!),
-      UserState.Year => SendExamKeyboard(botClient, message, command!),
-      UserState.Exam => SendTutorsKeyboard(botClient, message, command!),
-      UserState.Tutor => ReadTutor(botClient, message, command!),
-      _ => SendEcho(botClient, message)
-    };
+      var action = conversation.State switch
+      {
+        UserState.Start => SendSchoolKeyboard(botClient, message),
+        UserState.School => SendCourseKeyboard(botClient, message, command!),
+        UserState.Course => SendSaveUserData(botClient, message, command!),
+        UserState.Link => ReadStudentCode(botClient, message, command!),
+        UserState.ReLink => ReadReLinkAnswer(botClient, message, command!),
+        UserState.OFA => ReadOFAAnswer(botClient, message, command!),
+        UserState.OFATutor => ReadOFATutor(botClient, message, command!),
+        UserState.Year => SendExamKeyboard(botClient, message, command!),
+        UserState.Exam => SendTutorsKeyboard(botClient, message, command!),
+        UserState.Tutor => ReadTutor(botClient, message, command!),
+        _ => SendEcho(botClient, message)
+      };
 
-
-    await action;
+      await action;
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+      if (Monitor.IsEntered(conversation.ConvLock))
+        Monitor.Exit(conversation.ConvLock);
+      await InternalErrorMessage(botClient, message);
+    }
   }
 
-  private static async Task<Message> ReadOFATutor(ITelegramBotClient botClient, Message message, string tutor)
+  private static async Task<Message> ReadOFATutor(ITelegramBotClient botClient, Message message, string tutorIndexStr)
   {
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
-
-    // Check if user is already locked for finalizing a tutor request
     var userService = new UserDAO(DbConnection.GetMySqlConnection());
-    if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
+    // Check if user has an already ongoing tutoring
+    if (userService.HasUserOngoingTutoring(userId))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
-        text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
-              $"ore dalla tua precedente richiesta " +
-              $"o fino a che la segreteria non l'avrà elaborata.",
+        text: ReplyTexts.AlreadyOngoingTutoring,
         replyMarkup: new ReplyKeyboardRemove());
     }
 
+    // Check if user is already locked for finalizing a tutor request
+    if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
+    {
+      return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+        text: ReplyTexts.LockedUser,
+        replyMarkup: new ReplyKeyboardRemove());
+    }
+
+    // Check if received message has a valid value
+    if (!int.TryParse(tutorIndexStr, out var tutorIdx) ||
+        tutorIdx > GlobalConfig.BotConfig.ShownTutorsInList || tutorIdx < 1)
+    {
+      Log.Debug("Invalid {tutor} index chosen in chat {id}.", tutorIndexStr, message.Chat.Id);
+      return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+        text: ReplyTexts.InvalidTutorIndex);
+    }
+
+
+    var tutor = conversation!.ShownTutors![tutorIdx - 1];
+
+
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
 
-    var tutorCode = tutorService.FindTutorCode(tutor);
-    //TODO: also check if tutor is for OFA
-    if (tutorCode == null)
+    if (!tutor.OfaAvailable)
     {
-      Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
+      Log.Error("Invalid {tutor} chosen in chat {id}.", tutor.TutorCode, message.Chat.Id);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un tutor della lista");
+        text: ReplyTexts.InvalidTutor);
     }
 
     // lock tutor until email arrive
-    tutorService.ReserveOFATutor(tutorCode.Value, userId, conversation.StudentCode);
+    tutorService.ReserveOFATutor(tutor.TutorCode, userId, conversation!.StudentCode);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,
@@ -178,7 +202,7 @@ public static class MessageHandlers
       default:
         Log.Debug("Invalid {studentCode} chosen in chat {id}.", studentCode, message.Chat.Id);
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-          text: "Inserisci una risposta valida");
+          text: ReplyTexts.InvalidStudentCode);
     }
   }
 
@@ -203,14 +227,15 @@ public static class MessageHandlers
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
 
-    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
-    var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course + "\n \n")
+    var shownTutors = tutors.GetRange(0, Math.Min(GlobalConfig.BotConfig.ShownTutorsInOFAList, tutors.Count));
+
+    conversation.ShownTutors = shownTutors;
+
+    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(shownTutors);
+    var tutorsTexts = shownTutors.Select(x => shownTutors.IndexOf(x) + 1 + " )" + "\ncorso di studi tutor: " + x.Course + "\n \n")
       .ToList();
-    var text = $"Scegli uno dei tutor disponibili per recupero OFA (NO OFA ENG):\n \n";
-    foreach (var tutorsText in tutorsTexts)
-    {
-      text += tutorsText;
-    }
+
+    var text = tutorsTexts.Aggregate(ReplyTexts.SelectOFATutor, (current, tutorsText) => current + tutorsText);
 
     Monitor.Exit(conversation.ConvLock);
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -226,8 +251,16 @@ public static class MessageHandlers
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
 
-    // Check if user is already locked for finalizing a tutor request
     var userService = new UserDAO(DbConnection.GetMySqlConnection());
+    // Check if user has an already ongoing tutoring
+    if (userService.HasUserOngoingTutoring(userId))
+    {
+      return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+        text: ReplyTexts.AlreadyOngoingTutoring,
+        replyMarkup: new ReplyKeyboardRemove());
+    }
+
+    // Check if user is already locked for finalizing a tutor request
     if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
@@ -251,7 +284,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Errore Interno al Bot");
+        text: ReplyTexts.InternalError);
     }
 
     // Change conversation state
@@ -265,7 +298,7 @@ public static class MessageHandlers
     await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli la tua scuola",
+      text: ReplyTexts.SelectSchool,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -285,7 +318,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Il servizio è momentaneamente attivo solo per la scuola ICAT");
+        text: ReplyTexts.SchoolNotICAT);
     }
 
     var replyKeyboardMarkup = KeyboardGenerator.CourseKeyboard(school);
@@ -297,7 +330,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci una scuola valida");
+        text: ReplyTexts.InvalidSchool);
     }
 
     // Show typing action to client
@@ -311,7 +344,7 @@ public static class MessageHandlers
 
     Log.Debug("Sending Course inline keyboard for school {school} to chat: {id}.", school, message.Chat.Id);
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli il tuo corso di studi",
+      text: ReplyTexts.SelectCourse,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -334,10 +367,10 @@ public static class MessageHandlers
     // Show typing action to client
     await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
-    var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard();
+    var replyKeyboardMarkup = KeyboardGenerator.YearKeyboard(conversation.Course!);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli il tuo anno di corso",
+      text: ReplyTexts.SelectYear,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -347,20 +380,29 @@ public static class MessageHandlers
     // Check if conversation has been reset or is locked by a reset if not acquire lock
     if (conversation!.State == UserState.Start || !Monitor.TryEnter(conversation.ConvLock))
       return await SendEcho(botClient, message);
-    // Check course validity
-    var replyKeyboardMarkup = KeyboardGenerator.SubjectKeyboard(conversation.Course!, year);
-    if (replyKeyboardMarkup == null)
+    
+    
+    var examService = new ExamDAO(DbConnection.GetMySqlConnection());
+    var exams = examService.FindExamsInYear(conversation.Course!, year);
+    
+    // Check if the input was valid
+    if (exams.Count == 0)
     {
       Log.Debug("Invalid {year} chosen in chat {id}.", year, message.Chat.Id);
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un anno valido");
+        text: ReplyTexts.InvalidYear);
     }
-
+    
+    // Save shown exams in conversation
+    conversation.ShownExams = exams;
     // Change conversation state to Subject and save chosen year
     conversation.State = UserState.Exam;
     conversation.Year = year;
+    
+    var replyKeyboardMarkup = KeyboardGenerator.ExamsKeyboard(exams);
+    
     // Release lock on conversation
     Monitor.Exit(conversation.ConvLock);
 
@@ -369,7 +411,7 @@ public static class MessageHandlers
     await botClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-      text: "Scegli l’insegnamento per cui ti serve un tutorato",
+      text: ReplyTexts.SelectExam,
       replyMarkup: replyKeyboardMarkup);
   }
 
@@ -392,7 +434,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un corso valido");
+        text: ReplyTexts.InvalidCourse);
     }
 
     conversation.Course = course;
@@ -417,7 +459,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci il tuo codice matricola (NO CODICE PERSONA):",
+        text: ReplyTexts.LinkStudentCode,
         replyMarkup: new ReplyKeyboardRemove());
     }
 
@@ -430,8 +472,7 @@ public static class MessageHandlers
     var replyKeyboardMarkup = KeyboardGenerator.YesOrNoKeyboard();
     return await
       botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: $"Il tuo id Telegram è già associato al codice matricola {studentCode}.\n" +
-              "Vuoi reinserire la matricola?",
+        text: ReplyTexts.AlreadyLinkedAccount(studentCode.Value),
         replyMarkup: replyKeyboardMarkup);
   }
 
@@ -466,7 +507,7 @@ public static class MessageHandlers
         {
           Monitor.Exit(conversation.ConvLock);
           return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Associazione rimossa. \nReinserisci il tuo codice matricola:",
+            text: ReplyTexts.ReLinkStudentCode,
             replyMarkup: new ReplyKeyboardRemove());
         }
 
@@ -490,7 +531,7 @@ public static class MessageHandlers
       default:
         Log.Debug("Invalid {studentCode} chosen in chat {id}.", studentCode, message.Chat.Id);
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-          text: "Inserisci una risposta valida");
+          text: ReplyTexts.InvalidStudentCode);
     }
   }
 
@@ -536,13 +577,13 @@ public static class MessageHandlers
         text: "Accedi ad Aunica per continuare.");
     }
 
-    if (!Regex.IsMatch(studentCodeStr, "^[1-9][0-9]{5}$"))
+    if (!Regex.IsMatch(studentCodeStr, RegularExpr.StudentCode))
     {
       Log.Debug("Invalid student number {studentCode} typed in chat {id}.", studentCodeStr, message.Chat.Id);
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un codice matricola valido");
+        text: ReplyTexts.InvalidStudentCode);
     }
 
     var studentService = new StudentDAO(DbConnection.GetMySqlConnection());
@@ -552,7 +593,7 @@ public static class MessageHandlers
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.",
+        text: ReplyTexts.NotEnabledStudentCode,
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
 
@@ -586,40 +627,55 @@ public static class MessageHandlers
       return await SendEcho(botClient, message);
     }
 
-
-    var examService = new ExamDAO(DbConnection.GetMySqlConnection());
-    var exam = examService.FindExam(examName, conversation.Course!);
+    var exam = conversation.ShownExams!.Find(exam => exam.Name == examName);
+    
     // Check if exam valid
-    if (exam == null ||
-        !examService.IsExamInCourse(exam.Value.Code, conversation.Course!, conversation.Year!))
+    if (exam == default)
     {
       Log.Debug("Invalid Exam {exam} chosen in chat {id}.", examName, message.Chat.Id);
       // Release lock from conversation
       Monitor.Exit(conversation.ConvLock);
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci una materia valida");
+        text: ReplyTexts.InvalidExam);
     }
 
     conversation.Exam = exam;
     conversation.State = UserState.Tutor;
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    var tutors = tutorService.FindAvailableTutors(exam.Value.Code, GlobalConfig.BotConfig!.TutorLockHours);
+    var tutors = tutorService.FindAvailableTutors(exam.Code, GlobalConfig.BotConfig!.TutorLockHours);
+    
+    tutors = tutors.OrderBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
+      .ThenBy(tutor => tutor.School == conversation.School ? 0 : 1)
+      .ThenBy(tutor => tutor.Ranking)
+      .ToList();
+    
+    // If tutors aren't enough search for additional "similar" tutorings
+    if(tutors.Count < GlobalConfig.BotConfig.ShownTutorsInList)
+    {
+      tutors.AddRange(tutorService.FindAdditionalAvailableTutors(exam.Code, examName,GlobalConfig.BotConfig.TutorLockHours));
+    }
+    
     if (tutors.Count == 0)
     {
       return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
         text: ReplyTexts.NoTutoring,
         replyMarkup: KeyboardGenerator.BackKeyboard());
     }
+    
+    var shownTutors = tutors.GetRange(0, Math.Min(GlobalConfig.BotConfig.ShownTutorsInList, tutors.Count));
 
-    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(tutors);
-    var tutorsTexts = tutors.Select(x => "nome: " + x.Name + " " + x.Surname + "\ncorso: " + x.Course +
-                                         "\nprof: " + x.Professor + "\n \n")
-      .ToList();
-    var text = $"Scegli uno dei tutor disponibili per {conversation.Exam.Value.Name}:\n \n";
-    foreach (var tutorsText in tutorsTexts)
-    {
-      text += tutorsText;
-    }
+    // Save shown tutors for conversation
+    conversation.ShownTutors = shownTutors;
+
+    var tutorsTexts = shownTutors.Select(x => (shownTutors.IndexOf(x) + 1) + ") " + 
+                                              "\ncorso di studi tutor: " + x.Course +
+                                              "\nprofessore avuto: " + x.Professor + "\n \n").ToList();
+    var text = ReplyTexts.SelectTutor(conversation.Exam.Value.Name);
+
+    text = tutorsTexts.Aggregate(text, (current, tutorsText) => current + tutorsText);
+
+    // Generate keyboard
+    var keyboardMarkup = KeyboardGenerator.TutorKeyboard(shownTutors);
 
     Monitor.Exit(conversation.ConvLock);
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
@@ -627,37 +683,65 @@ public static class MessageHandlers
       replyMarkup: keyboardMarkup);
   }
 
-  private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutor)
+  private static async Task<Message> ReadTutor(ITelegramBotClient botClient, Message message, string tutorIndex)
   {
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
 
-    // Check if user is already locked for finalizing a tutor request
     var userService = new UserDAO(DbConnection.GetMySqlConnection());
-    if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
+    // Check if user has an already ongoing tutoring
+    if (userService.HasUserOngoingTutoring(userId))
     {
       return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
-        text: $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig.TutorLockHours} " +
-              $"ore dalla tua precedente richiesta " +
-              $"o fino a che la segreteria non l'avrà elaborata.",
+        text: ReplyTexts.AlreadyOngoingTutoring,
         replyMarkup: new ReplyKeyboardRemove());
     }
 
-    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
-    var exam = conversation!.Exam!.Value;
-    var tutorCode = tutorService.FindTutorCode(tutor, exam.Code);
-    if (tutorCode == null || !tutorService.IsTutorForExam(tutorCode.Value, exam.Code))
+    // Check if user is already locked for finalizing a tutor request
+    if (userService.IsUserLocked(userId, GlobalConfig.BotConfig!.TutorLockHours))
     {
-      Log.Debug("Invalid {tutor} chosen in chat {id}.", tutor, message.Chat.Id);
-      return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-        text: "Inserisci un tutor della lista");
+      return await botClient.SendTextMessageAsync(chatId: conversation!.ChatId,
+        text: ReplyTexts.LockedUser,
+        replyMarkup: new ReplyKeyboardRemove());
     }
 
-    // lock tutor until email arrive
-    tutorService.ReserveTutor(tutorCode.Value, exam.Code, userId, conversation.StudentCode);
+    // Check if received message has a valid value
+    if (!int.TryParse(tutorIndex, out var tutorIdx) ||
+        tutorIdx > GlobalConfig.BotConfig.ShownTutorsInList || tutorIdx < 1)
+    {
+      Log.Debug("Invalid {tutor} index chosen in chat {id}.", tutorIndex, message.Chat.Id);
+      return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+        text: ReplyTexts.InvalidTutorIndex);
+    }
+
+
+    var tutor = conversation!.ShownTutors[tutorIdx - 1];
+
+    var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
+    var exam = conversation.Exam!.Value;
+    if (!tutorService.IsTutorForExam(tutor.TutorCode, exam.Code))
+    {
+      // This should never happen in the current state of things
+      Log.Error("Invalid {tutor} chosen in chat {id}.", tutor.TutorCode, message.Chat.Id);
+      return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+        text: ReplyTexts.InvalidTutor);
+    }
+
+    // Reserve tutor
+    tutorService.ReserveTutor(tutor.TutorCode, exam.Code, userId, conversation.StudentCode);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,
+      replyMarkup: new ReplyKeyboardRemove());
+  }
+
+  private static async Task<Message> InternalErrorMessage(ITelegramBotClient botClient, Message message)
+  {
+    UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
+    conversation!.ResetConversation();
+
+    return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+      text: ReplyTexts.InternalError,
       replyMarkup: new ReplyKeyboardRemove());
   }
 }

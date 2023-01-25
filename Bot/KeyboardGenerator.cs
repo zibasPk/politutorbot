@@ -1,6 +1,6 @@
 using Bot.Database;
 using Bot.Database.Dao;
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Bot;
@@ -26,27 +26,25 @@ public static class KeyboardGenerator
     public static ReplyKeyboardMarkup? CourseKeyboard(string school)
     {
         var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
-        var courses = courseService.FindCoursesInSchool(school);
+        var courses = courseService.FindCourses(school);
         return courses.Count == 0 ? null : GenerateKeyboardMarkup(courses, true);
     }
 
     /// <summary>
-    /// Generate a keyboard containing Subjects for a specific course in a year.
+    /// Generate a keyboard containing given exams
     /// </summary>
-    /// <param name="course">The course for which it generates the keyboard.</param>
-    /// <param name="year">The year for which to look for exams.</param>
-    /// <returns>null if course doesn't exist.</returns>
-    public static ReplyKeyboardMarkup? SubjectKeyboard(string course, string year)
+    /// <param name="exams">exams to display on the keyboard</param>
+    public static ReplyKeyboardMarkup ExamsKeyboard(List<Exam> exams)
     {
-        var examService = new ExamDAO(DbConnection.GetMySqlConnection());
-        var exams = examService.FindExamsInYear(course, year);
         var examsNames = exams.Select(x => x.Name).ToList();
-        return exams.Count == 0 ? null : GenerateKeyboardMarkup(examsNames, true);
+        return GenerateKeyboardMarkup(examsNames, true);
     }
 
-    public static ReplyKeyboardMarkup YearKeyboard()
+    public static ReplyKeyboardMarkup YearKeyboard(string course)
     {
-        var items = new List<string>() { "Y1", "Y2", "Y3" };
+        var courseService = new CourseDAO(DbConnection.GetMySqlConnection());
+        var items = courseService.AvailableYearsInCourse(course);
+        items.Sort();
         return GenerateKeyboardMarkup(items, 2, true);
     }
 
@@ -67,8 +65,9 @@ public static class KeyboardGenerator
 
     public static ReplyKeyboardMarkup TutorKeyboard(List<TutorToExam> tutors)
     {
-        var names = tutors.Select(t => t.Name + " " + t.Surname).ToList();
-        return GenerateKeyboardMarkup(names, true);
+        var numbers = tutors.Select(tutor => (tutors.IndexOf(tutor) + 1).ToString()).ToList();
+        
+        return GenerateKeyboardMarkup(numbers, true);
     }
 
     /// <summary>

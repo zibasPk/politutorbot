@@ -1,7 +1,7 @@
 using System.Timers;
 using Bot.configs;
 using Bot.Constants;
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using Bot.Enums;
 using Org.BouncyCastle.Crypto.Modes;
 using Serilog;
@@ -39,7 +39,9 @@ public class Conversation
     public string? Year { get; set; }
     public Exam? Exam { get; set; }
     public int StudentCode { get; set; }
-    
+
+    public List<TutorToExam>? ShownTutors { get; set; }
+    public List<Exam>? ShownExams { get; set; }
     public string? Tutor { get; set; }
 
     public Conversation(long chatId)
@@ -78,9 +80,11 @@ public class Conversation
                 break;
             case UserState.Year:
                 Year = null;
+                ShownExams = null;
                 break;
             case UserState.Exam:
                 Exam = null;
+                ShownTutors = null;
                 break;
             case UserState.Tutor:
                 Tutor = null;
@@ -110,7 +114,7 @@ public class Conversation
     }
 
     /// <summary>
-    /// Resets a conversation by erasing all data but the chatId. 
+    /// Resets a conversation after time out by erasing all data but the chatId. 
     /// </summary>
     private async void ResetConversation(object? source, ElapsedEventArgs e)
     {
@@ -124,7 +128,27 @@ public class Conversation
         Exam = null;
         StudentCode = 0;
         Tutor = null;
+        ShownExams = null;
+        ShownTutors = null;
         Monitor.Exit(ConvLock);
         await AsyncResponseHandler.SendMessage(ChatId, ReplyTexts.ConversationReset);
+    }
+
+    /// <summary>
+    /// Resets a conversation by erasing all data but the chatId. 
+    /// </summary>
+    public async void ResetConversation()
+    {
+        if (!Monitor.TryEnter(ConvLock))
+            return;
+        Log.Debug("Resetting conversation in state {state}", State);
+        State = UserState.Start;
+        School = null;
+        Course = null;
+        Year = null;
+        Exam = null;
+        StudentCode = 0;
+        Tutor = null;
+        Monitor.Exit(ConvLock);
     }
 }

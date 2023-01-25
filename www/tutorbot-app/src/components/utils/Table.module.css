@@ -73,6 +73,10 @@
   border: 0;
 }
 
+.tableContainer tr:hover {
+  background-color: rgba(210, 231, 248, 0.488);
+}
+
 table,
 th,
 td {
@@ -86,10 +90,6 @@ th {
 
 td:hover .arrow {
   display: inline-block;
-}
-
-.tableContainer tr:hover {
-  background-color: rgba(210, 231, 248, 0.488);
 }
 
 .firstCell {
@@ -106,6 +106,13 @@ td:hover .arrow {
   background: rgb(247, 250, 255);
   border-style: none;
   text-align: center;
+}
+
+.noContentAlert {
+  position: relative;
+  font-weight: lighter;
+  text-align: center;
+  width: 100%;
 }
 
 .btnShowmore {
@@ -137,7 +144,7 @@ td:hover .arrow {
 
 .btnCancel{
   background: #fff;
-  color: red;
+  color: var(--alert-color);
   border: 2px solid red;
   border-radius: 3px;
   padding: 5px 10px;

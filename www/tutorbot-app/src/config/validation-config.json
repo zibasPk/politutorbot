@@ -1,0 +1,10 @@
+{
+  "maxNameLength": 30,
+  "maxSurnameLength": 30,
+  "maxProfessorFullNameLength": 60,
+  "examCodeRegex": "^[1-9][0-9]{4}$",
+  "studentCodeRegex": "^[1-9][0-9]{5}$",
+  "validYears": ["Y1","Y2","Y3"],
+  "validSchools": ["3I","ICAT","AUIC","Design"]
+
+}

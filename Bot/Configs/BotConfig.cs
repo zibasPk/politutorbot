@@ -15,6 +15,9 @@ public class BotConfig: Config
     public int TutorLockHours;
     public bool HasOnlineAuth;
     public string AuthLink;
+    public int MaxTutoringDuration;
+    public int ShownTutorsInList;
+    public int ShownTutorsInOFAList;
 
     public BotConfig()
     {
@@ -24,6 +27,9 @@ public class BotConfig: Config
         UserTimeOut = 120000;
         TutorLockHours = 24;
         HasOnlineAuth = false;
+        MaxTutoringDuration = 150;
+        ShownTutorsInList = 5;
+        ShownTutorsInOFAList = 8;
         // default link for online authentication
         AuthLink = "www.example.com";
         

@@ -13,11 +13,41 @@ public class CourseDAO
     }
 
     /// <summary>
+    /// Finds courses in db.
+    /// </summary>
+    /// <returns>List of courses in given school.</returns>
+    public List<string> FindCourses()
+    {
+        _connection.Open();
+        const string query = "SELECT * from course";
+        var courses = new List<string>();
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+                Log.Debug("No courses found in Db");
+
+            while (reader.Read())
+                courses.Add(reader.GetString("name"));
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return courses;
+    }
+    
+    /// <summary>
     /// Finds courses in given school.
     /// </summary>
     /// <param name="school">The school in which to search.</param>
     /// <returns>List of courses in given school.</returns>
-    public List<string> FindCoursesInSchool(string school)
+    public List<string> FindCourses(string school)
     {
         _connection.Open();
         const string query = "SELECT * from course WHERE school=@school";
@@ -36,10 +66,10 @@ public class CourseDAO
             while (reader.Read())
                 courses.Add(reader.GetString("name"));
         }
-        catch (Exception)
+        catch (Exception e)
         {
             _connection.Close();
-            throw;
+            Console.WriteLine(e);
         }
 
         _connection.Close();
@@ -90,4 +120,43 @@ public class CourseDAO
         _connection.Close();
         return false;
     }
+    
+    /// <summary>
+    /// Finds available years for a course. 
+    /// </summary>
+    /// <param name="course">The Course for which to check.</param> 
+    /// <returns>Available years for course.</returns>
+    public List<string> AvailableYearsInCourse(string course)
+    {
+        _connection.Open();
+        const string query = "SELECT DISTINCT year from exam WHERE course=@course";
+        var years = new List<string>();
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@course", course);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+            
+            if (!reader.HasRows)
+            {
+                Log.Error("No years found in DB");
+            }
+            
+            while (reader.Read())
+            {
+                years.Add(reader.GetString("year"));
+            }
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+
+        _connection.Close();
+        return years;
+    }
+    
 }

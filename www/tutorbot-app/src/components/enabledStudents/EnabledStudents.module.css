@@ -35,7 +35,7 @@
   max-height: 300px;
   border-style: solid;
   border-color: rgb(169, 170, 171);
-  scrollbar-color: #4a9ce3 rgb(247, 250, 255) ;
+  scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0) ;
   scrollbar-width: thin;
 }
 
@@ -55,4 +55,24 @@
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-color: rgb(169, 170, 171);
+}
+
+.inputDiv {
+  display: flex;
+  flex-direction: row;
+}
+
+.actionBox {
+  font-size: 2.5em !important;
+  color: var(--primary-color);
+}
+
+.actionBox :hover{
+  cursor: pointer;
+  color: var(--contrast-color);
+}
+
+.alertText {
+  color: var(--alert-color);
+  text-align: center;
 }

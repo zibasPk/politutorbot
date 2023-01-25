@@ -1,5 +1,5 @@
 using System.Globalization;
-using Bot.Database.Entity;
+using Bot.Database.Records;
 using CsvHelper;
 using CsvHelper.Configuration;
 

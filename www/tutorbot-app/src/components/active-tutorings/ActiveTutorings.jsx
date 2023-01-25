@@ -1,192 +1,127 @@
 import React from 'react';
+import styles from "./ActiveTutorings.module.css";
+import configData from "../../config/config.json";
 
+
+import RefreshableComponent from '../Interfaces';
 import Table from '../utils/Table';
 import ActiveTutoringsModal from './ActiveTutoringsModal';
 import EndedTutoringsModal from './EndedTutoringsModal';
 
-import styles from "./ActiveTutorings.module.css"
-
-const TutoringsArray = [
-  {
-    id: 1,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: "09999",
-    studentNumber: "938354",
-    start_date: new Date('2000-12-17T03:24:00'),
-    end_date: new Date('1995-12-17T03:24:00'),
-    duration: 14,
-    selected: false
-  },
-  {
-    id: 2,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: "09999",
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: null,
-    duration: null,
-    selected: false
-  },
-  {
-    id: 3,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: new Date('1995-12-17T03:24:00'),
-    duration: 36,
-    selected: false
-  },
-  {
-    id: 4,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: new Date('1995-12-17T03:24:00'),
-    duration: 11,
-    selected: false,
-  },
-  {
-    id: 5,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: new Date('1995-12-17T03:24:00'),
-    duration: 9,
-    selected: false,
-  },
-  {
-    id: 6,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: null,
-    duration: null,
-    selected: false,
-  },
-  {
-    id: 7,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: new Date('1995-12-17T03:24:00'),
-    duration: 22,
-    selected: false,
-  },
-  {
-    id: 8,
-    tutorNumber: 321321,
-    tutorSurname: "Brontesi",
-    tutorName: "Mario Claudiolini",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: null,
-    duration: null,
-    selected: false,
-  },
-  {
-    id: 9,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: null,
-    duration: null,
-    selected: false,
-  },
-  {
-    id: 10,
-    tutorNumber: 321321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: null,
-    duration: null,
-    selected: false 
-  },
-  {
-    id: 11,
-    tutorNumber: 431321,
-    tutorSurname: "Rossi",
-    tutorName: "Mario",
-    examCode: 11999,
-    studentNumber: "938354",
-    start_date: new Date('1995-12-17T03:24:00'),
-    end_date: null,
-    duration: null,
-    selected: false,
-  },
-];
+import CircularProgress from '@mui/material/CircularProgress';
+import ManualActivation from './ManualActivation';
 
 const ActiveHeaders = {
-  tutorNumber: "Cod. Matr. Tutor",
-  tutorSurname: "Cognome Tutor",
-  tutorName: "Nome Tutor",
-  examCode: "Cod. Matr. Studente",
-  studentNumber: "Codice Esame",
-  start_date: "Data Inizio",
+  TutorCode: "Cod. Matr. Tutor",
+  TutorSurname: "Cognome Tutor",
+  TutorName: "Nome Tutor",
+  ExamCode: "Codice Esame",
+  StudentCode: "Cod. Matr. Studente",
+  StartDate: "Data Inizio",
 }
 
 const EndedHeaders = {
-  tutorNumber: "Cod. Matr. Tutor",
-  tutorSurname: "Cognome Tutor",
-  tutorName: "Nome Tutor",
-  examCode: "Cod. Matr. Studente",
-  studentNumber: "Codice Esame",
-  start_date: "Data Inizio",
-  end_date: "Data Fine",
-  duration: "Ore Durata"
+  TutorCode: "Cod. Matr. Tutor",
+  TutorSurname: "Cognome Tutor",
+  TutorName: "Nome Tutor",
+  ExamCode: "Codice Esame",
+  StudentCode: "Cod. Matr. Studente",
+  StartDate: "Data Inizio",
+  EndDate: "Data Fine",
+  Duration: "Durata in Ore"
 }
 
-function ActiveTutorings() {
-  let activeTutoringsArray = TutoringsArray.filter((t) => t.end_date == null);
-  activeTutoringsArray = activeTutoringsArray.map(({ end_date, duration, ...key }) => key);
-  let endedTutoringsArray = TutoringsArray.filter((t) => t.end_date != null);
-  return (
-    <>
-      <div className={styles.content} >
-        <h1>Tutoraggi Attivi</h1>
-        <Table headers={ActiveHeaders}
-          content={activeTutoringsArray} hasChecks={true}
-          modalProps={{
-            modalContent: ActiveTutoringsModal,
-            onConfirm: () => { console.log("azione confermata") },
-            modalTitle: "Concludi Tutoraggi selezionati"
-          }}/>
-        <h1>Tutoraggi Conclusi</h1>
-        <Table headers={EndedHeaders}
-          content={endedTutoringsArray} hasChecks={true}
-          modalProps={{
-            modalContent: EndedTutoringsModal,
-            modalTitle: "Esporta File CSV"
-          }}
-          />
-      </div>
-    </>
-  );
+
+
+class ActiveTutorings extends RefreshableComponent
+{
+  constructor(props)
+  {
+    super(props);
+    this.state = {
+      ActiveTutoringsArray: undefined,
+      EndedTutoringsArray: undefined
+    }
+  }
+
+  refreshData()
+  {
+    fetch(configData.botApiUrl + '/tutoring/active', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Basic ' + btoa(configData.authCredentials),
+      }
+    }).then(resp => resp.json())
+      .then((tutorings) =>
+      {
+        tutorings.forEach((elem) =>
+        {
+          if (elem.ExamCode === null)
+            elem.ExamCode = "OFA"
+          elem.StartDate = new Date(elem.StartDate);
+        });
+        this.setState({
+          ActiveTutoringsArray: tutorings,
+        })
+      })
+
+    fetch(configData.botApiUrl + '/tutoring/ended', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Basic ' + btoa(configData.authCredentials),
+      }
+    }).then(resp => resp.json())
+      .then((tutorings) =>
+      {
+        tutorings.forEach((elem) =>
+        {
+          if (elem.ExamCode === null)
+            elem.ExamCode = "OFA"
+          elem.StartDate = new Date(elem.StartDate);
+          elem.EndDate = new Date(elem.EndDate);
+        });
+
+        this.setState({
+          EndedTutoringsArray: tutorings,
+        })
+      });
+  }
+
+  render()
+  {
+    return (
+      <>
+        <div className={styles.content} >
+          <h1>Attivazione Manuale</h1>
+          <ManualActivation onChange={() => this.refreshData()}/>
+          <h1>Tutoraggi Attivi</h1>
+          {this.state.ActiveTutoringsArray === undefined ? <CircularProgress /> :
+            <>
+              <Table headers={ActiveHeaders}
+                content={this.state.ActiveTutoringsArray} hasChecks={true}
+                modalProps={{
+                  modalContent: ActiveTutoringsModal,
+                  modalTitle: "Concludi Tutoraggi selezionati",
+                  onModalEvent: () => this.refreshData()
+                }} />
+            </>
+          }
+          <h1>Tutoraggi Conclusi</h1>
+          {this.state.EndedTutoringsArray === undefined ? <CircularProgress /> :
+            <>
+              <Table headers={EndedHeaders}
+                content={this.state.EndedTutoringsArray} hasChecks={true}
+                modalProps={{
+                  modalContent: EndedTutoringsModal,
+                  modalTitle: "Esporta File CSV",
+                }}
+              />
+            </>}
+
+        </div>
+      </>
+    );
+  }
 }
 
 export default ActiveTutorings;

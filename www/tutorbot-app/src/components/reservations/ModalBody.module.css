@@ -50,3 +50,8 @@ td:hover .arrow {
   margin-left: 0.2em;
   font-size: 1.3em;
 }
+
+.alertText {
+  text-align: center;
+  color: var(--alert-color);
+}

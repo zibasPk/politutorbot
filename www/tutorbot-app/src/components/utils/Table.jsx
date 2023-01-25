@@ -18,6 +18,8 @@ import configData from "../../config/config.json";
 class Table extends Component {
   constructor(props) {
     super(props);
+    if (props.hasChecks)
+      props.content.forEach(item => item.selected = false);
     this.state = {
       Headers: props.headers,
       Content: props.content,
@@ -26,12 +28,31 @@ class Table extends Component {
       HasChecks: props.hasChecks !== undefined ? props.hasChecks : false,
       MasterChecked: false,
       SelectedContent: [],
-      HeaderArrows: Array(Object.keys(props.content[0]).length - 1).fill(0),
+      HeaderArrows: Array(Object.keys(props.headers).length).fill(0),
       VisibleRows: configData.defaultTableRows,
       IsModalVisible: false,
       SearchOption: Object.keys(props.headers)[0],
+      SearchValue: ""
     };
   }
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.content !== state.Content) {
+      //Change in props
+      props.content.forEach((elem) => elem.selected = false);
+
+      const tempList = props.content.filter(
+        (item) => item[state.SearchOption].toString().toLowerCase().includes(state.SearchValue)
+      );
+      return {
+        Content: props.content,
+        FilteredContent: tempList,
+        SelectedContent: []
+      };
+    }
+    return null; // No change to state
+  }
+
 
   render() {
     let i = 0;
@@ -114,12 +135,13 @@ class Table extends Component {
                   <this.renderRow row={row}
                     headers={this.state.Headers}
                     hasChecks={this.state.HasChecks}
-                    key={row.id}
+                    key={row.Id}
                     onChange={(e) => this.onItemCheck(e, row)}
                   />)
               }
             </tbody>
           </table>
+          {visibleRows.length === 0 ? <div className={styles.noContentAlert}>Nessun contentuto trovato</div> : <></>}
           <ShowMoreButton onClick={() => this.handleShowMoreClick()}
             visibleRows={this.state.VisibleRows}
             maximumRows={this.state.FilteredContent.length}
@@ -147,7 +169,7 @@ class Table extends Component {
 
     return (
       <>
-        <tr key={props.row.id} className={props.row.selected ? styles.selected : ""}>
+        <tr key={props.row.Id} className={props.row.selected ? styles.selected : ""}>
           {props.hasChecks ? <th scope="row" className={styles.firstCell}>
             <input
               type="checkbox"
@@ -181,7 +203,7 @@ class Table extends Component {
   onItemCheck(e, item) {
     let tempList = this.state.FilteredContent;
     tempList.map((row) => {
-      if (row.id === item.id) {
+      if (row.Id === item.Id) {
         row.selected = e.target.checked;
       }
       return row;
@@ -201,7 +223,6 @@ class Table extends Component {
   }
 
   handleHeaderClick(key, i) {
-    console.log(i);
     const arrows = this.state.HeaderArrows;
     switch (arrows[i]) {
       case 0:
@@ -263,9 +284,8 @@ class Table extends Component {
   }
 
   handleModalVisibility() {
-    var temp = this.state.IsModalVisible;
     this.setState({
-      IsModalVisible: !temp,
+      IsModalVisible: !this.state.IsModalVisible,
     });
   }
 
@@ -279,13 +299,18 @@ class Table extends Component {
     });
   }
 
+  filterContent(value) {
+    return this.state.Content.filter(
+      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(value)
+    );
+  }
+
   handleSearch(event) {
     let tempList;
-    tempList = this.state.Content.filter(
-      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(event.target.value.toLowerCase())
-    );
+    tempList = this.filterContent(event.target.value.toLowerCase());
     this.setState({
-      FilteredContent: tempList
+      FilteredContent: tempList,
+      SearchValue: event.target.value.toLowerCase()
     })
   }
 

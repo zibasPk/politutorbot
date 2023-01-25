@@ -11,7 +11,8 @@ export default class TableModal extends React.Component {
       Body: props.modalContent,
       AltMessage: props.alt,
       Title: props.modalTitle,
-      ConfirmAction: props.onConfirm
+      ConfirmAction: props.onConfirm,
+      OnModalEvent: props.onModalEvent
     }
   }
 
@@ -19,13 +20,19 @@ export default class TableModal extends React.Component {
     if (this.state.ConfirmAction !== undefined)
       this.state.ConfirmAction();
     this.props.handleVisibility();
+    if (this.props.onModalEvent !== undefined)
+      this.props.onModalEvent();
   }
-
+  
   renderBody(props) {
     if (props.content !== undefined) {
       return (
         <>
-          <props.content selectedContent={props.selectedContent} />
+          <props.content 
+          selectedContent={props.selectedContent} 
+          onModalEvent={() => props.onModalEvent()} 
+          contentHeaders={props.contentHeaders}
+          />
         </>
       )
     }
@@ -44,7 +51,12 @@ export default class TableModal extends React.Component {
           <Modal.Title>{this.state.Title}</Modal.Title>
         </Modal.Header>
         <Modal.Body >
-          <this.renderBody content={this.state.Body} alt={this.state.AltMessage} selectedContent={this.props.selectedContent} />
+          <this.renderBody
+            content={this.state.Body}
+            contentHeaders={this.props.contentHeaders}
+            alt={this.state.AltMessage}
+            selectedContent={this.props.selectedContent}
+            onModalEvent={() => this.props.onModalEvent()} />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="warning" onClick={() => this.handleConfirm()}>

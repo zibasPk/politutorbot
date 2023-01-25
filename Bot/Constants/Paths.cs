@@ -5,7 +5,7 @@ namespace Bot.Constants;
 /// </summary>
 public static class Paths
 {
-    public const string BotConfig = "data/botconfig.json";
-    public const string DbConfig = "data/dbconfig.json";
-    public const string WebAppConfig = "data/webconfig.json";
+    public const string BotConfig = "/config/botconfig.json";
+    public const string DbConfig = "/config/dbconfig.json";
+    public const string WebAppConfig = "/config/webconfig.json";
 }

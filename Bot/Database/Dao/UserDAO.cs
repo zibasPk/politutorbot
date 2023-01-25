@@ -135,23 +135,62 @@ public class UserDAO
         _connection.Close();
     }
 
-    
+
+
+    /// <summary>
+    /// Checks if the given user has an already active tutoring.
+    /// </summary>
+    /// <param name="userId">Telegram userId to check.</param>
+    /// <returns>true if user has an active tutoring; otherwise false.</returns>
+    public bool HasUserOngoingTutoring(long userId)
+    {
+        _connection.Open();
+        const string query =
+            "SELECT * FROM telegram_user " +
+            "WHERE userID=@userId AND " +
+            "student_code IN (select student FROM active_tutoring WHERE end_date IS NOT NULL)";
+        try
+        {
+            var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Prepare();
+
+            var reader = command.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                Log.Debug("User {user} has an already active tutoring", userId);
+                _connection.Close();
+                return true;
+            }
+        }
+        catch (Exception)
+        {
+            _connection.Close();
+            throw;
+        }
+        
+        Log.Debug("User {user} has no active tutoring", userId);
+        _connection.Close();
+        return false;
+    }
     
     /// <summary>
     /// Checks if the given user is locked from making new requests.
+    /// A user is locked if it made a recent request or it has an already pending reservation.
     /// </summary>
     /// <param name="userId">Telegram userId to check.</param>
     /// <param name="hoursSinceLock">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
     /// <returns>true if user is locked; otherwise false.</returns>
     public bool IsUserLocked(long userId, int hoursSinceLock)
     {
-        // A user is locked if he already had done a request in the last "hoursSinceLock" hours or
-        // if there is an already active tutoring
+        // A user is locked if he already has made a request in the last "hoursSinceLock" hours or
+        // if there is a pending reservation
         _connection.Open();
         const string query =
             "SELECT * FROM telegram_user " +
             "WHERE userID=@userId AND (lock_timestamp >= NOW() - INTERVAL @hours HOUR OR " +
-            "student_code IN (select student FROM active_tutoring WHERE end_date IS NULL))";
+            "student_code IN (select student FROM reservation WHERE is_processed = 0))";
         try
         {
             var command = new MySqlCommand(query, _connection);
