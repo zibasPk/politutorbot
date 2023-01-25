@@ -1,0 +1,88 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Publish Docker image
+
+on:
+  push:
+    paths:
+      - 'Bot/**'
+
+jobs:
+  build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/main' }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Build
+        uses: docker/build-push-action@v3
+        with:
+          context: Bot/
+          push: false
+
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Set env
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: echo "DOCKER_REPO=$(echo prod)" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: Bot/
+          push: true
+          tags: poli-tutor-bot/tutor-bot_${{ env.DOCKER_REPO }}:${{ github.sha }}
+
+  Update-K8s-Manifests:
+    name: Update K8s Deployment Manifest with Image Version
+    needs: push_to_registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get application code from repo
+        uses: actions/checkout@v3
+        with:
+          repository: polinetworkorg/polinetwork-ext-cd
+          ssh-key: ${{ secrets.CD_DEPLOY_KEY }}
+          
+      - name: Set new image ref
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          DOCKER_REPO: 'prod'
+          STAGE_ENV: 'prod'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '.spec|=select(.selector.matchLabels.app=="tutor-prod").template.spec.containers[0].image = "poli-tutor-bot/tutor-bot_${{ env.DOCKER_REPO }}:${{ github.sha }}"' tutor-${{ env.STAGE_ENV }}/tutor-deployment.yaml
+      
+      - name: Commit changes in manifest to repo
+        run: | 
+          git config user.name "GitHub Actions Bot"
+          git config user.email ""
+          git add */tutor-deployment.yaml
+          git commit -m "Update image version in K8s Deployment manifests file"
+          git push origin
