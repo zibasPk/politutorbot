@@ -49,16 +49,12 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
 
-      - name: Set env
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: echo "DOCKER_REPO=$(echo prod)" >> $GITHUB_ENV
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: Bot/
           push: true
-          tags: poli-tutor-bot/tutor-bot_${{ env.DOCKER_REPO }}:${{ github.sha }}
+          tags: zibas/poli-tutor-bot:${{ github.sha }}
 
   Update-K8s-Manifests:
     name: Update K8s Deployment Manifest with Image Version
@@ -78,7 +74,7 @@ jobs:
           STAGE_ENV: 'prod'
         uses: mikefarah/yq@master
         with:
-          cmd: yq -i '.spec|=select(.selector.matchLabels.app=="tutor-prod").template.spec.containers[0].image = "poli-tutor-bot/tutor-bot_${{ env.DOCKER_REPO }}:${{ github.sha }}"' tutor-${{ env.STAGE_ENV }}/tutor-deployment.yaml
+          cmd: yq -i '.spec|=select(.selector.matchLabels.app=="tutor-prod").template.spec.containers[0].image = "zibas/poli-tutor-bot:${{ github.sha }}"' tutor-${{ env.STAGE_ENV }}/tutor-deployment.yaml
       
       - name: Commit changes in manifest to repo
         run: | 
