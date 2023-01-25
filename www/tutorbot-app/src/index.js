@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter,HashRouter, Routes, Route } from "react-router-dom";
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -13,18 +13,18 @@ import Reservations from './components/reservations/Reservations';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <>
-    <BrowserRouter>
+    <HashRouter>
       <Navigation />
       <div className='page'>
         <Routes>
-          <Route path="/" element={<Reservations />} />
-          <Route path="/PoliTutorBot/reservations" element={<Reservations />} />
-          <Route path="/PoliTutorBot/active-tutorings" element={<ActiveTutorings />} />
-          <Route path="/PoliTutorBot/enabled-students" element={<EnabledStudents />} />
-          <Route path="/PoliTutorBot/manage-tutors" element={<TutorManagement />} />
+          <Route path="" element={<Reservations />} />
+          <Route path="reservations" element={<Reservations />} />
+          <Route path="active-tutorings" element={<ActiveTutorings />} />
+          <Route path="enabled-students" element={<EnabledStudents />} />
+          <Route path="manage-tutors" element={<TutorManagement />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </HashRouter>
     {/* <Footer/> */}
   </>
 );
