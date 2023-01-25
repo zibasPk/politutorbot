@@ -80,8 +80,10 @@ public static class WebServer
     app.MapDelete("/api/tutors", DeleteTutors).RequireAuthorization();
 
 
-    var url = "https://localhost:" + GlobalConfig.WebConfig!.Port;
-    app.Run(url);
+    app.UsePathBase("/tutorapp");
+    app.Urls.Add("http://+:5000");
+    // var url = "https://localhost:" + GlobalConfig.WebConfig!.Port;
+    app.Run();
   }
 
   private static async void DeleteTutors(HttpResponse response, HttpRequest request)
