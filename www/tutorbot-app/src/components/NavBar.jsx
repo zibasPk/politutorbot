@@ -24,11 +24,11 @@ function Navigation() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="navbarCollapse">
-            <Nav.Item className={itemClass(0)} ><Nav.Link onClick={() => selectCard(0)} as={Link} to="/PoliTutorBot/reservations" className="text-light">Storico Prenotazioni</Nav.Link></Nav.Item>
-            <Nav.Item className={itemClass(1)} ><Nav.Link onClick={() => selectCard(1)} as={Link} to="/PoliTutorBot/active-tutorings" className="text-light">Tutoraggi Attivi</Nav.Link></Nav.Item>
-            <Nav.Item className={itemClass(2)} ><Nav.Link onClick={() => selectCard(2)} as={Link} to="/PoliTutorBot/enabled-students" className="text-light">Matricole Abilitate</Nav.Link></Nav.Item>
-            <Nav.Item className={itemClass(3)} ><Nav.Link onClick={() => selectCard(3)} as={Link} to="/PoliTutorBot/manage-tutors" className="text-light">Gestione Tutor</Nav.Link></Nav.Item>
-            <Nav.Item className={itemClass(4)} ><Nav.Link onClick={() => selectCard(4)} as={Link} to="/PoliTutorBot/manage-data" className="text-light">Gestione Dati</Nav.Link></Nav.Item>
+            <Nav.Item className={itemClass(0)} ><Nav.Link onClick={() => selectCard(0)} as={Link} to="reservations" className="text-light">Storico Prenotazioni</Nav.Link></Nav.Item>
+            <Nav.Item className={itemClass(1)} ><Nav.Link onClick={() => selectCard(1)} as={Link} to="active-tutorings" className="text-light">Tutoraggi Attivi</Nav.Link></Nav.Item>
+            <Nav.Item className={itemClass(2)} ><Nav.Link onClick={() => selectCard(2)} as={Link} to="enabled-students" className="text-light">Matricole Abilitate</Nav.Link></Nav.Item>
+            <Nav.Item className={itemClass(3)} ><Nav.Link onClick={() => selectCard(3)} as={Link} to="manage-tutors" className="text-light">Gestione Tutor</Nav.Link></Nav.Item>
+            <Nav.Item className={itemClass(4)} ><Nav.Link onClick={() => selectCard(4)} as={Link} to="manage-data" className="text-light">Gestione Dati</Nav.Link></Nav.Item>
           </Nav>
         </Navbar.Collapse>
       </Container>
