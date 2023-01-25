@@ -1,5 +1,5 @@
 # Fetching the latest node image on alpine linux
-FROM node:16 AS development
+FROM node:16
 
 # Setting up the work directory
 WORKDIR /react-app
