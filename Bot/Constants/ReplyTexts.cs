@@ -51,7 +51,7 @@ public static class ReplyTexts
   // Invalid inputs
   public const string InvalidTutor = "Inserisci un tutor della lista";
   public const string InvalidTutorIndex = "Inserisci il numero di un tutor della lista";
-  public const string InvalidStudentCode = "Inserisci un codice persona valido";
+  public const string InvalidStudentCode = "Inserisci un codice matricola valido";
   public const string NotEnabledStudentCode = "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.";
   public const string InvalidSchool = "Inserisci una scuola valid";
   public const string SchoolNotICAT = "Il servizio è momentaneamente attivo solo per la scuola ICAT";
