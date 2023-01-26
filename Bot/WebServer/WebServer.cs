@@ -44,12 +44,15 @@ public static class WebServer
 
     var app = builder.Build();
 
+    app.UsePathBase("/tutorapp");
+    app.UseRouting();
     app.UseCors("corsapp");
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseHttpsRedirection();
 
     // Get endpoints
+    app.MapGet("/", async (HttpResponse response) => { await response.WriteAsync("OK");});
     app.MapGet("/api/tutor", FetchTutors).RequireAuthorization();
     app.MapGet("/api/tutoring/{tutorType?}/{exam:int?}", FetchTutorings).RequireAuthorization();
     app.MapGet("/api/reservations/{value?}", FetchReservations).RequireAuthorization();
@@ -73,7 +76,6 @@ public static class WebServer
     app.MapDelete("/api/tutors", DeleteTutors).RequireAuthorization();
 
 
-    app.UsePathBase("/tutorapp");
     var url = GlobalConfig.WebConfig!.Url +  ":" + GlobalConfig.WebConfig.Port;
     app.Urls.Add(url);
     app.Run();
