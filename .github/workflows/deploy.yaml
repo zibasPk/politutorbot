@@ -2,6 +2,8 @@ name: Build & deploy
 
 on:
   push:
+    paths:
+      - 'www/**'
     branches:
       - main
   pull_request:
