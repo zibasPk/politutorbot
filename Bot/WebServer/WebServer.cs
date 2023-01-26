@@ -12,6 +12,7 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Bot.WebServer;
 
@@ -44,6 +45,10 @@ public static class WebServer
       .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
         ("BasicAuthentication", null);
     builder.Services.AddAuthorization();
+    
+    // Swagger config
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
     var app = builder.Build();
 
@@ -53,6 +58,8 @@ public static class WebServer
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseHttpsRedirection();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     // Get endpoints
     app.MapGet("/", async (HttpResponse response) => { await response.WriteAsync("OK");});
@@ -78,7 +85,7 @@ public static class WebServer
     app.MapDelete("/api/tutoring/", RemoveTutoring).RequireAuthorization();
     app.MapDelete("/api/tutors", DeleteTutors).RequireAuthorization();
 
-
+    
     var url = GlobalConfig.WebConfig!.Url +  ":" + GlobalConfig.WebConfig.Port;
     app.Urls.Add(url);
     app.Run();
