@@ -22,4 +22,6 @@ RUN useradd -u 7999 -m botexecuter
 RUN chown -R botexecuter .
 USER botexecuter
 
+EXPOSE 5000
+
 ENTRYPOINT ["sh", "-c", "dotnet Bot.dll"]
