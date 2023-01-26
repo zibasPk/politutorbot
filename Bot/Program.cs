@@ -14,6 +14,7 @@ internal static class Program
 {
   private static async Task Main()
   {
+    using var cts = new CancellationTokenSource();
     try
     {
       // Global logger configuration
@@ -33,7 +34,7 @@ internal static class Program
       // Bot initialization
       var botClient = new TelegramBotClient(GlobalConfig.BotConfig!.BotToken);
       var me = await botClient.GetMeAsync();
-      using var cts = new CancellationTokenSource();
+      
       var receiverOptions = new ReceiverOptions
       {
         AllowedUpdates = Array.Empty<UpdateType>() // receive all update types
@@ -47,13 +48,14 @@ internal static class Program
       AsyncResponseHandler.Init(botClient);
 
       Log.Information("Start listening for " + me.Username);
-      // Send cancellation request to stop bot
-      cts.Cancel();
     }
     catch (Exception e)
     {
       Console.WriteLine(e);
     }
+    
     WebServer.WebServer.Init();
+    // Send cancellation request to stop bot
+    cts.Cancel();
   }
 }
