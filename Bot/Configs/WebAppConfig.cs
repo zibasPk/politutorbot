@@ -20,7 +20,7 @@ public class WebAppConfig : Config
         // default log level 3: information
         WebLogLevel = 3;
         // default port
-        Url = "https://localhost";
+        Url = "http://localhost";
         Port = 5000;
         // default Api authentication
         AuthUsr = "admin";
