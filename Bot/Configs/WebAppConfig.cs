@@ -9,21 +9,23 @@ namespace Bot.configs;
 /// </summary>
 public class WebAppConfig : Config
 {
+    public string Url;
     public int Port;
     public int WebLogLevel;
     public string AuthUsr;
     public string AuthPsw;
-    public bool AllowCors;
+    public string AllowedCors;
     public WebAppConfig()
     {
         // default log level 3: information
         WebLogLevel = 3;
         // default port
-        Port = 3000;
+        Url = "https://localhost";
+        Port = 5000;
         // default Api authentication
         AuthUsr = "admin";
         AuthPsw = "admin";
-        AllowCors = false;
+        AllowedCors = "";
         FilePath = Paths.WebAppConfig;
     }
 }

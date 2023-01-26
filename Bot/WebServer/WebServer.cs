@@ -33,13 +33,10 @@ public static class WebServer
     var builder = WebApplication.CreateBuilder();
     builder.Host.UseSerilog(serverLog);
     // CORS handler
-    if (GlobalConfig.WebConfig!.AllowCors)
-    {
-      builder.Services.AddCors(p =>
-        p.AddPolicy("corsapp", policyBuilder => { policyBuilder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader(); }));
-    }
+    builder.Services.AddCors(p =>
+        p.AddPolicy("corsapp", policyBuilder => { policyBuilder.WithOrigins(GlobalConfig.WebConfig!.AllowedCors).AllowAnyMethod().AllowAnyHeader(); }));
 
-    // Authorization handler
+      // Authorization handler
     builder.Services.AddAuthentication("BasicAuthentication")
       .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
         ("BasicAuthentication", null);
@@ -47,11 +44,7 @@ public static class WebServer
 
     var app = builder.Build();
 
-    if (GlobalConfig.WebConfig!.AllowCors)
-    {
-      app.UseCors("corsapp");
-    }
-
+    app.UseCors("corsapp");
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseHttpsRedirection();
@@ -81,8 +74,8 @@ public static class WebServer
 
 
     app.UsePathBase("/tutorapp");
-    app.Urls.Add("http://+:5000");
-    // var url = "https://localhost:" + GlobalConfig.WebConfig!.Port;
+    var url = GlobalConfig.WebConfig!.Url +  ":" + GlobalConfig.WebConfig.Port;
+    app.Urls.Add(url);
     app.Run();
   }
 

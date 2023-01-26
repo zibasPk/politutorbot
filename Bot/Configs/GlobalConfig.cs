@@ -13,9 +13,9 @@ public static class GlobalConfig
         BotConfig = new BotConfig();
         DbConfig = new DbConfig();
         WebConfig = new WebAppConfig();
-        Directory.CreateDirectory("data");
+        Directory.CreateDirectory("config");
         InitConfigs();
-    } 
+        } 
     public static BotConfig? BotConfig { get; set; }
     public static DbConfig? DbConfig { get; set; }
     public static WebAppConfig? WebConfig { get; set; }
@@ -61,8 +61,29 @@ public static class GlobalConfig
     /// </summary>
     private static void InitConfigs()
     {
-        BotConfig!.Initialize();
-        DbConfig!.Initialize();
-        WebConfig!.Initialize();
+        try
+        {
+            BotConfig!.Initialize();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        try
+        {
+            DbConfig!.Initialize();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        try
+        {
+            WebConfig!.Initialize();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 }
