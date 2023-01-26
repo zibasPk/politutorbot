@@ -20,12 +20,12 @@ public class WebAppConfig : Config
         // default log level 3: information
         WebLogLevel = 3;
         // default port
-        Url = "http://localhost";
+        Url = "http://+";
         Port = 5000;
         // default Api authentication
         AuthUsr = "admin";
         AuthPsw = "admin";
-        AllowedCors = "";
+        AllowedCors = "*";
         FilePath = Paths.WebAppConfig;
     }
 }

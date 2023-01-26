@@ -28,15 +28,18 @@ public static class WebServer
     levelSwitch.MinimumLevel = GlobalConfig.GetWebLogLevel();
     Log.Information("Web application logger started on {level} level", levelSwitch.MinimumLevel);
 
+    
     Log.Information("Initializing Web Server...");
-
     var builder = WebApplication.CreateBuilder();
+    
+    // Add server logger
     builder.Host.UseSerilog(serverLog);
+    
     // CORS handler
     builder.Services.AddCors(p =>
         p.AddPolicy("corsapp", policyBuilder => { policyBuilder.WithOrigins(GlobalConfig.WebConfig!.AllowedCors).AllowAnyMethod().AllowAnyHeader(); }));
 
-      // Authorization handler
+    // Authorization handler
     builder.Services.AddAuthentication("BasicAuthentication")
       .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
         ("BasicAuthentication", null);
