@@ -19,11 +19,14 @@ public abstract class Config
         try
         {
             var text = File.ReadAllText(FilePath);
-            JsonConvert.PopulateObject(text, this);
+            var settings = new JsonSerializerSettings
+            {
+                MissingMemberHandling = MissingMemberHandling.Error
+            };
+            JsonConvert.PopulateObject(text, this,settings);
         }
-        catch (Exception ex)
+        catch (FileNotFoundException)
         {
-            if (ex is not FileNotFoundException) throw;
             Log.Warning("No configuration json file found, generating template file in " + FilePath);
             GenerateEmptyConfig(FilePath);
         }

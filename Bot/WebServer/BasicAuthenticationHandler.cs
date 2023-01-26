@@ -26,7 +26,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
         if (authHeader != null && authHeader.StartsWith("basic", StringComparison.OrdinalIgnoreCase))
         {
             var token = authHeader.Substring("Basic ".Length).Trim();
-            //System.Console.WriteLine(token);
+            
             var credentialstring = Encoding.UTF8.GetString(Convert.FromBase64String(token));
             var credentials = credentialstring.Split(':');
             if (credentials[0] == GlobalConfig.WebConfig!.AuthUsr && credentials[1] == GlobalConfig.WebConfig!.AuthPsw)
