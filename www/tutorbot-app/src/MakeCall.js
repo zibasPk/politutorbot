@@ -1,26 +1,29 @@
+import config from './config/config.json'
 
-import configData from "./config/config.json"
+export async function makeCall(url, method, contentType, hasAuth, body, status) {
+    let authorization = btoa(config.authCredentials);
+    let headers = {
+      'Content-Type': contentType
+  }
+    let options = {
+        method: method,
+        headers: headers
+    };
 
-
-export async function MakeCall(callMethod ,endPoint , hasCache, hasAuth,responseCallBack, dataCallBack) {
-  const method = callMethod !== undefined ? callMethod : 'GET';
-  const cache = hasCache ? 'default' : 'no-cache';
-  const auth = hasAuth ? 'Basic ' + btoa(configData.authCredentials) : '';
-  
-  fetch(configData.botApiUrl + endPoint,
-    {
-      method: method, // *GET, POST, PUT, DELETE, etc.
-      mode: 'cors', // no-cors, *cors, same-origin
-      cache: cache, // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin', // include, *same-origin, omit
-      headers: {
-        'Authorization': auth,
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      }
-    }).then((response)=> {
-      console.log(response.json());
-      responseCallBack(response)
+    if(hasAuth) {
+      headers.Authorization ='Basic ' + authorization;
     }
-    ).then((data) => {
-      dataCallBack(data)});
+
+    if (body) {
+        options.body = body;
+    }
+    let response = await fetch(url, options);
+
+    status.code = response.status;
+
+    console.log(status);
+    if(contentType === 'application/json')
+      return await response.json();
+    if(contentType === 'text/html')
+      return await response.text();
 }
