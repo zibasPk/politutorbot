@@ -354,10 +354,9 @@ public class TutorDAO
   }
   
   /// <summary>
-  /// Tries to delete all tutors
+  /// Deletes all tutors and tutorings from the db
   /// </summary>
-  /// <returns>true if deletion worked, otherwise false.</returns>
-  public bool DeleteTutors()
+  public void DeleteTutors()
   {
     _connection.Open();
     const string query = "DELETE FROM tutor ";
@@ -367,7 +366,6 @@ public class TutorDAO
       var command = new MySqlCommand(query, _connection);
       command.ExecuteNonQuery();
       Log.Debug("All tutors where deleted from db");
-      return true;
     }
     catch (Exception)
     {
@@ -748,7 +746,7 @@ public class TutorDAO
                          "JOIN tutor as t on t.tutor_code=te.tutor " +
                          "JOIN course as c on c.name=t.course " +
                          "JOIN exam as e on e.code=te.exam " +
-                         "WHERE exam!=@exam AND e.name == @examName AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
+                         "WHERE exam!=@exam AND e.name = @examName AND last_reservation <= (NOW() - INTERVAL @hours HOUR) " +
                          "AND available_tutorings > 0 ORDER BY ranking ASC";
     var tutors = new List<TutorToExam>();
     try

@@ -68,6 +68,12 @@ public record struct Exam(
   string Year
 );
 
+public record struct Course
+(
+  string Name,
+  string School
+);
+
 public record struct TutoringToDuration(int Id, int Duration);
 
 public record struct TutorToStudentToExam(bool IsOFA, int TutorCode, int StudentCode, int? ExamCode);

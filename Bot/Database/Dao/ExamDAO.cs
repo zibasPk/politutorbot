@@ -6,174 +6,275 @@ namespace Bot.Database.Dao;
 
 public class ExamDAO
 {
-    private readonly MySqlConnection _connection;
+  private readonly MySqlConnection _connection;
 
-    public ExamDAO(MySqlConnection connection)
+  public ExamDAO(MySqlConnection connection)
+  {
+    _connection = connection;
+  }
+
+  /// <summary>
+  /// Deletes all exams from the db
+  /// </summary>
+  /// <returns>true if deletion worked, otherwise false.</returns>
+  public void DeleteExams()
+  {
+    _connection.Open();
+    const string query = "DELETE FROM exam";
+
+    try
     {
-        _connection = connection;
+      var command = new MySqlCommand(query, _connection);
+      command.ExecuteNonQuery();
+      Log.Debug("All exams where deleted from db");
     }
-
-
-    /// <summary>
-    /// Finds exam by searching by its name and course.
-    /// </summary>
-    /// <param name="name">Name of exam to search.</param>
-    /// <param name="course">The course for which to search.</param>
-    /// <returns>Exam</returns>
-    public Exam? FindExam(string name, string course)
+    catch (Exception)
     {
-        _connection.Open();
-        const string query = "SELECT * from exam WHERE name=@name AND course=@course";
+      _connection.Close();
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Adds new exams to db.
+  /// </summary>
+  /// <param name="exams">exams to add</param>
+  /// <param name="errorMessage">error message</param>
+  /// <returns>false if anything goes wrong, otherwise true.</returns>
+  public bool AddExam(List<Exam> exams, out string errorMessage)
+  {
+    errorMessage = "";
+    _connection.Open();
+    const string query = "INSERT INTO exam (code,course,name,year) " +
+                         "VALUES (@examCode,@course,@examName,@year)";
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+
+
+      foreach (var exam in exams)
+      {
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@examCode", exam.Code);
+        command.Parameters.AddWithValue("@course", exam.Course);
+        command.Parameters.AddWithValue("@examName", exam.Name);
+        command.Parameters.AddWithValue("@year", exam.Year);
         try
         {
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@name", name);
-            command.Parameters.AddWithValue("@course", course);
-            command.Prepare();
-
-            var reader = command.ExecuteReader();
-
-            if (!reader.Read())
-            {
-                Log.Debug("No exams found for {course} with name {name}", course, name);
-                _connection.Close();
-                return null;
-            }
-
-            var exam = new Exam
-            {
-                Code = reader.GetInt32("code"),
-                Course = reader.GetString("course"),
-                Name = reader.GetString("name"),
-                Year = reader.GetString("year")
-            };
-            _connection.Close();
-            return exam;
+          command.Prepare();
+          command.ExecuteNonQuery();
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            _connection.Close();
-            throw;
+          switch (e)
+          {
+            case MySqlException { Number: 1062 }:
+              // duplicate key entry
+              errorMessage = $"Duplicate entry for exam: {exam.Code} for course {exam.Course}";
+              Log.Debug(errorMessage);
+              break;
+            case MySqlException { Number: 1452 }:
+              // foreign key fail
+              _connection.Close();
+              errorMessage =
+                $"Adding new exam: {exam.Code} with non-existing course: {exam.Course}";
+              Log.Warning(errorMessage);
+              return false;
+            case MySqlException { Number: 1048 }:
+              // null value
+              _connection.Close();
+              errorMessage =
+                $"Tried adding new exam: {exam.Code} {exam.Course} with an empty value";
+              Log.Warning(errorMessage);
+              return false;
+            default:
+              throw;
+          }
         }
+      }
+
+      _connection.Close();
+      return true;
     }
-    
-    /// <summary>
-    /// Searches for an exam with a certain code.
-    /// </summary>
-    /// <param name="examCode"> Code of the exam</param>
-    /// <returns>true if at least one exam with that name exists; false otherwise</returns>
-    public bool FindExam(int examCode)
+    catch (Exception e)
     {
-        _connection.Open();
-        const string query = "SELECT * from exam WHERE code=@code";
-        var exams = new List<string>();
-        try
-        {
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@code", examCode);
-            command.Prepare();
+      Console.WriteLine(e);
+      _connection.Close();
+      throw;
+    }
+  }
 
-            var reader = command.ExecuteReader();
+  /// <summary>
+  /// Adds new exams to db.
+  /// </summary>
+  /// <param name="exam">exam to add</param>
+  /// <param name="errorMessage">error message</param>
+  /// <returns>false if anything goes wrong, otherwise true.</returns>
+  public bool AddExam(Exam exam, out string errorMessage)
+  {
+    var exams = new List<Exam> { exam };
+    return AddExam(exams, out errorMessage);
+  }
 
-            if (!reader.HasRows)
-            {
-                Log.Debug("Exam {code} not found in db", examCode);
-                _connection.Close();
-                return false;
-            }
-            
-        }
-        catch (Exception)
-        {
-            _connection.Close();
-            throw;
-        }
+  /// <summary>
+  /// Finds exam by searching by its name and course.
+  /// </summary>
+  /// <param name="name">Name of exam to search.</param>
+  /// <param name="course">The course for which to search.</param>
+  /// <returns>Exam</returns>
+  public Exam? FindExam(string name, string course)
+  {
+    _connection.Open();
+    const string query = "SELECT * from exam WHERE name=@name AND course=@course";
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@name", name);
+      command.Parameters.AddWithValue("@course", course);
+      command.Prepare();
 
+      var reader = command.ExecuteReader();
+
+      if (!reader.Read())
+      {
+        Log.Debug("No exams found for {course} with name {name}", course, name);
         _connection.Close();
-        return true;
+        return null;
+      }
+
+      var exam = new Exam
+      {
+        Code = reader.GetInt32("code"),
+        Course = reader.GetString("course"),
+        Name = reader.GetString("name"),
+        Year = reader.GetString("year")
+      };
+      _connection.Close();
+      return exam;
     }
-    
-    /// <summary>
-    /// Finds exams of a course from a specific year.
-    /// </summary>
-    /// <param name="course">The course for which to search.</param>
-    /// <param name="year">The year for which to search.</param>
-    /// <returns>List of exams of a course from a specific year.</returns>
-    public List<Exam> FindExamsInYear(string course, string year)
+    catch (Exception)
     {
-        _connection.Open();
-        const string query = "SELECT * from exam WHERE year=@year AND course=@course";
-        var exams = new List<Exam>();
-        try
-        {
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@year", year);
-            command.Parameters.AddWithValue("@course", course);
-            command.Prepare();
-
-            var reader = command.ExecuteReader();
-
-            if (!reader.HasRows)
-                Log.Debug("No exams found for {course} in year {year}", course, year);
-
-            while (reader.Read())
-            {
-                var exam = new Exam
-                {
-                    Code = reader.GetInt32("code"),
-                    Course = reader.GetString("course"),
-                    Name = reader.GetString("name"),
-                    Year = reader.GetString("year")
-                };
-                exams.Add(exam);
-            }
-        }
-        catch (Exception)
-        {
-            _connection.Close();
-            throw;
-        }
-
-        _connection.Close();
-        return exams;
+      _connection.Close();
+      throw;
     }
+  }
 
-    /// <summary>
-    /// Checks if the given exam is in the given course and given year.
-    /// </summary>
-    /// <param name="exam">The code of the exam for which to check.</param>
-    /// <param name="course">The course for which to check.</param>
-    /// <param name="year">The year for which to check.</param>
-    /// <returns>true if exam is in course in year; otherwise false.</returns>
-    public bool IsExamInCourse(int exam, string course, string year)
+  /// <summary>
+  /// Searches for an exam with a certain code.
+  /// </summary>
+  /// <param name="examCode"> Code of the exam</param>
+  /// <returns>true if at least one exam with that name exists; false otherwise</returns>
+  public bool FindExam(int examCode)
+  {
+    _connection.Open();
+    const string query = "SELECT * from exam WHERE code=@code";
+    var exams = new List<string>();
+    try
     {
-        _connection.Open();
-        const string query = "SELECT * from exam WHERE code=@code and course=@course and year=@year";
-        try
-        {
-            var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@code", exam);
-            command.Parameters.AddWithValue("@course", course);
-            command.Parameters.AddWithValue("@year", year);
-            command.Prepare();
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@code", examCode);
+      command.Prepare();
 
-            var reader = command.ExecuteReader();
+      var reader = command.ExecuteReader();
 
-            if (reader.Read())
-            {
-                _connection.Close();
-                return true;
-            }
-
-            Log.Debug("{exam} {course} {year} doesn't exist", exam, course, year);
-        }
-        catch (Exception)
-        {
-            _connection.Close();
-            throw;
-        }
-
+      if (!reader.HasRows)
+      {
+        Log.Debug("Exam {code} not found in db", examCode);
         _connection.Close();
         return false;
+      }
     }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+
+    _connection.Close();
+    return true;
+  }
+
+  /// <summary>
+  /// Finds exams of a course from a specific year.
+  /// </summary>
+  /// <param name="course">The course for which to search.</param>
+  /// <param name="year">The year for which to search.</param>
+  /// <returns>List of exams of a course from a specific year.</returns>
+  public List<Exam> FindExamsInYear(string course, string year)
+  {
+    _connection.Open();
+    const string query = "SELECT * from exam WHERE year=@year AND course=@course";
+    var exams = new List<Exam>();
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@year", year);
+      command.Parameters.AddWithValue("@course", course);
+      command.Prepare();
+
+      var reader = command.ExecuteReader();
+
+      if (!reader.HasRows)
+        Log.Debug("No exams found for {course} in year {year}", course, year);
+
+      while (reader.Read())
+      {
+        var exam = new Exam
+        {
+          Code = reader.GetInt32("code"),
+          Course = reader.GetString("course"),
+          Name = reader.GetString("name"),
+          Year = reader.GetString("year")
+        };
+        exams.Add(exam);
+      }
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+
+    _connection.Close();
+    return exams;
+  }
+
+  /// <summary>
+  /// Checks if the given exam is in the given course and given year.
+  /// </summary>
+  /// <param name="exam">The code of the exam for which to check.</param>
+  /// <param name="course">The course for which to check.</param>
+  /// <param name="year">The year for which to check.</param>
+  /// <returns>true if exam is in course in year; otherwise false.</returns>
+  public bool IsExamInCourse(int exam, string course, string year)
+  {
+    _connection.Open();
+    const string query = "SELECT * from exam WHERE code=@code and course=@course and year=@year";
+    try
+    {
+      var command = new MySqlCommand(query, _connection);
+      command.Parameters.AddWithValue("@code", exam);
+      command.Parameters.AddWithValue("@course", course);
+      command.Parameters.AddWithValue("@year", year);
+      command.Prepare();
+
+      var reader = command.ExecuteReader();
+
+      if (reader.Read())
+      {
+        _connection.Close();
+        return true;
+      }
+
+      Log.Debug("{exam} {course} {year} doesn't exist", exam, course, year);
+    }
+    catch (Exception)
+    {
+      _connection.Close();
+      throw;
+    }
+
+    _connection.Close();
+    return false;
+  }
 }

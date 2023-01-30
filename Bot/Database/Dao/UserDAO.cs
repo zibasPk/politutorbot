@@ -148,7 +148,7 @@ public class UserDAO
         const string query =
             "SELECT * FROM telegram_user " +
             "WHERE userID=@userId AND " +
-            "student_code IN (select student FROM active_tutoring WHERE end_date IS NOT NULL)";
+            "student_code IN (select student FROM active_tutoring WHERE end_date IS NULL)";
         try
         {
             var command = new MySqlCommand(query, _connection);
