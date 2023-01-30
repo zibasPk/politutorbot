@@ -25,10 +25,20 @@ public abstract class Config
             };
             JsonConvert.PopulateObject(text, this,settings);
         }
-        catch (FileNotFoundException)
+        catch (Exception e)
         {
-            Log.Warning("No configuration json file found, generating template file in " + FilePath);
-            GenerateEmptyConfig(FilePath);
+            switch (e)
+            {
+                case FileNotFoundException:
+                    Log.Warning("No configuration json file found, generating template file in " + FilePath);
+                    GenerateEmptyConfig(FilePath);
+                    break;
+                case DirectoryNotFoundException:
+                    Log.Warning("/config/ directory not found, couldn't generate template file");
+                    break;
+                default:
+                    throw;
+            }
         }
     }
 
