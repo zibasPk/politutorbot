@@ -6,7 +6,6 @@ import { jsonToCSV } from 'react-papaparse'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import Form from 'react-bootstrap/Form';
 
-
 export default class EndedTutoringsModal extends React.Component
 {
   constructor(props)

@@ -17,7 +17,7 @@ public class Conversation
 {
     public bool WaitingForApiCall = false;
     public readonly object ConvLock = new();
-
+    public DateTime LastMessage;
     private readonly Timer _conversationTimer;
     private UserState _state;
 
@@ -48,6 +48,7 @@ public class Conversation
     {
         ChatId = chatId;
         State = UserState.Start;
+        LastMessage = DateTime.MinValue;
         _conversationTimer = new Timer(GlobalConfig.BotConfig!.UserTimeOut);
         _conversationTimer.Elapsed += ResetConversation;
         _conversationTimer.AutoReset = false;
@@ -119,7 +120,11 @@ public class Conversation
     private async void ResetConversation(object? source, ElapsedEventArgs e)
     {
         if (!Monitor.TryEnter(ConvLock))
+        {
+            Log.Debug("Tried clearing locked conversation... resetting timer ");
+            _conversationTimer.Interval = GlobalConfig.BotConfig!.UserTimeOut;
             return;
+        }
         Log.Debug("Resetting conversation in state {state}", State);
         State = UserState.Start;
         School = null;

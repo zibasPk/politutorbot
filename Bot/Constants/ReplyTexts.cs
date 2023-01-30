@@ -7,6 +7,8 @@ namespace Bot.Constants;
 /// </summary>
 public static class ReplyTexts
 {
+  public const string SpamWarning = "Questo bot è dotato di una protezione dallo spam. Non mandare troppi messaggi in successione.";
+  
   public const string NoTutoring = "Ci dispiace, al momento nessun tutor è disponibile per l’insegnamento richiesto";
   public const string NoOFATutoring = "Ci dispiace, al momento nessun tutor è disponibile per gli OFA";
 
@@ -14,7 +16,7 @@ public static class ReplyTexts
                                              $"ore dalla tua precedente richiesta " +
                                              $"o fino a che la segreteria non l'avrà elaborata.";
 
-  public const string AlreadyOngoingTutoring = "Sei bloccato dal fare nuove richieste fino alla conclusione del tuo tutoraggi corrente.";
+  public const string AlreadyOngoingTutoring = "Sei bloccato dal fare nuove richieste fino alla conclusione del tuo tutoraggio corrente.";
 
   public const string TutorSelected = "Tutor selezionato; " +
                                       "\nRiceverai a breve conferma via mail dell’abbinamento con il tutor e ulteriori istruzioni dalla segreteria del tutorato.";
@@ -52,6 +54,7 @@ public static class ReplyTexts
   public const string InvalidTutor = "Inserisci un tutor della lista";
   public const string InvalidTutorIndex = "Inserisci il numero di un tutor della lista";
   public const string InvalidStudentCode = "Inserisci un codice matricola valido";
+  public const string InvalidYesOrNo = "Inserisci Si o No";
   public const string NotEnabledStudentCode = "Spiacente non sei tra gli studenti che possono richiedere il tutoring peer to peer.";
   public const string InvalidSchool = "Inserisci una scuola valid";
   public const string SchoolNotICAT = "Il servizio è momentaneamente attivo solo per la scuola ICAT";
