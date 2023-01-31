@@ -12,6 +12,7 @@ import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { allowedExtensions } from '../enabledStudents/EnabledStudents';
+import { makeCall } from '../../MakeCall';
 
 
 function ManualActivation(props)
@@ -136,31 +137,21 @@ function ManualActivation(props)
     reader.readAsText(tutorings);
   }
 
-  const sendTutorings = (tutorings) =>
+  const sendTutorings = async (tutorings) =>
   {
-    fetch(configData.botApiUrl + '/tutoring/start', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      },
-      body: JSON.stringify(tutorings)
-    }).then(resp =>
+    let status ={code: 0}
+    let result = await makeCall(configData.botApiUrl + '/tutoring/start', 'POST','application/json', true,
+    JSON.stringify(tutorings), status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-      props.onChange();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          setAlert("Errore nella richiesta: " + text);
-          return;
-        }
-        // Hide alert after a positive response
-        setAlert("")
-      })
+      setAlert("Errore nella richiesta: " + result);
+      return;
+    }
+    props.onChange();
+
+    // Hide alert after a positive response
+    setAlert("");
   }
 
   const validateTutoring = (tutoring) =>

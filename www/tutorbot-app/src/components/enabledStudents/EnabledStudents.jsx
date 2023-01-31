@@ -11,6 +11,7 @@ import RefreshableComponent from '../Interfaces';
 import { CircularProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { makeCall } from '../../MakeCall';
 
 export const allowedExtensions = ["csv", "vnd.ms-excel"];
 
@@ -29,20 +30,18 @@ export default class EnabledStudents extends RefreshableComponent
     };
   }
 
-  refreshData()
+  async refreshData()
   {
-    fetch(configData.botApiUrl + '/students', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((students) =>
-      {
-        this.setState({
-          EnabledStudents: students,
-        })
-      })
+    let status = {code: 0};
+    
+    let result = await makeCall(configData.botApiUrl + "/students","GET",'application/json', true, null, status);
+    if (status.code !== 200) {
+      return;
+    }
+    
+    this.setState({
+      EnabledStudents: result
+    });
   }
 
   changeStudentToEnable(value)
@@ -139,7 +138,7 @@ export default class EnabledStudents extends RefreshableComponent
     }
   }
 
-  enabledStudent()
+  async enabledStudent()
   {
     if (this.state.StudentToEnable == null || !this.state.StudentToEnable.toString().match(/^[1-9][0-9]{5}$/))
     {
@@ -157,34 +156,23 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
-    fetch(configData.botApiUrl + '/students/enable/' + this.state.StudentToEnable, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp =>
-    {
-      if (!resp.ok)
-        return resp.text();
-      this.refreshData();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          this.setState({
-            AlertText: text,
-          })
-          return;
-        }
-        // Hide alert after a positive response
-        this.setState({
-          AlertText: ""
-        })
+    let status = {code: 0};
+    let result = await makeCall( configData.botApiUrl + "/students/enable/" + this.state.StudentToEnable,"POST","application/json", true, null, status);
+
+    if (status.code !== 200) {
+      this.setState({
+        AlertText: result,
       })
+      return;
+    }
+
+    this.refreshData();
+    this.setState({
+      AlertText: ""
+    });
   }
 
-  disableStudent()
+  async disableStudent()
   {
     if (this.state.StudentToDisable == null || !this.state.StudentToDisable.toString().match(validationConfig.studentCodeRegex))
     {
@@ -202,31 +190,22 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
-    fetch(configData.botApiUrl + '/students/disable/' + this.state.StudentToDisable, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp =>
-    {
-      if (!resp.ok)
-        return resp.text();
-      this.refreshData();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          this.setState({
-            AlertText: text,
-          })
-          return;
-        }
-        // Hide alert after a positive response
-        this.setState({
-          AlertText: ""
-        })
+    let status = {code: 0};
+    let result = await makeCall( configData.botApiUrl + "/students/disable/" + this.state.StudentToDisable,"POST",
+    "application/json", true, null, status);
+
+    if (status.code !== 200) {
+      this.setState({
+        AlertText: result,
       })
+      return;
+    }
+
+    this.refreshData();
+    // hide the alert on success
+    this.setState({
+      AlertText: ""
+    });
   }
 
   sendStudents(students, action) 
@@ -253,34 +232,23 @@ export default class EnabledStudents extends RefreshableComponent
       const parsedData = csv?.data;
       const formattedData = parsedData.map((line) => line[0]);
 
-      fetch(configData.botApiUrl + '/students/' + action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + btoa(configData.authCredentials),
-        },
-        body: JSON.stringify(formattedData)
-      }).then(resp =>
-      {
-        if (!resp.ok)
-          return resp.text();
-        this.refreshData();
-      })
-        .then((text) =>
-        {
-          if (text !== undefined)
-          {
-            this.setState({
-              AlertText: text,
-            })
-            return;
-          }
-          // Hide alert after a positive response
-          this.setState({
-            AlertText: ""
-          })
+      let status = {code: 0};
+      let result = await makeCall( configData.botApiUrl + "/students/" + action, "POST", "application/json", true, 
+      JSON.stringify(formattedData), status);
+
+      if (status.code !== 200) {
+        this.setState({
+          AlertText: result,
         })
+        return;
+      }
+
+      this.refreshData();
+      this.setState({
+        AlertText: ""
+      });
     };
+    // Read the file as text
     reader.readAsText(students);
   }
 

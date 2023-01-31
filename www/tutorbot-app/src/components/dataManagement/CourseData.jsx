@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { makeCall } from '../../MakeCall';
 
 export default function CourseData()
 {
@@ -39,8 +40,9 @@ export default function CourseData()
     className={styles.btnExpand}
   />;
 
-  const parseCourseFile = (file, alertSetter, sendFile) => {
-    
+  const parseCourseFile = (file, alertSetter, sendFile) =>
+  {
+
     // If user clicks the parse button without
     // a file 
     if (!file)
@@ -88,7 +90,7 @@ export default function CourseData()
     if (!course.School)
       return 'Sigla Scuola mancante';
 
-    if(!validationConfig.validSchools.includes(course.School))
+    if (!validationConfig.validSchools.includes(course.School))
       return 'Sigla Scuola invalida, può essere solo: ' + validationConfig.validSchools.toString();
 
     return null;
@@ -100,17 +102,17 @@ export default function CourseData()
       <div className={styles.dropDownContent}>
         <h1>Gestione Dati Corsi di Studi{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.courseDataCont}>
-        <UploadForm
-              formText="Carica File CSV Corsi da aggiungere"
-              infoContent={
-                <>
-                  <div>Inserire un file .csv con righe come da figura:</div>
-                  <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-                  <img src={examplePic}></img>
-                </>}
-              uploadEndPoint="/course/add"
-              parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
-            />
+          <UploadForm
+            formText="Carica File CSV Corsi da aggiungere"
+            infoContent={
+              <>
+                <div>Inserire un file .csv con righe come da figura:</div>
+                <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+                <img src={examplePic}></img>
+              </>}
+            uploadEndPoint="/course/add"
+            parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
+          />
           <DeleteCourses />
         </Collapse>
       </div>
@@ -133,30 +135,22 @@ function DeleteCourses()
     setShowButton(true);
   };
 
-  const handleConfirm = () =>
+  const handleConfirm = async () =>
   {
-    fetch(configData.botApiUrl + '/courses/', {
-      method: 'DELETE',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
+    let status = { code: 0 };
+    let result = await makeCall(configData.botApiUrl + '/courses/', 'DELETE', null, true, null, status);
+
+    if (status.code !== 200) {
+      if (result == "") {
+        return;
       }
-    }).then(resp =>
-    {
-      if (!resp.ok)
-        return resp.text();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          if(text == "") 
-            return;
-          setText(text);
-        }
-        setText("Eliminazione avvenuta con successo");
-        setTextClass(styles.successAlert);
-        setShowButton(false);
-      })
+      setText(result);
+      return;
+    }
+
+    setText("Eliminazione avvenuta con successo");
+    setTextClass(styles.successAlert);
+    setShowButton(false);
   }
 
   return (

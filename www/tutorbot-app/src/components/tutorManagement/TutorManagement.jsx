@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import configData from "../../config/config.json"
 import styles from './TutorManagement.module.css'
+import { makeCall } from '../../MakeCall';
 
 import AddTutor from './AddTutor';
 import TutorsList from './TutorsList';
@@ -36,61 +37,49 @@ export default function TutorManagement()
     refreshData();
   }, [])
 
-  const refreshData = () =>
+  const refreshData = async () =>
   {
-    fetch(configData.botApiUrl + '/tutor', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((tutors) =>
-      {
-        tutors.forEach((tutor, i) =>
-        {
-          tutor.OfaAvailable ? tutor.OfaAvailable = "SI" : tutor.OfaAvailable = "NO";
-          switch (tutor.ContractState)
-          {
-            case 0:
-              tutor.ContractState = "non inviato";
-              break;
-            case 1:
-              tutor.ContractState = "inviato";
-              break;
-            case 2:
-              tutor.ContractState = "firmato";
-              break;
-            default:
-              tutor.ContractState = "invalido";
-              break;
-          }
-          tutor.Id = i;
-        });
-        setTutors(tutors);
-      });
+    let status = { code: 0 };
+    let result = await makeCall(configData.botApiUrl + '/tutor', 'GET', "application/json", true, null, status);
 
-    fetch(configData.botApiUrl + '/tutoring', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((tutorings) =>
+    result.forEach((tutor, i) =>
+    {
+      tutor.OfaAvailable ? tutor.OfaAvailable = "SI" : tutor.OfaAvailable = "NO";
+      switch (tutor.ContractState)
       {
-        tutorings.forEach((tutoring, i) =>
-        {
-          tutoring.OfaAvailable ? tutoring.OfaAvailable = "SI" : tutoring.OfaAvailable = "NO";
-          tutoring.Id = i;
-        });
-        setTutorings(tutorings);
-      });
+        case 0:
+          tutor.ContractState = "non inviato";
+          break;
+        case 1:
+          tutor.ContractState = "inviato";
+          break;
+        case 2:
+          tutor.ContractState = "firmato";
+          break;
+        default:
+          tutor.ContractState = "invalido";
+          break;
+      }
+      tutor.Id = i;
+    });
+    setTutors(result);
+
+    result = await makeCall(configData.botApiUrl + '/tutoring', 'GET', "application/json", true, null, status);
+
+    result.forEach((tutoring, i) =>
+    {
+      tutoring.OfaAvailable ? tutoring.OfaAvailable = "SI" : tutoring.OfaAvailable = "NO";
+      tutoring.Id = i;
+    });
+    setTutorings(result);
   }
+
 
   return (
     <div className={styles.content}>
       <AddTutor onChange={() => refreshData()} />
-      <TutorsList headers={TutorHeaders} tutorList={tutorsArray} refreshData={()=> refreshData()}/>
-      <TutoringList headers={TutoringHeaders} tutoringList={tutoringArray} refreshData={()=> refreshData()}/>
+      <TutorsList headers={TutorHeaders} tutorList={tutorsArray} refreshData={() => refreshData()} />
+      <TutoringList headers={TutoringHeaders} tutoringList={tutoringArray} refreshData={() => refreshData()} />
     </div>
   );
 }

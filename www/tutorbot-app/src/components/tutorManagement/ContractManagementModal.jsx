@@ -4,38 +4,29 @@ import { useState } from "react";
 import styles from "./TutorManagement.module.css";
 import configData from "../../config/config.json";
 
+
 import { Form } from "react-bootstrap";
 import { Button } from 'react-bootstrap';
+import { makeCall } from "../../MakeCall";
 
 function ContractManagementModal(props)
 {
   const [changedTutorings, setChangedTutorings] = useState([]);
   const [alert, setAlert] = useState("");
 
-  const changeContracts = () =>
+  const changeContracts = async () =>
   {
-    changedTutorings.forEach(tutoring =>
+    changedTutorings.forEach(async tutoring =>
     {
-      fetch(configData.botApiUrl + '/tutor/' + tutoring.TutorCode + "/contract/" + tutoring.ContractState, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + btoa(configData.authCredentials),
-        }
-      }).then(resp =>
+      let status = { code: 0 };
+      let result = await makeCall(configData.botApiUrl + '/tutor/' + tutoring.TutorCode + "/contract/" + tutoring.ContractState, 'PUT', 'application/json', true, null, status);
+
+      if (status.code !== 200)
       {
-        if (!resp.ok)
-          return resp.text();
-        props.onModalEvent();
-      })
-        .then((text) =>
-        {
-          if (text !== undefined)
-          {
-            setAlert(text);
-            return;
-          }
-        })
+        setAlert(result);
+        return;
+      }
+      props.onModalEvent();
     });
   }
 
@@ -75,7 +66,6 @@ function ContractManagementModal(props)
     {
       const formClass = changedTutorings.filter((tutoring) => tutoring.TutorCode === row.TutorCode).length > 0 ?
         "" : styles.unalteredSelect;
-      console.log(formClass);
       return <td key={i}>
         <Form.Select className={formClass} onChange={(e) => handleSelectChange(e, row)} defaultValue={row[key]}>
           <option key={0}>non inviato</option>

@@ -8,6 +8,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { makeCall } from '../../MakeCall';
 
 export default function TutorData()
 {
@@ -61,29 +62,20 @@ function DeleteTutors()
     setShowButton(true);
   };
 
-  const handleConfirm = () =>
+  const handleConfirm = async () =>
   {
-    fetch(configData.botApiUrl + '/tutors/', {
-      method: 'DELETE',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp =>
+    let status = { code: 0 }
+    let result = await makeCall(configData.botApiUrl + '/tutors/', 'DELETE', null, true, null, status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          setText(text);
-          return;
-        }
-        setText("Eliminazione avvenuta con successo");
-        setTextClass(styles.successAlert);
-        setShowButton(false);
-      })
+      if (result != "")
+        setText(result);
+      return
+    }
+    setText("Eliminazione avvenuta con successo");
+    setTextClass(styles.successAlert);
+    setShowButton(false);
   }
 
   return (
