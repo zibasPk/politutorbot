@@ -1,10 +1,10 @@
-CREATE DATABASE  IF NOT EXISTS `politutor2.0` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE  IF NOT EXISTS `politutor2.0` /*!40100 DEFAULT CHARACTER SET utf8 */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `politutor2.0`;
--- MySQL dump 10.13  Distrib 8.0.30, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
 --
--- Host: 192.168.1.88    Database: politutor2.0
+-- Host: 127.0.0.1    Database: politutor2.0
 -- ------------------------------------------------------
--- Server version	8.0.31-0ubuntu0.20.04.1
+-- Server version	8.0.28
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -36,7 +36,7 @@ CREATE TABLE `active_tutoring` (
   PRIMARY KEY (`ID`),
   KEY `exam` (`exam`),
   CONSTRAINT `active_tutoring_ibfk_2` FOREIGN KEY (`exam`) REFERENCES `exam` (`code`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,7 @@ CREATE TABLE `active_tutoring` (
 
 LOCK TABLES `active_tutoring` WRITE;
 /*!40000 ALTER TABLE `active_tutoring` DISABLE KEYS */;
-INSERT INTO `active_tutoring` VALUES (1,321321,52522,111111,0,'2022-12-11 14:36:39','2022-12-11 17:02:28',3),(2,321321,52522,111111,0,'2022-12-11 14:36:39',NULL,NULL),(3,321321,52522,111111,1,'2022-12-11 14:36:39','2022-12-15 12:18:50',11),(4,321321,52522,111111,0,'2022-12-11 14:36:39',NULL,NULL),(5,123322,NULL,111111,1,'2022-12-15 12:09:41',NULL,NULL),(6,123322,NULL,111111,1,'2022-12-15 12:19:26','2022-12-15 12:21:02',123),(7,123322,NULL,123123,1,'2022-12-22 12:46:02',NULL,NULL),(8,123333,NULL,123123,1,'2022-12-22 12:46:02',NULL,NULL),(15,321321,NULL,123123,1,'2022-12-22 14:06:30',NULL,NULL);
+INSERT INTO `active_tutoring` VALUES (1,321321,52522,111111,0,'2022-12-11 14:36:39','2022-12-11 17:02:28',3),(2,321321,52522,111111,0,'2022-12-11 14:36:39',NULL,NULL),(3,321321,52522,111111,1,'2022-12-11 14:36:39','2022-12-15 12:18:50',11),(4,321321,52522,111111,0,'2022-12-11 14:36:39',NULL,NULL),(5,123322,NULL,111111,1,'2022-12-15 12:09:41',NULL,NULL),(6,123322,NULL,111111,1,'2022-12-15 12:19:26','2022-12-15 12:21:02',123),(7,123322,NULL,123123,1,'2022-12-22 12:46:02',NULL,NULL),(8,123333,NULL,123123,1,'2022-12-22 12:46:02',NULL,NULL),(15,321321,NULL,123123,1,'2022-12-22 14:06:30',NULL,NULL),(17,999999,52522,222222,0,'2023-01-31 10:28:12','2023-01-31 10:38:22',123);
 /*!40000 ALTER TABLE `active_tutoring` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -55,9 +55,9 @@ UNLOCK TABLES;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`zibas`@`%`*/ /*!50003 TRIGGER `check_duplicate_active_tutorings` BEFORE INSERT ON `active_tutoring` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `check_duplicate_active_tutorings` BEFORE INSERT ON `active_tutoring` FOR EACH ROW BEGIN
 	DECLARE duplicate int;
 	SET duplicate = (SELECT COUNT(*) FROM active_tutoring
     WHERE tutor = NEW.tutor AND (exam = NEW.exam OR (exam IS NULL AND NEW.exam IS NULL)) 
@@ -71,6 +71,75 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `save_active_tutoring_history` AFTER INSERT ON `active_tutoring` FOR EACH ROW BEGIN
+INSERT INTO active_tutoring_history (ID,tutor_code,tutor_name,tutor_surname,student_code,exam_code,is_OFA,start_date,end_date,duration) 
+	SELECT a.ID,t.tutor_code,t.name,t.surname,a.student,a.exam,a.is_OFA,a.start_date,a.end_date,a.duration 
+    FROM tutor as t join active_tutoring as a ON t.tutor_code = a.tutor WHERE a.ID =  NEW.ID;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `update_active_tutoring_history` AFTER UPDATE ON `active_tutoring` FOR EACH ROW BEGIN
+	UPDATE active_tutoring_history SET duration = NEW.duration, end_date = NEW.end_date 
+    WHERE active_tutoring_history.ID = NEW.ID;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `active_tutoring_history`
+--
+
+DROP TABLE IF EXISTS `active_tutoring_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `active_tutoring_history` (
+  `ID` int NOT NULL,
+  `tutor_code` varchar(300) DEFAULT NULL,
+  `tutor_name` varchar(300) DEFAULT NULL,
+  `tutor_surname` varchar(300) DEFAULT NULL,
+  `student_code` varchar(45) DEFAULT NULL,
+  `exam_code` varchar(300) DEFAULT NULL,
+  `is_OFA` varchar(300) DEFAULT NULL,
+  `start_date` varchar(300) DEFAULT NULL,
+  `end_date` varchar(300) DEFAULT NULL,
+  `duration` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `active_tutoring_history`
+--
+
+LOCK TABLES `active_tutoring_history` WRITE;
+/*!40000 ALTER TABLE `active_tutoring_history` DISABLE KEYS */;
+INSERT INTO `active_tutoring_history` VALUES (17,'999999','giulio','bartolomei','222222','52522','0','2023-01-31 11:28:12','2023-01-31 11:38:22','123');
+/*!40000 ALTER TABLE `active_tutoring_history` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `course`
@@ -167,7 +236,7 @@ CREATE TABLE `reservation` (
   PRIMARY KEY (`ID`),
   KEY `exam` (`exam`),
   CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`exam`) REFERENCES `exam` (`code`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -176,8 +245,56 @@ CREATE TABLE `reservation` (
 
 LOCK TABLES `reservation` WRITE;
 /*!40000 ALTER TABLE `reservation` DISABLE KEYS */;
-INSERT INTO `reservation` VALUES (5,321321,52522,111111,'2022-12-09 13:42:44',1,0),(9,123322,NULL,111111,'2022-09-14 10:57:09',1,1),(11,123322,NULL,111111,'2022-09-14 14:22:36',1,1),(12,999999,52522,222222,'2023-01-13 15:40:35',1,0),(13,999999,52522,222222,'2023-01-13 17:38:20',0,0);
+INSERT INTO `reservation` VALUES (5,321321,52522,111111,'2022-12-09 13:42:44',1,0),(9,123322,NULL,111111,'2022-09-14 10:57:09',1,1),(11,123322,NULL,111111,'2022-09-14 14:22:36',1,1),(12,999999,52522,222222,'2023-01-13 15:40:35',1,0),(13,999999,52522,222222,'2023-01-13 17:38:20',1,0),(15,123123,52522,444444,'2023-01-31 10:04:30',1,0);
 /*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `save_reservation_history` AFTER INSERT ON `reservation` FOR EACH ROW BEGIN
+INSERT INTO reservation_history (ID,tutor_code,tutor_name,tutor_surname,exam_code,student_code,reservation_date) 
+	SELECT r.ID,t.tutor_code,t.name,t.surname,r.exam,r.student,r.reservation_timestamp 
+    FROM tutor as t join reservation as r ON t.tutor_code = r.tutor WHERE r.ID =  NEW.ID;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `reservation_history`
+--
+
+DROP TABLE IF EXISTS `reservation_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reservation_history` (
+  `ID` int NOT NULL,
+  `tutor_code` varchar(300) DEFAULT NULL,
+  `tutor_name` varchar(300) DEFAULT NULL,
+  `tutor_surname` varchar(300) DEFAULT NULL,
+  `exam_code` varchar(300) DEFAULT NULL,
+  `student_code` varchar(300) DEFAULT NULL,
+  `reservation_date` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reservation_history`
+--
+
+LOCK TABLES `reservation_history` WRITE;
+/*!40000 ALTER TABLE `reservation_history` DISABLE KEYS */;
+INSERT INTO `reservation_history` VALUES (14,'123123','nome1','cognome1','52522','444444','2023-01-31 11:04:30'),(15,'123123','nome1','cognome1','52522','444444','2023-01-31 11:04:30');
+/*!40000 ALTER TABLE `reservation_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -226,7 +343,7 @@ CREATE TABLE `telegram_user` (
 
 LOCK TABLES `telegram_user` WRITE;
 /*!40000 ALTER TABLE `telegram_user` DISABLE KEYS */;
-INSERT INTO `telegram_user` VALUES (1089557436,222222,'2023-01-13 17:38:20');
+INSERT INTO `telegram_user` VALUES (107050697,444444,'1970-01-01 11:00:10'),(1089557436,222222,'1970-01-01 11:00:10');
 /*!40000 ALTER TABLE `telegram_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -258,7 +375,7 @@ CREATE TABLE `tutor` (
 
 LOCK TABLES `tutor` WRITE;
 /*!40000 ALTER TABLE `tutor` DISABLE KEYS */;
-INSERT INTO `tutor` VALUES (111111,'mario','draghi','Ingegneria Aerospaziale',1,126,1),(123123,'nome1','cognome1','Ingegneria Civile',0,1,2),(123322,'nome2','cognome2','Ingegneria dell\'Automazione',1,2,1),(123333,'mario','marioni','Ingegneria Biomedica',1,123,0),(123456,'nome3','cognome3','Ingegneria Chimica',0,3,0),(133123,'nome1','cognome1','Ingegneria Civile',0,11,0),(173123,'nome1','cognome1','Ingegneria Civile',0,12,0),(321321,'nome4','cognome4','Ingegneria Informatica',1,4,0),(999999,'giulio','bartolomei','Ingegneria per l\'Ambiente e il Territorio',0,999,0);
+INSERT INTO `tutor` VALUES (111111,'mario','draghi','Ingegneria Aerospaziale',1,126,1),(123123,'nome1','cognome1','Ingegneria Civile',0,1,2),(123322,'nome2','cognome2','Ingegneria dell\'Automazione',1,2,1),(123333,'mario','marioni','Ingegneria Biomedica',1,123,0),(123456,'nome3','cognome3','Ingegneria Chimica',0,3,0),(133123,'nome1','cognome1','Ingegneria Civile',0,11,0),(173123,'nome1','cognome1','Ingegneria Civile',0,12,0),(321321,'nome4','cognome4','Ingegneria Informatica',1,4,0),(938333,'mario','franchini','Ingegneria Aerospaziale',1,987,0),(999999,'giulio','bartolomei','Ingegneria per l\'Ambiente e il Territorio',0,999,0);
 /*!40000 ALTER TABLE `tutor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -288,8 +405,60 @@ CREATE TABLE `tutor_to_exam` (
 
 LOCK TABLES `tutor_to_exam` WRITE;
 /*!40000 ALTER TABLE `tutor_to_exam` DISABLE KEYS */;
-INSERT INTO `tutor_to_exam` VALUES (123123,52400,'asd','1970-01-01 11:00:10',1),(123123,52522,'sd','1970-01-01 11:00:10',2),(123333,54096,'franco franconi','1970-01-01 11:00:10',1),(133123,52400,'asd','1970-01-01 11:00:10',1),(173123,52522,'sd','1970-01-01 11:00:10',2),(321321,52522,'Marco Cannolo','1970-01-01 11:00:10',16),(999999,52522,'mario franceschini','2023-01-13 17:38:20',1);
+INSERT INTO `tutor_to_exam` VALUES (123123,52400,'asd','1970-01-01 11:00:10',1),(123123,52522,'sd','1970-01-01 11:00:10',2),(123333,54096,'franco franconi','1970-01-01 11:00:10',1),(133123,52400,'asd','1970-01-01 11:00:10',1),(173123,52522,'sd','1970-01-01 11:00:10',2),(321321,52522,'Marco Cannolo','1970-01-01 11:00:10',16),(938333,52400,'francesco lucciola','1970-01-01 11:00:10',1),(999999,52522,'mario franceschini','1970-01-01 11:00:10',1);
 /*!40000 ALTER TABLE `tutor_to_exam` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `save_tutoring_history` AFTER INSERT ON `tutor_to_exam` FOR EACH ROW BEGIN
+	INSERT INTO tutoring_history (tutor_code,tutor_name,tutor_surname,tutor_course,tutor_ranking,tutor_OFA_availability,exam_code,exam_professor,available_tutorings)
+	SELECT tutor_code,name,surname,course,ranking,OFA_available,exam,exam_professor,available_tutorings 
+    FROM tutor join tutor_to_exam ON tutor_code = tutor WHERE tutor_code =  NEW.tutor AND exam = NEW.exam;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `tutoring_history`
+--
+
+DROP TABLE IF EXISTS `tutoring_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tutoring_history` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tutor_code` varchar(300) DEFAULT NULL,
+  `tutor_name` varchar(300) DEFAULT NULL,
+  `tutor_surname` varchar(300) DEFAULT NULL,
+  `tutor_course` varchar(300) DEFAULT NULL,
+  `tutor_ranking` varchar(300) DEFAULT NULL,
+  `tutor_OFA_availability` varchar(300) DEFAULT NULL,
+  `exam_code` varchar(300) DEFAULT NULL,
+  `exam_professor` varchar(300) DEFAULT NULL,
+  `available_tutorings` varchar(300) DEFAULT NULL,
+  `date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tutoring_history`
+--
+
+LOCK TABLES `tutoring_history` WRITE;
+/*!40000 ALTER TABLE `tutoring_history` DISABLE KEYS */;
+INSERT INTO `tutoring_history` VALUES (1,'938333','mario','franchini','Ingegneria Aerospaziale','987','1','52400','francesco lucciola','1','2023-01-31 10:15:58');
+/*!40000 ALTER TABLE `tutoring_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -305,4 +474,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-18 16:57:21
+-- Dump completed on 2023-01-31 11:39:49
