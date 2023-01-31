@@ -4,33 +4,30 @@ using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class ExamDAO
+public class ExamDAO : DAO
 {
-  private readonly MySqlConnection _connection;
-
-  public ExamDAO(MySqlConnection connection)
+  public ExamDAO(MySqlConnection connection) : base(connection)
   {
-    _connection = connection;
   }
-
+  
   /// <summary>
   /// Deletes all exams from the db
   /// </summary>
   /// <returns>true if deletion worked, otherwise false.</returns>
   public void DeleteExams()
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "DELETE FROM exam";
 
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.ExecuteNonQuery();
       Log.Debug("All exams where deleted from db");
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -44,12 +41,12 @@ public class ExamDAO
   public bool AddExam(List<Exam> exams, out string errorMessage)
   {
     errorMessage = "";
-    _connection.Open();
+    Connection.Open();
     const string query = "INSERT INTO exam (code,course,name,year) " +
                          "VALUES (@examCode,@course,@examName,@year)";
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
 
 
       foreach (var exam in exams)
@@ -75,14 +72,14 @@ public class ExamDAO
               break;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Adding new exam: {exam.Code} with non-existing course: {exam.Course}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Tried adding new exam: {exam.Code} {exam.Course} with an empty value";
               Log.Warning(errorMessage);
@@ -93,13 +90,13 @@ public class ExamDAO
         }
       }
 
-      _connection.Close();
+      Connection.Close();
       return true;
     }
     catch (Exception e)
     {
       Console.WriteLine(e);
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -124,11 +121,11 @@ public class ExamDAO
   /// <returns>Exam</returns>
   public Exam? FindExam(string name, string course)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from exam WHERE name=@name AND course=@course";
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@name", name);
       command.Parameters.AddWithValue("@course", course);
       command.Prepare();
@@ -138,7 +135,7 @@ public class ExamDAO
       if (!reader.Read())
       {
         Log.Debug("No exams found for {course} with name {name}", course, name);
-        _connection.Close();
+        Connection.Close();
         return null;
       }
 
@@ -149,12 +146,12 @@ public class ExamDAO
         Name = reader.GetString("name"),
         Year = reader.GetString("year")
       };
-      _connection.Close();
+      Connection.Close();
       return exam;
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -166,12 +163,12 @@ public class ExamDAO
   /// <returns>true if at least one exam with that name exists; false otherwise</returns>
   public bool FindExam(int examCode)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from exam WHERE code=@code";
     var exams = new List<string>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@code", examCode);
       command.Prepare();
 
@@ -180,17 +177,17 @@ public class ExamDAO
       if (!reader.HasRows)
       {
         Log.Debug("Exam {code} not found in db", examCode);
-        _connection.Close();
+        Connection.Close();
         return false;
       }
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return true;
   }
 
@@ -202,12 +199,12 @@ public class ExamDAO
   /// <returns>List of exams of a course from a specific year.</returns>
   public List<Exam> FindExamsInYear(string course, string year)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from exam WHERE year=@year AND course=@course";
     var exams = new List<Exam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@year", year);
       command.Parameters.AddWithValue("@course", course);
       command.Prepare();
@@ -231,11 +228,11 @@ public class ExamDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return exams;
   }
 
@@ -248,11 +245,11 @@ public class ExamDAO
   /// <returns>true if exam is in course in year; otherwise false.</returns>
   public bool IsExamInCourse(int exam, string course, string year)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from exam WHERE code=@code and course=@course and year=@year";
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@code", exam);
       command.Parameters.AddWithValue("@course", course);
       command.Parameters.AddWithValue("@year", year);
@@ -262,7 +259,7 @@ public class ExamDAO
 
       if (reader.Read())
       {
-        _connection.Close();
+        Connection.Close();
         return true;
       }
 
@@ -270,11 +267,11 @@ public class ExamDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return false;
   }
 }

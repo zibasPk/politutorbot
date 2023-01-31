@@ -4,33 +4,29 @@ using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class CourseDAO
+public class CourseDAO: DAO
 {
-  private readonly MySqlConnection _connection;
-
-  public CourseDAO(MySqlConnection connection)
+  public CourseDAO(MySqlConnection connection): base(connection)
   {
-    _connection = connection;
   }
-
 
   /// <summary>
   /// Deletes all courses and tutorings from the db
   /// </summary>
   public void DeleteCourses()
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "DELETE FROM course ";
 
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.ExecuteNonQuery();
       Log.Debug("All courses where deleted from db");
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -44,12 +40,12 @@ public class CourseDAO
   public bool AddCourse(List<Course> courses, out string errorMessage)
   {
     errorMessage = "";
-    _connection.Open();
+    Connection.Open();
     const string query = "INSERT INTO course (name,school) " +
                          "VALUES (@name,@school)";
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
 
 
       foreach (var course in courses)
@@ -73,14 +69,14 @@ public class CourseDAO
               break;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Adding new course: {course.Name} with non-existing school: {course.School}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Tried adding new exam: {course.Name} with an empty school value";
               Log.Warning(errorMessage);
@@ -91,13 +87,13 @@ public class CourseDAO
         }
       }
 
-      _connection.Close();
+      Connection.Close();
       return true;
     }
     catch (Exception e)
     {
       Console.WriteLine(e);
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -120,12 +116,12 @@ public class CourseDAO
   /// <returns>List of courses in given school.</returns>
   public List<string> FindCourses()
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from course";
     var courses = new List<string>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       var reader = command.ExecuteReader();
 
       if (!reader.HasRows)
@@ -136,11 +132,11 @@ public class CourseDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return courses;
   }
 
@@ -151,12 +147,12 @@ public class CourseDAO
   /// <returns>List of courses in given school.</returns>
   public List<string> FindCourses(string school)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from course WHERE school=@school";
     var courses = new List<string>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@school", school);
       command.Prepare();
 
@@ -170,11 +166,11 @@ public class CourseDAO
     }
     catch (Exception e)
     {
-      _connection.Close();
+      Connection.Close();
       Console.WriteLine(e);
     }
 
-    _connection.Close();
+    Connection.Close();
     return courses;
   }
 
@@ -186,11 +182,11 @@ public class CourseDAO
   /// <returns>true if the specified School contains the given Course; otherwise, false</returns>
   public bool IsCourseInSchool(string course, string school)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * from course WHERE name=@name";
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@name", course);
       command.Prepare();
 
@@ -201,7 +197,7 @@ public class CourseDAO
         var foundSchool = reader.GetString("school");
         if (foundSchool == school)
         {
-          _connection.Close();
+          Connection.Close();
           return true;
         }
 
@@ -215,11 +211,11 @@ public class CourseDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return false;
   }
 
@@ -230,12 +226,12 @@ public class CourseDAO
   /// <returns>Available years for course.</returns>
   public List<string> AvailableYearsInCourse(string course)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT DISTINCT year from exam WHERE course=@course";
     var years = new List<string>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@course", course);
       command.Prepare();
 
@@ -253,11 +249,11 @@ public class CourseDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return years;
   }
 }

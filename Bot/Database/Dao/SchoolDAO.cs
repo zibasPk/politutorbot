@@ -3,13 +3,10 @@ using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class SchoolDAO
+public class SchoolDAO : DAO
 {
-    private readonly MySqlConnection _connection;
-
-    public SchoolDAO(MySqlConnection connection)
+    public SchoolDAO(MySqlConnection connection) : base(connection)
     {
-        _connection = connection;
     }
 
     /// <summary>
@@ -18,12 +15,12 @@ public class SchoolDAO
     /// <returns>List of schools.</returns>
     public List<string> FindSchools()
     {
-        _connection.Open();
+        Connection.Open();
         const string query = "SELECT * from school";
         var schools = new List<string>();
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
 
             var reader = command.ExecuteReader();
 
@@ -35,11 +32,11 @@ public class SchoolDAO
         }
         catch (Exception)
         {
-            _connection.Close();
+            Connection.Close();
             throw;
         }
 
-        _connection.Close();
+        Connection.Close();
         return schools;
     }
 }
