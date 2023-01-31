@@ -1,3 +1,4 @@
+using System.Dynamic;
 using System.Text.RegularExpressions;
 using Bot.configs;
 using Bot.Constants;
@@ -74,7 +75,7 @@ public static class WebServer
     app.MapGet("/reservations/{value?}", ReservationEndpoints.FetchReservations).RequireAuthorization();
     app.MapGet("/students", StudentEndpoints.FetchStudents).RequireAuthorization();
     app.MapGet("/course", CourseEndpoints.FetchCourses).RequireAuthorization();
-    app.MapGet("/history/{content}", FetchHistory).RequireAuthorization();
+    app.MapGet("/history/{content}/{contentType?}", FetchHistory).RequireAuthorization();
 
 
     // Put endpoint
@@ -102,24 +103,34 @@ public static class WebServer
     app.Urls.Add(url);
     app.Run();
   }
-  
+
   private static void FetchHistory(string content, string? contentType, HttpResponse response)
   {
     try
     {
+      var historyService = new HistoryDAO(DbConnection.GetMySqlConnection());
       switch (content)
       {
         case "tutorings":
-          if (contentType == "activated")
+          if (contentType == "active")
           {
-            response.StatusCode = StatusCodes.Status501NotImplemented;
+            var activeTutoringHistory = historyService.FindActiveTutoringHistory(out var activeHeaders);
+            var result = new { header = activeHeaders, content = activeTutoringHistory };
+            response.ContentType = "application/json; charset=utf-8";
+            response.WriteAsync(JsonConvert.SerializeObject(result));
             return;
           }
 
-          response.StatusCode = StatusCodes.Status501NotImplemented;
+          var tutoringHistory = historyService.FindTutoringHistory(out var tutoringHeaders);
+          var tutoringResult = new { header = tutoringHeaders, content = tutoringHistory };
+          response.ContentType = "application/json; charset=utf-8";
+          response.WriteAsync(JsonConvert.SerializeObject(tutoringResult));
           return;
         case "reservations":
-          response.StatusCode = StatusCodes.Status501NotImplemented;
+          var reservationHistory = historyService.FindReservationHistory(out var reservationHeaders);
+          var reservationResult = new { header = reservationHeaders, content = reservationHistory };
+          response.ContentType = "application/json; charset=utf-8";
+          response.WriteAsync(JsonConvert.SerializeObject(reservationResult));
           return;
         default:
           response.StatusCode = StatusCodes.Status404NotFound;
@@ -132,5 +143,4 @@ public static class WebServer
       response.StatusCode = StatusCodes.Status502BadGateway;
     }
   }
-  
 }
