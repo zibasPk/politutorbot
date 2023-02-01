@@ -13,6 +13,7 @@ import { Button } from 'react-bootstrap';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { allowedExtensions } from '../enabledStudents/EnabledStudents';
 import { makeCall } from '../../MakeCall';
+import UploadForm from '../utils/UploadForm';
 
 
 function ManualActivation(props)
@@ -86,20 +87,19 @@ function ManualActivation(props)
 
   }
 
-  const sendFile = (tutorings) =>
+  const parseTutoringsFile = (file, alertSetter, sendFile) =>
   {
     // If user clicks the parse button without
     // a file we show a error
-    if (!tutorings)
+    if (!file)
     {
-      setAlert("Inserire un file valido.");
+      alertSetter("Nessun file selezionato");
       return;
     };
 
     // Initialize a reader which allows user
     // to read any file or blob.
     const reader = new FileReader();
-
 
     // Event listener on reader when the file
     // loads, we parse it and send the data.
@@ -125,23 +125,22 @@ function ManualActivation(props)
         alertMsg = validateTutoring(tutoring);
         if (alertMsg != null)
         {
-          setAlert("Errore nei dati per (tutor: "
+          alertSetter("Errore nei dati per (tutor: "
             + tutoring.TutorCode + " studente: " + tutoring.StudentCode + "): " + alertMsg);
           return;
         }
       }
-
       if (alertMsg == null)
-        sendTutorings(parsedData);
+        sendFile(parsedData);
     };
-    reader.readAsText(tutorings);
+    reader.readAsText(file);
   }
 
   const sendTutorings = async (tutorings) =>
   {
-    let status ={code: 0}
-    let result = await makeCall(configData.botApiUrl + '/tutoring/start', 'POST','application/json', true,
-    JSON.stringify(tutorings), status);
+    let status = { code: 0 }
+    let result = await makeCall(configData.botApiUrl + '/tutoring/start', 'POST', 'application/json', true,
+      JSON.stringify(tutorings), status);
 
     if (status.code !== 200)
     {
@@ -211,22 +210,22 @@ function ManualActivation(props)
         </Button>
       </div>
       <div className={styles.AlertText}>{alertText}</div>
-      <Form.Group controlId="formFileEnable" className="mb-3">
-        <Form.Label>Carica File CSV</Form.Label>
-        <InfoIconBis content={
-          <>
-            <div>Inserire un file cvs con righe come da figura:</div>
-            <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-            <img src={examplePic}></img>
-          </>
-        } />
-        <div className={styles.inputDiv}>
-          <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
-          <FileUploadIcon className={styles.actionBox}
-            onClick={() => sendFile(file)} />
-        </div>
-      </Form.Group>
-
+      <div className={styles.inputDiv}>
+        <UploadForm
+          formText="Carica File CSV con i tutoraggi da attivare"
+          infoContent=
+          {
+            <>
+              <div>Inserire un file cvs con righe come da figura:</div>
+              <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+              <img src={examplePic}></img>
+            </>
+          }
+          uploadEndPoint="/tutoring/start"
+          parseData={(file, alertSetter, sendFile) => parseTutoringsFile(file, alertSetter, sendFile)}
+          callBack={() => props.onChange()}
+        />
+      </div>
     </>);
 }
 
