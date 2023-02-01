@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 
 import styles from "./ActiveTutorings.module.css";
 import configData from "../../config/config.json";
@@ -6,12 +6,9 @@ import validationConfig from "../../config/validation-config.json";
 import examplePic from "../../assets/activate-tutoring-example.png"
 import Papa from "papaparse";
 
-import InfoIconBis from '../utils/InfoIconBis';
 
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import { allowedExtensions } from '../enabledStudents/EnabledStudents';
 import { makeCall } from '../../MakeCall';
 import UploadForm from '../utils/UploadForm';
 
@@ -19,7 +16,6 @@ import UploadForm from '../utils/UploadForm';
 function ManualActivation(props)
 {
   const [checkBoxState, setCheckBox] = useState(0);
-  const [file, setFile] = useState(null);
   const [alertText, setAlert] = useState("");
 
 
@@ -64,28 +60,7 @@ function ManualActivation(props)
     setAlert("");
   }
 
-  const handleFileChange = (e) =>
-  {
-    if (e.target.files.length)
-    {
-      const inputFile = e.target.files[0]
 
-      // Check the file extensions, if it not
-      // included in the allowed extensions
-      // we show the error
-      const fileExtension = inputFile?.type.split("/")[1];
-      if (!allowedExtensions.includes(fileExtension))
-      {
-        setFile(null);
-        setAlert("File inserito non del formato .csv")
-        return;
-      }
-
-      setFile(inputFile);
-      setAlert("");
-    }
-
-  }
 
   const parseTutoringsFile = (file, alertSetter, sendFile) =>
   {
@@ -218,7 +193,7 @@ function ManualActivation(props)
             <>
               <div>Inserire un file cvs con righe come da figura:</div>
               <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-              <img src={examplePic}></img>
+              <img src={examplePic} alt="immagine mancante"></img>
             </>
           }
           uploadEndPoint="/tutoring/start"

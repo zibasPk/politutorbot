@@ -157,7 +157,7 @@ class Table extends Component {
         return <td key={i}>{props.row[key].toLocaleString()}</td>;
       }
 
-      if (props.row[key] == "OFA") {
+      if (props.row[key] === "OFA") {
         return <td key={i} className={styles.tdCentered}>OFA</td>;
       }
 

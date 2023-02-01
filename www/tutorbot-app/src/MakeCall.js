@@ -26,7 +26,6 @@ export async function makeCall(url, method, contentType, hasAuth, body, status)
 
   let respContentType = response.headers.get('Content-Type');
 
-  console.log(respContentType);
   if (respContentType.split(";")[0] === 'application/json')
     return await response.json();
   if (respContentType.split(";")[0] === 'text/html')

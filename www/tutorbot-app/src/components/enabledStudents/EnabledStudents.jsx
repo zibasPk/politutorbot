@@ -6,10 +6,8 @@ import validationConfig from "../../config/validation-config.json"
 import Papa from "papaparse";
 
 import Form from 'react-bootstrap/Form';
-import InfoIcon from '../utils/InfoIcon';
 import RefreshableComponent from '../Interfaces';
 import { CircularProgress } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { makeCall } from '../../MakeCall';
 import UploadForm from '../utils/UploadForm';

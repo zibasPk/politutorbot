@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import styles from './DataManagement.module.css'
 import configData from "../../config/config.json";
@@ -83,7 +83,6 @@ export default function CourseData()
 
   const validateCourse = (course) =>
   {
-    console.log(course);
     if (!course.Name)
       return 'Nome Corso mancante';
 
@@ -108,7 +107,7 @@ export default function CourseData()
               <>
                 <div>Inserire un file .csv con righe come da figura:</div>
                 <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-                <img src={examplePic}></img>
+                <img src={examplePic} alt="immagine mancante"></img>
               </>}
             uploadEndPoint="/course/add"
             parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
@@ -141,7 +140,7 @@ function DeleteCourses()
     let result = await makeCall(configData.botApiUrl + '/courses/', 'DELETE', null, true, null, status);
 
     if (status.code !== 200) {
-      if (result == "") {
+      if (result === "") {
         return;
       }
       setText(result);
