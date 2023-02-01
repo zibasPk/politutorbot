@@ -24,9 +24,11 @@ export async function makeCall(url, method, contentType, hasAuth, body, status)
 
   status.code = response.status;
 
-  if (contentType === 'application/json')
-   {
-    return await response.json();}
-  if (contentType === 'text/html')
+  let respContentType = response.headers.get('Content-Type');
+
+  console.log(respContentType);
+  if (respContentType.split(";")[0] === 'application/json')
+    return await response.json();
+  if (respContentType.split(";")[0] === 'text/html')
     return await response.text();
 }
