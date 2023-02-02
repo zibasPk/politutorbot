@@ -45,13 +45,11 @@ public static class TutorEndPoints
       response.StatusCode = StatusCodes.Status502BadGateway;
       response.ContentType = "text/html; charset=utf-8";
       response.WriteAsync($"Error in contract state change for tutor: {tutorCode}");
-      return;
     }
     catch (MySqlException e)
     {
       Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status502BadGateway;
-      return;
     }
   }
 
@@ -75,7 +73,7 @@ public static class TutorEndPoints
       Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status400BadRequest;
       response.ContentType = "text/html; charset=utf-8";
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -84,7 +82,7 @@ public static class TutorEndPoints
       // Invalid request body
       response.StatusCode = StatusCodes.Status400BadRequest;
       response.ContentType = "text/html; charset=utf-8";
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -126,7 +124,7 @@ public static class TutorEndPoints
           // if (tutorService.AddTutor(tutorings[0])) return;
           // response.StatusCode = StatusCodes.Status400BadRequest;
           // response.ContentType = "application/json; charset=utf-8";
-          await response.WriteAsync($"tried disabling non enabled student code");
+          response.StatusCode = StatusCodes.Status501NotImplemented;
           return;
         default:
           response.StatusCode = StatusCodes.Status404NotFound;
@@ -140,7 +138,7 @@ public static class TutorEndPoints
     }
   }
   
-  public static async void DeleteTutors(HttpResponse response, HttpRequest request)
+  public static void DeleteTutors(HttpResponse response, HttpRequest request)
   {
     try
     {

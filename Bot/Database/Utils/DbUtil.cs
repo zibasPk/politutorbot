@@ -56,7 +56,7 @@ public static class DbUtil
         return ExecuteSelectSlave(query, connection, args);
     }
 
-    private static DataTable? ExecuteSelectSlave(string query, MySqlConnection connection,
+    private static DataTable ExecuteSelectSlave(string query, MySqlConnection connection,
         Dictionary<string, object?>? args = null)
     {
         var ret = new DataSet();

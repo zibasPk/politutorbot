@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Bot.WebServer.EndPoints;
 
-public class CourseEndpoints
+public static class CourseEndpoints
 {
   public static void FetchCourses(HttpResponse response)
   {
@@ -33,7 +33,7 @@ public class CourseEndpoints
     }
 
     // Read request body
-    List<Course>? courses = null;
+    List<Course>? courses;
     try
     {
       courses = await request.ReadFromJsonAsync<List<Course>>();
@@ -43,7 +43,7 @@ public class CourseEndpoints
       // Invalid request body
       Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -51,7 +51,7 @@ public class CourseEndpoints
     {
       // Invalid request body
       response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -94,7 +94,7 @@ public class CourseEndpoints
     }
   }
   
-  public static async void DeleteCourses(HttpResponse response, HttpRequest request)
+  public static void DeleteCourses(HttpResponse response, HttpRequest request)
   {
     try
     {

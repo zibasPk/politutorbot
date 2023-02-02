@@ -36,10 +36,10 @@ public class UserDAO : DAO
     }
 
     /// <summary>
-    /// Checks if user has already a saved personal code.
+    /// Checks if user has already a saved student code.
     /// </summary>
     /// <param name="userId">Telegram userId of user for which to check.</param>
-    /// <returns>true user has a saved personal code; otherwise false.</returns>
+    /// <returns>true user has a saved student code; otherwise false.</returns>
     public bool IsUserLinked(long userId)
     {
         Connection.Open();

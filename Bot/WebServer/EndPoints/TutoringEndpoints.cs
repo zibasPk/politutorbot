@@ -125,7 +125,7 @@ public static class TutoringEndpoints
           // Invalid request body
           response.StatusCode = StatusCodes.Status400BadRequest;
           response.ContentType = "text/html; charset=utf-8";
-          await response.WriteAsync($"invalid request body");
+          await response.WriteAsync("invalid request body");
           return;
         }
 
@@ -134,7 +134,7 @@ public static class TutoringEndpoints
           // invalid request body
           response.StatusCode = StatusCodes.Status400BadRequest;
           response.ContentType = "text/html; charset=utf-8";
-          await response.WriteAsync($"invalid request body");
+          await response.WriteAsync("invalid request body");
           return;
         }
 
@@ -158,7 +158,7 @@ public static class TutoringEndpoints
       {
         response.StatusCode = StatusCodes.Status400BadRequest;
         response.ContentType = "text/html; charset=utf-8";
-        await response.WriteAsync($"invalid duration parameter");
+        await response.WriteAsync("invalid duration parameter");
         return;
       }
 
@@ -198,7 +198,7 @@ public static class TutoringEndpoints
           Console.Write(e);
           response.StatusCode = StatusCodes.Status400BadRequest;
           response.ContentType = "text/html; charset=utf-8";
-          await response.WriteAsync($"invalid request body");
+          await response.WriteAsync("invalid request body");
           return;
         }
 
@@ -218,14 +218,13 @@ public static class TutoringEndpoints
         // Invalid request body
         response.StatusCode = StatusCodes.Status400BadRequest;
         response.ContentType = "text/html; charset=utf-8";
-        await response.WriteAsync($"student code missing in url");
+        await response.WriteAsync("student code missing in url");
         return;
       }
 
       await StartTutoring(
-        new TutorToStudentToExam(examCode.HasValue, tutorCode!.Value, studentCode.Value, examCode),
+        new TutorToStudentToExam(examCode.HasValue, tutorCode.Value, studentCode.Value, examCode),
         response);
-      return;
     }
     catch (MySqlException e)
     {
@@ -312,7 +311,7 @@ public static class TutoringEndpoints
   public static async void RemoveTutoring(HttpResponse response, HttpRequest request)
   {
     // Enable all given students
-    List<TutorCodeToExamCode>? tutorings = null;
+    List<TutorCodeToExamCode>? tutorings;
     try
     {
       tutorings = await request.ReadFromJsonAsync<List<TutorCodeToExamCode>>();
@@ -323,7 +322,7 @@ public static class TutoringEndpoints
       Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status400BadRequest;
       response.ContentType = "text/html; charset=utf-8";
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -332,7 +331,7 @@ public static class TutoringEndpoints
       // Invalid request body
       response.StatusCode = StatusCodes.Status400BadRequest;
       response.ContentType = "text/html; charset=utf-8";
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -356,7 +355,6 @@ public static class TutoringEndpoints
       response.StatusCode = StatusCodes.Status400BadRequest;
       response.ContentType = "text/html; charset=utf-8";
       await response.WriteAsync($"Invalid tutorings in request body: {errorMessage}");
-      return;
     }
     catch (MySqlException e)
     {

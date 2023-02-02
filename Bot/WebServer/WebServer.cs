@@ -1,10 +1,6 @@
-using System.Dynamic;
-using System.Text.RegularExpressions;
 using Bot.configs;
-using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
-using Bot.Database.Records;
 using Bot.WebServer.EndPoints;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -16,8 +12,6 @@ using Serilog;
 using Serilog.Core;
 
 namespace Bot.WebServer;
-
-public record struct UserToPersonCode(string UserId, string PersonCode);
 
 public static class WebServer
 {

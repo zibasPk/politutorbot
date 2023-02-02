@@ -41,7 +41,7 @@ public static class StudentEndpoints
       if (!studentCode.HasValue)
       {
         // Enable all given students
-        List<int>? studentCodes = null;
+        List<int>? studentCodes;
         try
         {
           studentCodes = await request.ReadFromJsonAsync<List<int>>();
@@ -51,7 +51,7 @@ public static class StudentEndpoints
           // Invalid request body
           response.StatusCode = StatusCodes.Status400BadRequest;
           response.ContentType = "text/html; charset=utf-8";
-          await response.WriteAsync($"invalid request body");
+          await response.WriteAsync("invalid request body");
           return;
         }
 
@@ -60,7 +60,7 @@ public static class StudentEndpoints
           // Invalid request body
           response.StatusCode = StatusCodes.Status400BadRequest;
           response.ContentType = "text/html; charset=utf-8";
-          await response.WriteAsync($"invalid request body");
+          await response.WriteAsync("invalid request body");
           return;
         }
 
@@ -81,13 +81,13 @@ public static class StudentEndpoints
             if (studentService.EnableStudent(studentCodes)) return;
             response.StatusCode = StatusCodes.Status400BadRequest;
             response.ContentType = "text/html; charset=utf-8";
-            await response.WriteAsync($"duplicate student code in request body");
+            await response.WriteAsync("duplicate student code in request body");
             return;
           case "disable":
             if (studentService.DisableStudent(studentCodes)) return;
             response.StatusCode = StatusCodes.Status400BadRequest;
             response.ContentType = "text/html; charset=utf-8";
-            await response.WriteAsync($"tried disabling non enabled student code");
+            await response.WriteAsync("tried disabling non enabled student code");
             return;
           default:
             response.StatusCode = StatusCodes.Status404NotFound;

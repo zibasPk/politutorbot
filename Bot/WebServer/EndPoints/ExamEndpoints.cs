@@ -8,7 +8,7 @@ using MySql.Data.MySqlClient;
 
 namespace Bot.WebServer.EndPoints;
 
-public class ExamEndpoints
+public static class ExamEndpoints
 {
   public static async void HandleExamAction(string action, HttpResponse response, HttpRequest request)
   {
@@ -29,7 +29,7 @@ public class ExamEndpoints
       // Invalid request body
       Console.WriteLine(e);
       response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -37,7 +37,7 @@ public class ExamEndpoints
     {
       // Invalid request body
       response.StatusCode = StatusCodes.Status400BadRequest;
-      await response.WriteAsync($"invalid request body");
+      await response.WriteAsync("invalid request body");
       return;
     }
 
@@ -77,7 +77,7 @@ public class ExamEndpoints
     }
   }
   
-  public static async void DeleteExams(HttpResponse response, HttpRequest request)
+  public static void DeleteExams(HttpResponse response, HttpRequest request)
   {
     try
     {

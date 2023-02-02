@@ -165,7 +165,6 @@ public class ExamDAO : DAO
   {
     Connection.Open();
     const string query = "SELECT * from exam WHERE code=@code";
-    var exams = new List<string>();
     try
     {
       var command = new MySqlCommand(query, Connection);

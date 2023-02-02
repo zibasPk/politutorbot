@@ -13,8 +13,8 @@ public static class ReplyTexts
   public const string NoOFATutoring = "Ci dispiace, al momento nessun tutor è disponibile per gli OFA";
 
   public static readonly string LockedUser = $"Sei bloccato dal fare nuove richieste per {GlobalConfig.BotConfig!.TutorLockHours} " +
-                                             $"ore dalla tua precedente richiesta " +
-                                             $"o fino a che la segreteria non l'avrà elaborata.";
+                                             "ore dalla tua precedente richiesta " +
+                                             "o fino a che la segreteria non l'avrà elaborata.";
 
   public const string AlreadyOngoingTutoring = "Sei bloccato dal fare nuove richieste fino alla conclusione del tuo tutoraggio corrente.";
 

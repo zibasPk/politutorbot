@@ -69,7 +69,7 @@ public class ReservationDAO : DAO
             Connection.Close();
             return reservation;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             Connection.Close();
             throw;
@@ -212,7 +212,7 @@ public class ReservationDAO : DAO
             reader = command.ExecuteReader();
             if (!reader.HasRows)
             {
-                // checking if reservation is for tutoring with aviable tutoring
+                // checking if reservation is for tutoring with available tutoring
                 Log.Debug("No available reservations with id: {0} found in db ", reservationId);
                 Connection.Close();
                 return false;

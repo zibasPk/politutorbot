@@ -44,7 +44,7 @@ public class HistoryDAO : DAO
     columnNames = new List<string>();
     try
     {
-      var data = DbUtil.ExecuteSelect(query, Connection, null);
+      var data = DbUtil.ExecuteSelect(query, Connection);
       if (data == null)
         return objRows;
 

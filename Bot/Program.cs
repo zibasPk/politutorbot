@@ -33,7 +33,7 @@ internal static class Program
 
       // Bot initialization
       var botClient = new TelegramBotClient(GlobalConfig.BotConfig!.BotToken);
-      var me = await botClient.GetMeAsync();
+      var me = await botClient.GetMeAsync(cancellationToken: cts.Token);
       
       var receiverOptions = new ReceiverOptions
       {
