@@ -10,6 +10,7 @@ import EndedTutoringsModal from './EndedTutoringsModal';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import ManualActivation from './ManualActivation';
+import { makeCall } from '../../MakeCall';
 
 const ActiveHeaders = {
   TutorCode: "Cod. Matr. Tutor",
@@ -44,48 +45,42 @@ class ActiveTutorings extends RefreshableComponent
     }
   }
 
-  refreshData()
+  async refreshData()
   {
-    fetch(configData.botApiUrl + '/tutoring/active', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((tutorings) =>
-      {
-        tutorings.forEach((elem) =>
-        {
-          if (elem.ExamCode === null)
-            elem.ExamCode = "OFA"
-          elem.StartDate = new Date(elem.StartDate);
-        });
-        this.setState({
-          ActiveTutoringsArray: tutorings,
-        })
-      })
+    let status = { code: 0 };
 
-    fetch(configData.botApiUrl + '/tutoring/ended', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((tutorings) =>
-      {
-        tutorings.forEach((elem) =>
-        {
-          if (elem.ExamCode === null)
-            elem.ExamCode = "OFA"
-          elem.StartDate = new Date(elem.StartDate);
-          elem.EndDate = new Date(elem.EndDate);
-        });
+    // fetch and format active tutorings
+    let activeTutorings = await makeCall(configData.botApiUrl + '/tutoring/active', 'GET', 'application/json', true, null, status);
 
-        this.setState({
-          EndedTutoringsArray: tutorings,
-        })
-      });
+    const formatActiveTutoring = (tutoring) => {
+      if (tutoring.ExamCode === null)
+          tutoring.ExamCode = "OFA"
+        tutoring.StartDate = new Date(tutoring.StartDate);
+    }
+
+    activeTutorings.forEach((elem) =>
+    {
+      formatActiveTutoring(elem);
+    });
+    this.setState({
+      ActiveTutoringsArray: activeTutorings,
+    });
+
+    // fetch and format ended tutorings
+    let endedTutorings = await makeCall(configData.botApiUrl + '/tutoring/ended', 'GET', 'application/json', true, null, status);
+
+    endedTutorings.forEach((elem) =>
+    {
+      formatActiveTutoring(elem);
+      elem.EndDate = new Date(elem.EndDate);
+    });
+
+    this.setState({
+      EndedTutoringsArray: endedTutorings,
+    });
   }
+
+  
 
   render()
   {
@@ -93,7 +88,7 @@ class ActiveTutorings extends RefreshableComponent
       <>
         <div className={styles.content} >
           <h1>Attivazione Manuale</h1>
-          <ManualActivation onChange={() => this.refreshData()}/>
+          <ManualActivation onChange={() => this.refreshData()} />
           <h1>Tutoraggi Attivi</h1>
           {this.state.ActiveTutoringsArray === undefined ? <CircularProgress /> :
             <>

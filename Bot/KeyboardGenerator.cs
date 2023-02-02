@@ -50,7 +50,7 @@ public static class KeyboardGenerator
 
     public static ReplyKeyboardMarkup YesOrNoKeyboard()
     {
-        var items = new List<string>() { "Si", "No" };
+        var items = new List<string> { "Si", "No" };
         return GenerateKeyboardMarkup(items, 2, true);
     }
 
@@ -103,7 +103,7 @@ public static class KeyboardGenerator
         }
 
         if (hasBackButton)
-            buttons.Add(new List<KeyboardButton>() { new("indietro") });
+            buttons.Add(new List<KeyboardButton> { new("indietro") });
         return new ReplyKeyboardMarkup(buttons)
         {
             ResizeKeyboard = true
@@ -131,7 +131,7 @@ public static class KeyboardGenerator
         }
 
         if (hasBackButton)
-            buttons.Add(new List<KeyboardButton>() { new("indietro") });
+            buttons.Add(new List<KeyboardButton> { new("indietro") });
         return new ReplyKeyboardMarkup(buttons)
         {
             ResizeKeyboard = true

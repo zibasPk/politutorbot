@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form';
 
 import InfoIconBis from '../utils/InfoIconBis';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { makeCall } from "../../MakeCall";
 
 export const allowedExtensions = ["csv", "vnd.ms-excel"];
 
@@ -57,34 +58,23 @@ function UploadForm(props)
   }
 
 
-  const sendFile = (tutorings) =>
+  const sendFile = async (tutorings) =>
   {
-    fetch(configData.botApiUrl + props.uploadEndPoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      },
-      body: JSON.stringify(tutorings)
-    }).then(resp =>
+    let status = { code: 0 }
+    let result = await makeCall(configData.botApiUrl + props.uploadEndPoint, "POST","application/json",true , JSON.stringify(tutorings), status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-      if (props.callBack)
-        props.callBack()
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          setFileAlertText("Errore nella richiesta: " + text)
-          return;
-        }
-        // Hide alert after a positive response
-        setFileAlertClass(styles.successText);
-        setFileAlertText("Caricamento avvenuto con successo");
-      })
+      setFileAlertText("Errore nella richiesta: " + result);
+      return;
+    }
+    // Hide alert after a positive response
+    setFileAlertClass(styles.successText);
+    setFileAlertText("Caricamento avvenuto con successo");
+    if (props.callBack)
+      props.callBack();
   }
+
 
 
 

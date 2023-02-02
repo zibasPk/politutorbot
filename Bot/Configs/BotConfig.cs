@@ -1,6 +1,4 @@
 using Bot.Constants;
-using Newtonsoft.Json;
-using Serilog;
 
 namespace Bot.configs;
 

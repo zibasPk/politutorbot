@@ -17,6 +17,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { makeCall } from '../../MakeCall';
 
 export default function DataHistory()
 {
@@ -43,13 +44,20 @@ export default function DataHistory()
     className={styles.btnExpand}
   />;
 
-  const exportCsv = async (title, csvFields, dataArray) =>
+  const exportCsv = async (title, historyType) =>
   {
+    let history = await fetchHistoryData(historyType);
 
+    if (history === null)
+      return;
+
+    if (history.content == null)
+      return;
+    
     const csv = jsonToCSV(
       {
-        fields: csvFields,
-        data: dataArray
+        fields: history.header,
+        data: history.content
       }, { delimiter: ";" });
 
     var blob = new Blob([csv], { type: 'text/plain' });
@@ -60,18 +68,45 @@ export default function DataHistory()
     element.click();
   }
 
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const fetchHistoryData = async (type) =>
+  {
+    let status = { code: 0 };
+    let history = await makeCall(configData.botApiUrl + "/history/" + type, 'GET',"application/json", true, null, status);
+    if (status.code !== 200)
+    {
+      setErrorMsg("Errore nel recupero dei dati storici");
+      return null;
+    }
+    setErrorMsg("");
+    return history;
+  }
+
 
   return (
     <>
       <div className={styles.dropDownContent}>
         <h1>Download Dati Storici{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.historyDataCont}>
-          <p><Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Svolti</Form.Label>
-            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => exportCsv()} /></p>
+          <div className={styles.errorMsg}>{errorMsg}</div>
+          <p>
+            <Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Svolti</Form.Label>
+            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() =>
+              exportCsv("storico_tutoraggi_attivi.csv", "tutorings/active")} />
+          </p>
 
-          <p><Form.Label className={styles.csvDownloadLable}>Download storico Prenotazioni</Form.Label>
-            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => exportCsv()} /></p>
+          <p>
+            <Form.Label className={styles.csvDownloadLable}>Download storico Prenotazioni</Form.Label>
+            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => 
+              exportCsv("storico_prenotazioni.csv", "reservations")} />
+          </p>
 
+          <p>
+            <Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Disponibili</Form.Label>
+            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => 
+              exportCsv("storico_tutoraggi.csv", "tutorings")} />
+          </p>
         </Collapse>
       </div>
     </>

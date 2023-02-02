@@ -4,6 +4,7 @@ import configData from "../../config/config.json"
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import { makeCall } from "../../MakeCall";
 
 
 export default class ActiveTutoringsModal extends React.Component
@@ -36,7 +37,7 @@ export default class ActiveTutoringsModal extends React.Component
   }
 
 
-  tryEndingTutorings()
+  async tryEndingTutorings()
   {
     const temp = this.state.DurationList;
     if (temp.filter((x) => x.Duration === 0).length !== 0)
@@ -48,33 +49,23 @@ export default class ActiveTutoringsModal extends React.Component
       return;
     }
 
-    fetch(configData.botApiUrl + '/tutoring/end', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      },
-      body: JSON.stringify(this.state.DurationList)
-    }).then(resp =>
+    let status = {code: 0};
+    let result = await makeCall(configData.botApiUrl + '/tutoring/end', 'PUT', 'application/json', true,
+    JSON.stringify(this.state.DurationList), status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-      this.props.onModalEvent();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          this.setState({
-            AlertText: text
-          })
-          return;
-        }
-        // Hide alert after a positive response
-        this.setState({
-          AlertText: ""
-        })
+      this.setState({
+        AlertText: result,
       })
+      return;
+    }
+    this.props.onModalEvent();
+
+    // Hide alert after a positive response
+    this.setState({
+      AlertText: ""
+    });
   }
 
   changeDuration(index, value)

@@ -5,41 +5,29 @@ import styles from "./TutorManagement.module.css";
 import configData from "../../config/config.json";
 
 import { Button } from 'react-bootstrap';
+import { makeCall } from "../../MakeCall";
 
 function TutoringListModal(props)
 {
   const [alert, setAlert] = useState("");
 
-
-  const removeTutorings = () =>
+  const removeTutorings = async () =>
   {
     let toDelete = props.selectedContent.map((tutoring) =>
     {
       return { "TutorCode": tutoring.TutorCode, "ExamCode": tutoring.ExamCode }
     });
 
-    fetch(configData.botApiUrl + '/tutoring/', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      },
-      body: JSON.stringify(toDelete)
-    }).then(resp =>
-    {
-      if (!resp.ok)
-        return resp.text();
-      props.onModalEvent();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          setAlert(text);
-          return;
-        }
-      })
+    let status = { code: 0 };
+    let result = await makeCall(configData.botApiUrl + '/tutoring/', 'DELETE', 'application/json', true, 
+    JSON.stringify(toDelete), status);
 
+    if (status.code !== 200)
+    {
+      setAlert(result);
+      return;
+    }
+    props.onModalEvent();
   }
 
   const headerRow = Object.keys(props.contentHeaders).map((key, i) =>

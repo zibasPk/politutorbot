@@ -6,11 +6,11 @@ import validationConfig from "../../config/validation-config.json"
 import Papa from "papaparse";
 
 import Form from 'react-bootstrap/Form';
-import InfoIcon from '../utils/InfoIcon';
 import RefreshableComponent from '../Interfaces';
 import { CircularProgress } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { makeCall } from '../../MakeCall';
+import UploadForm from '../utils/UploadForm';
 
 export const allowedExtensions = ["csv", "vnd.ms-excel"];
 
@@ -29,20 +29,19 @@ export default class EnabledStudents extends RefreshableComponent
     };
   }
 
-  refreshData()
+  async refreshData()
   {
-    fetch(configData.botApiUrl + '/students', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((students) =>
-      {
-        this.setState({
-          EnabledStudents: students,
-        })
-      })
+    let status = { code: 0 };
+
+    let result = await makeCall(configData.botApiUrl + "/students", "GET", 'application/json', true, null, status);
+    if (status.code !== 200)
+    {
+      return;
+    }
+
+    this.setState({
+      EnabledStudents: result
+    });
   }
 
   changeStudentToEnable(value)
@@ -139,7 +138,7 @@ export default class EnabledStudents extends RefreshableComponent
     }
   }
 
-  enabledStudent()
+  async enabledStudent()
   {
     if (this.state.StudentToEnable == null || !this.state.StudentToEnable.toString().match(/^[1-9][0-9]{5}$/))
     {
@@ -157,34 +156,24 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
-    fetch(configData.botApiUrl + '/students/enable/' + this.state.StudentToEnable, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp =>
+    let status = { code: 0 };
+    let result = await makeCall(configData.botApiUrl + "/students/enable/" + this.state.StudentToEnable, "POST", "application/json", true, null, status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-      this.refreshData();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          this.setState({
-            AlertText: text,
-          })
-          return;
-        }
-        // Hide alert after a positive response
-        this.setState({
-          AlertText: ""
-        })
+      this.setState({
+        AlertText: result,
       })
+      return;
+    }
+
+    this.refreshData();
+    this.setState({
+      AlertText: ""
+    });
   }
 
-  disableStudent()
+  async disableStudent()
   {
     if (this.state.StudentToDisable == null || !this.state.StudentToDisable.toString().match(validationConfig.studentCodeRegex))
     {
@@ -202,42 +191,32 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
-    fetch(configData.botApiUrl + '/students/disable/' + this.state.StudentToDisable, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp =>
+    let status = { code: 0 };
+    let result = await makeCall(configData.botApiUrl + "/students/disable/" + this.state.StudentToDisable, "POST",
+      "application/json", true, null, status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-      this.refreshData();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          this.setState({
-            AlertText: text,
-          })
-          return;
-        }
-        // Hide alert after a positive response
-        this.setState({
-          AlertText: ""
-        })
+      this.setState({
+        AlertText: result,
       })
+      return;
+    }
+
+    this.refreshData();
+    // hide the alert on success
+    this.setState({
+      AlertText: ""
+    });
   }
 
-  sendStudents(students, action) 
+  parseStudentsFile(file, alertSetter, sendFile)
   {
     // If user clicks the parse button without
     // a file we show a error
-    if (!students)
+    if (!file)
     {
-      this.setState({
-        AlertText: "Inserire un file valido."
-      });
+      alertSetter("Nessun file selezionato");
       return;
     };
 
@@ -245,44 +224,47 @@ export default class EnabledStudents extends RefreshableComponent
     // to read any file or blob.
     const reader = new FileReader();
 
+
     // Event listener on reader when the file
     // loads, we parse it and send the data.
     reader.onload = async ({ target }) =>
     {
+      let alertMsg = null;
+
       const csv = Papa.parse(target.result, { header: false, skipEmptyLines: true });
       const parsedData = csv?.data;
       const formattedData = parsedData.map((line) => line[0]);
 
-      fetch(configData.botApiUrl + '/students/' + action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + btoa(configData.authCredentials),
-        },
-        body: JSON.stringify(formattedData)
-      }).then(resp =>
+      formattedData.forEach(element =>
       {
-        if (!resp.ok)
-          return resp.text();
-        this.refreshData();
-      })
-        .then((text) =>
+        alertMsg = this.validateStudent(element);
+        if (alertMsg != null)
         {
-          if (text !== undefined)
-          {
-            this.setState({
-              AlertText: text,
-            })
-            return;
-          }
-          // Hide alert after a positive response
-          this.setState({
-            AlertText: ""
-          })
-        })
+          alertSetter("Errore nei dati inseriti: " + alertMsg);
+          return;
+        }
+      });
+
+      if (alertMsg == null)
+      {
+        sendFile(formattedData);
+        return;
+      }
+
     };
-    reader.readAsText(students);
+    reader.readAsText(file);
   }
+
+  validateStudent(student)
+  {
+    if (!student.toString().match(validationConfig.studentCodeRegex))
+    {
+      return "Codice matricola " + student + " non valido";
+    }
+    return null;
+  }
+
+  
 
   render()
   {
@@ -305,15 +287,16 @@ export default class EnabledStudents extends RefreshableComponent
                   <FileUploadIcon className={styles.actionBox} onClick={() => this.enabledStudent()} />
                 </div>
               </Form.Group>
-              <Form.Group controlId="formFileEnable" className="mb-3">
-                <Form.Label>Carica File CSV</Form.Label>
-                <InfoIcon text="Caricare un file CVS contente un elenco (**in colonna**) di codici matricola da abilitare." />
-                <div className={styles.inputDiv}>
-                  <Form.Control type="file" onChange={(e) => this.handleEnabledFileChange(e)} />
-                  <FileUploadIcon className={styles.actionBox}
-                    onClick={() => this.sendStudents(this.state.StudentsToEnableFile, "enable")} />
-                </div>
-              </Form.Group>
+              <UploadForm
+                formText="Carica File CSV con le matricole da abilitare"
+                infoContent={
+                  <>
+                    <div>Caricare un file CVS contente un elenco <strong>in colonna</strong> di codici matricola da abilitare.</div>
+                  </>}
+                uploadEndPoint="/students/enable"
+                parseData={(file, alertSetter, sendFile) => this.parseStudentsFile(file, alertSetter, sendFile)}
+                callBack={() => this.refreshData()}
+              />
             </div>
             <div className={styles.removeFunctions}>
               <h1>Rimuovi Studenti</h1>
@@ -326,15 +309,16 @@ export default class EnabledStudents extends RefreshableComponent
                   <FileUploadIcon className={styles.actionBox} onClick={() => this.disableStudent()} />
                 </div>
               </Form.Group>
-              <Form.Group controlId="formFileRemove" className="mb-3">
-                <Form.Label>Carica File CSV</Form.Label>
-                <InfoIcon text="Caricare un file CVS contente un elenco (**in colonna**) di codici matricola da rimuovere." />
-                <div className={styles.inputDiv}>
-                  <Form.Control type="file" onChange={(e) => this.handleToDisableFileChange(e)}/>
-                  <FileUploadIcon className={styles.actionBox}
-                    onClick={() => this.sendStudents(this.state.StudentsToDisableFile, "disable")} />
-                </div>
-              </Form.Group>
+              <UploadForm
+                formText="Carica File CSV con le matricole da rimuovere"
+                infoContent={
+                  <>
+                    <div>Caricare un file CVS contente un elenco <strong>in colonna</strong> di codici matricola da rimuovere.</div>
+                  </>}
+                uploadEndPoint="/students/disable"
+                parseData={(file, alertSetter, sendFile) => this.parseStudentsFile(file, alertSetter, sendFile)}
+                callBack={() => this.refreshData()}
+              />
             </div>
           </div>
           {this.state.EnabledStudents === undefined ? <CircularProgress /> :

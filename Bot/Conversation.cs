@@ -3,7 +3,6 @@ using Bot.configs;
 using Bot.Constants;
 using Bot.Database.Records;
 using Bot.Enums;
-using Org.BouncyCastle.Crypto.Modes;
 using Serilog;
 using Timer = System.Timers.Timer;
 
@@ -110,6 +109,8 @@ public class Conversation
             UserState.Link => StudentCode != 0 ? StudentCode.ToString() : null,
             UserState.ReLink => StudentCode != 0 ? StudentCode.ToString() : null,
             UserState.Tutor => Tutor,
+            UserState.OFA => null,
+            UserState.OFATutor => Tutor,
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -142,7 +143,7 @@ public class Conversation
     /// <summary>
     /// Resets a conversation by erasing all data but the chatId. 
     /// </summary>
-    public async void ResetConversation()
+    public void ResetConversation()
     {
         if (!Monitor.TryEnter(ConvLock))
             return;

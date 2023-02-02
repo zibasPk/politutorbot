@@ -3,13 +3,10 @@ using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class UserDAO
+public class UserDAO : DAO
 {
-    private readonly MySqlConnection _connection;
-
-    public UserDAO(MySqlConnection connection)
+    public UserDAO(MySqlConnection connection): base(connection)
     {
-        _connection = connection;
     }
 
     /// <summary>
@@ -19,37 +16,37 @@ public class UserDAO
     /// <returns>true if removal is a success; otherwise false.</returns>
     public bool RemoveUser(long userId)
     {
-        _connection.Open();
+        Connection.Open();
         const string query = "DELETE FROM telegram_user WHERE userID=@userID";
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
             command.Parameters.AddWithValue("@userID", userId);
             command.Prepare();
             command.ExecuteNonQuery();
         }
         catch (Exception)
         {
-            _connection.Close();
+            Connection.Close();
             throw;
         }
 
-        _connection.Close();
+        Connection.Close();
         return true;
     }
 
     /// <summary>
-    /// Checks if user has already a saved personal code.
+    /// Checks if user has already a saved student code.
     /// </summary>
     /// <param name="userId">Telegram userId of user for which to check.</param>
-    /// <returns>true user has a saved personal code; otherwise false.</returns>
+    /// <returns>true user has a saved student code; otherwise false.</returns>
     public bool IsUserLinked(long userId)
     {
-        _connection.Open();
+        Connection.Open();
         const string query = "SELECT * from telegram_user WHERE userID=@userID";
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
             command.Parameters.AddWithValue("@userID", userId);
             command.Prepare();
 
@@ -57,7 +54,7 @@ public class UserDAO
 
             if (reader.HasRows)
             {
-                _connection.Close();
+                Connection.Close();
                 return true;
             }
 
@@ -65,11 +62,11 @@ public class UserDAO
         }
         catch (Exception)
         {
-            _connection.Close();
+            Connection.Close();
             throw;
         }
 
-        _connection.Close();
+        Connection.Close();
         return false;
     }
 
@@ -80,11 +77,11 @@ public class UserDAO
     /// <returns>Student number if found; otherwise null.</returns>
     public int? FindUserStudentCode(long userId)
     {
-        _connection.Open();
+        Connection.Open();
         const string query = "SELECT * from telegram_user WHERE userID=@userID";
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
             command.Parameters.AddWithValue("@userID", userId);
             command.Prepare();
 
@@ -92,7 +89,7 @@ public class UserDAO
             if (reader.Read())
             {
                 var result = reader.GetInt32("student_code");
-                _connection.Close();
+                Connection.Close();
                 return result;
             }
 
@@ -100,11 +97,11 @@ public class UserDAO
         }
         catch (Exception)
         {
-            _connection.Close();
+            Connection.Close();
             throw;
         }
 
-        _connection.Close();
+        Connection.Close();
         return null;
     }
 
@@ -115,11 +112,11 @@ public class UserDAO
     /// <param name="studentCode">Student number to save.</param>
     public void SaveUserLink(long userId, int studentCode)
     {
-        _connection.Open();
+        Connection.Open();
         const string query = "INSERT INTO telegram_user VALUES(@userID, @studentCode, DEFAULT)";
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
             command.Parameters.AddWithValue("@userID", userId);
             command.Parameters.AddWithValue("@studentCode", studentCode);
             command.Prepare();
@@ -128,11 +125,11 @@ public class UserDAO
         catch (Exception e)
         {
             Log.Error(e.Message);
-            _connection.Close();
+            Connection.Close();
             throw;
         }
 
-        _connection.Close();
+        Connection.Close();
     }
 
 
@@ -144,14 +141,14 @@ public class UserDAO
     /// <returns>true if user has an active tutoring; otherwise false.</returns>
     public bool HasUserOngoingTutoring(long userId)
     {
-        _connection.Open();
+        Connection.Open();
         const string query =
             "SELECT * FROM telegram_user " +
             "WHERE userID=@userId AND " +
             "student_code IN (select student FROM active_tutoring WHERE end_date IS NULL)";
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
             command.Parameters.AddWithValue("@userId", userId);
             command.Prepare();
 
@@ -160,18 +157,18 @@ public class UserDAO
             if (reader.HasRows)
             {
                 Log.Debug("User {user} has an already active tutoring", userId);
-                _connection.Close();
+                Connection.Close();
                 return true;
             }
         }
         catch (Exception)
         {
-            _connection.Close();
+            Connection.Close();
             throw;
         }
         
         Log.Debug("User {user} has no active tutoring", userId);
-        _connection.Close();
+        Connection.Close();
         return false;
     }
     
@@ -186,14 +183,14 @@ public class UserDAO
     {
         // A user is locked if he already has made a request in the last "hoursSinceLock" hours or
         // if there is a pending reservation
-        _connection.Open();
+        Connection.Open();
         const string query =
             "SELECT * FROM telegram_user " +
             "WHERE userID=@userId AND (lock_timestamp >= NOW() - INTERVAL @hours HOUR OR " +
             "student_code IN (select student FROM reservation WHERE is_processed = 0))";
         try
         {
-            var command = new MySqlCommand(query, _connection);
+            var command = new MySqlCommand(query, Connection);
             command.Parameters.AddWithValue("@userId", userId);
             command.Parameters.AddWithValue("@hours", hoursSinceLock);
             command.Prepare();
@@ -203,17 +200,17 @@ public class UserDAO
             if (reader.HasRows)
             {
                 Log.Debug("User {user} is currently locked", userId);
-                _connection.Close();
+                Connection.Close();
                 return true;
             }
         }
         catch (Exception)
         {
-            _connection.Close();
+            Connection.Close();
             throw;
         }
 
-        _connection.Close();
+        Connection.Close();
         return false;
     }
 }

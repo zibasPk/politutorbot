@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 
 import styles from "./ActiveTutorings.module.css";
 import configData from "../../config/config.json";
@@ -6,18 +6,16 @@ import validationConfig from "../../config/validation-config.json";
 import examplePic from "../../assets/activate-tutoring-example.png"
 import Papa from "papaparse";
 
-import InfoIconBis from '../utils/InfoIconBis';
 
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import { allowedExtensions } from '../enabledStudents/EnabledStudents';
+import { makeCall } from '../../MakeCall';
+import UploadForm from '../utils/UploadForm';
 
 
 function ManualActivation(props)
 {
   const [checkBoxState, setCheckBox] = useState(0);
-  const [file, setFile] = useState(null);
   const [alertText, setAlert] = useState("");
 
 
@@ -62,43 +60,21 @@ function ManualActivation(props)
     setAlert("");
   }
 
-  const handleFileChange = (e) =>
-  {
-    if (e.target.files.length)
-    {
-      const inputFile = e.target.files[0]
 
-      // Check the file extensions, if it not
-      // included in the allowed extensions
-      // we show the error
-      const fileExtension = inputFile?.type.split("/")[1];
-      if (!allowedExtensions.includes(fileExtension))
-      {
-        setFile(null);
-        setAlert("File inserito non del formato .csv")
-        return;
-      }
 
-      setFile(inputFile);
-      setAlert("");
-    }
-
-  }
-
-  const sendFile = (tutorings) =>
+  const parseTutoringsFile = (file, alertSetter, sendFile) =>
   {
     // If user clicks the parse button without
     // a file we show a error
-    if (!tutorings)
+    if (!file)
     {
-      setAlert("Inserire un file valido.");
+      alertSetter("Nessun file selezionato");
       return;
     };
 
     // Initialize a reader which allows user
     // to read any file or blob.
     const reader = new FileReader();
-
 
     // Event listener on reader when the file
     // loads, we parse it and send the data.
@@ -124,43 +100,32 @@ function ManualActivation(props)
         alertMsg = validateTutoring(tutoring);
         if (alertMsg != null)
         {
-          setAlert("Errore nei dati per (tutor: "
+          alertSetter("Errore nei dati per (tutor: "
             + tutoring.TutorCode + " studente: " + tutoring.StudentCode + "): " + alertMsg);
           return;
         }
       }
-
       if (alertMsg == null)
-        sendTutorings(parsedData);
+        sendFile(parsedData);
     };
-    reader.readAsText(tutorings);
+    reader.readAsText(file);
   }
 
-  const sendTutorings = (tutorings) =>
+  const sendTutorings = async (tutorings) =>
   {
-    fetch(configData.botApiUrl + '/tutoring/start', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      },
-      body: JSON.stringify(tutorings)
-    }).then(resp =>
+    let status = { code: 0 }
+    let result = await makeCall(configData.botApiUrl + '/tutoring/start', 'POST', 'application/json', true,
+      JSON.stringify(tutorings), status);
+
+    if (status.code !== 200)
     {
-      if (!resp.ok)
-        return resp.text();
-      props.onChange();
-    })
-      .then((text) =>
-      {
-        if (text !== undefined)
-        {
-          setAlert("Errore nella richiesta: " + text);
-          return;
-        }
-        // Hide alert after a positive response
-        setAlert("")
-      })
+      setAlert("Errore nella richiesta: " + result);
+      return;
+    }
+    props.onChange();
+
+    // Hide alert after a positive response
+    setAlert("");
   }
 
   const validateTutoring = (tutoring) =>
@@ -220,22 +185,22 @@ function ManualActivation(props)
         </Button>
       </div>
       <div className={styles.AlertText}>{alertText}</div>
-      <Form.Group controlId="formFileEnable" className="mb-3">
-        <Form.Label>Carica File CSV</Form.Label>
-        <InfoIconBis content={
-          <>
-            <div>Inserire un file cvs con righe come da figura:</div>
-            <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
-            <img src={examplePic}></img>
-          </>
-        } />
-        <div className={styles.inputDiv}>
-          <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
-          <FileUploadIcon className={styles.actionBox}
-            onClick={() => sendFile(file)} />
-        </div>
-      </Form.Group>
-
+      <div className={styles.inputDiv}>
+        <UploadForm
+          formText="Carica File CSV con i tutoraggi da attivare"
+          infoContent=
+          {
+            <>
+              <div>Inserire un file cvs con righe come da figura:</div>
+              <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+              <img src={examplePic} alt="immagine mancante"></img>
+            </>
+          }
+          uploadEndPoint="/tutoring/start"
+          parseData={(file, alertSetter, sendFile) => parseTutoringsFile(file, alertSetter, sendFile)}
+          callBack={() => props.onChange()}
+        />
+      </div>
     </>);
 }
 

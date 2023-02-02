@@ -1,18 +1,13 @@
-using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using Bot.Database.Records;
 using MySql.Data.MySqlClient;
 using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class TutorDAO
+public class TutorDAO: DAO
 {
-  private readonly MySqlConnection _connection;
-
-  public TutorDAO(MySqlConnection connection)
+  public TutorDAO(MySqlConnection connection): base(connection)
   {
-    _connection = connection;
   }
 
   /// <summary>
@@ -23,13 +18,13 @@ public class TutorDAO
   /// <returns>true if contract state change was a success, otherwise false.</returns>
   public bool ChangeContractState(int tutorCode, int newState)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "UPDATE tutor SET contract_state = @state " +
                          "WHERE tutor_code=@tutorCode";
 
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@tutorCode", tutorCode);
       command.Parameters.AddWithValue("@state", newState);
       command.Prepare();
@@ -39,12 +34,12 @@ public class TutorDAO
         return true;
       
       Log.Debug($"Tried changing contract of non existing tutor: {tutorCode}");
-      _connection.Close();
+      Connection.Close();
       return false;
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -55,12 +50,12 @@ public class TutorDAO
   /// <returns>Tutor if found, otherwise null.</returns>
   public Tutor? FindTutor(int tutorStudentCode)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * FROM tutor WHERE tutor_code=@tutorCode";
 
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@tutorCode", tutorStudentCode);
       command.Prepare();
       var reader = command.ExecuteReader();
@@ -68,7 +63,7 @@ public class TutorDAO
       if (!reader.Read())
       {
         Log.Debug("No Tutors found in db");
-        _connection.Close();
+        Connection.Close();
         return null;
       }
 
@@ -84,12 +79,12 @@ public class TutorDAO
 
 
       reader.Close();
-      _connection.Close();
+      Connection.Close();
       return tutor;
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -100,13 +95,13 @@ public class TutorDAO
   /// <returns>List of tutors in db.</returns>
   public List<Tutor> FindTutors()
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * FROM tutor";
 
     var tutors = new List<Tutor>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       var reader = command.ExecuteReader();
 
       if (!reader.HasRows)
@@ -130,13 +125,13 @@ public class TutorDAO
       }
 
       reader.Close();
-      _connection.Close();
+      Connection.Close();
       return tutors;
     }
     catch (Exception e)
     {
       Console.WriteLine(e);
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -160,8 +155,8 @@ public class TutorDAO
   public bool AddTutor(List<TutorToExam> tutorings, out string errorMessage)
   {
     errorMessage = "";
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
     const string query1 = "SELECT * FROM tutor WHERE ranking=@ranking";
     const string query2 = "INSERT INTO tutor (tutor_code,name,surname,course,OFA_available,ranking) " +
                           "VALUES (@tutor,@name,@surname,@course,@OFA_available,@ranking)";
@@ -169,7 +164,7 @@ public class TutorDAO
                           "VALUES (@tutor,@exam,@professor,@availableTutorings)";
     try
     {
-      var command = new MySqlCommand(query1, _connection, transaction);
+      var command = new MySqlCommand(query1, Connection, transaction);
 
 
       foreach (var tutorToExam in tutorings)
@@ -233,14 +228,14 @@ public class TutorDAO
               break;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Adding new tutor: {tutorToExam.TutorCode} with non-existing course: {tutorToExam.Course}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Tried adding new tutor: {tutorToExam.TutorCode} with no name or surname";
               Log.Warning(errorMessage);
@@ -268,21 +263,21 @@ public class TutorDAO
           {
             case MySqlException { Number: 1062 }:
               // duplicate key entry
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Duplicate key entry while adding exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Adding tutoring for non-existing exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              _connection.Close();
+              Connection.Close();
               errorMessage =
                 $"Tried adding new tutoring for tutor: {tutorToExam.TutorCode} with missing exam, professor or available tutorings";
               Log.Warning(errorMessage);
@@ -295,22 +290,17 @@ public class TutorDAO
       }
 
       transaction.Commit();
-      _connection.Close();
+      Connection.Close();
       return true;
     }
     catch (Exception e)
     {
       Console.WriteLine(e);
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
-
-  public bool AddTutor(Tutor tutor, out string errorMessage)
-  {
-    throw new NotImplementedException();
-  }
-
+  
   /// <summary>
   /// Tries to delete a list of tutorings.
   /// </summary>
@@ -319,14 +309,14 @@ public class TutorDAO
   /// <returns>true if deletion worked for all tutorings, otherwise false.</returns>
   public bool DeleteTutorings(List<TutorCodeToExamCode> tutorToExamList, out string errorMessage)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "DELETE FROM tutor_to_exam " +
                          "WHERE tutor=@tutor AND exam=@exam;";
 
-    var transaction = _connection.BeginTransaction();
+    var transaction = Connection.BeginTransaction();
     try
     {
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       foreach (var tutorToExam in tutorToExamList)
       {
         command.Parameters.Clear();
@@ -338,7 +328,7 @@ public class TutorDAO
           continue;
         errorMessage = $"No tutoring found in db with code {tutorToExam.TutorCode} for exam {tutorToExam.ExamCode}";
         Log.Error(errorMessage);
-        _connection.Close();
+        Connection.Close();
         return false;
       }
 
@@ -348,7 +338,7 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -358,18 +348,18 @@ public class TutorDAO
   /// </summary>
   public void DeleteTutors()
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "DELETE FROM tutor ";
 
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.ExecuteNonQuery();
       Log.Debug("All tutors where deleted from db");
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -378,14 +368,13 @@ public class TutorDAO
 
   public TutorToExam? FindTutoring(int tutor, int exam)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code = tutor " +
                          "WHERE tutor=@tutor AND exam=@exam;";
 
-    var tutors = new List<TutorToExam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@tutor", tutor);
       command.Parameters.AddWithValue("@exam", exam);
       command.Prepare();
@@ -394,7 +383,7 @@ public class TutorDAO
       if (!reader.Read())
       {
         Log.Debug("No tutoring found with code {0} for exam {1} in db", tutor, exam);
-        _connection.Close();
+        Connection.Close();
         return null;
       }
 
@@ -411,12 +400,12 @@ public class TutorDAO
         LastReservation = reader.GetDateTime("last_reservation"),
         AvailableTutorings = reader.GetInt32("available_tutorings")
       };
-      _connection.Close();
+      Connection.Close();
       return tutorObj;
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
   }
@@ -428,14 +417,14 @@ public class TutorDAO
   /// <returns>List of tutorings from a tutor.</returns>
   public List<TutorToExam> FindTutorings(int tutorCode)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * FROM tutor_to_exam join tutor on tutor_code = tutor " +
                          "WHERE tutor=@code;";
 
     var tutors = new List<TutorToExam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@code", tutorCode);
       command.Prepare();
 
@@ -467,11 +456,11 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return tutors;
   }
 
@@ -481,14 +470,14 @@ public class TutorDAO
   /// <returns>List of possible tutorings.</returns>
   public List<TutorToExam> FindTutorings()
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT  *, tutor.name as tutorName,exam.name as examName " +
                          "FROM tutor join tutor_to_exam on tutor_code = tutor " +
                          "join exam on exam=code";
     var tutors = new List<TutorToExam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       var reader = command.ExecuteReader();
 
       if (!reader.HasRows)
@@ -515,61 +504,11 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
-    return tutors;
-  }
-
-  /// <summary>
-  /// Finds tutoring, for a specific exam.
-  /// </summary>
-  /// <param name="exam">Exam for which to find tutoring.</param>
-  /// <returns>List of tutorings for exam.</returns>
-  public List<TutorToExam> FindTutorings(string exam)
-  {
-    _connection.Open();
-    const string query = "SELECT * FROM tutor_to_exam join tutor on name=tutor " +
-                         "WHERE exam=@exam";
-    var tutors = new List<TutorToExam>();
-    try
-    {
-      var command = new MySqlCommand(query, _connection);
-      command.Parameters.AddWithValue("@exam", exam);
-      command.Prepare();
-
-      var reader = command.ExecuteReader();
-
-      if (!reader.HasRows)
-        Log.Debug("No tutors found for {exam} in db", exam);
-
-      while (reader.Read())
-      {
-        var tutor = new TutorToExam
-        {
-          TutorCode = reader.GetInt32("tutor"),
-          Name = reader.GetString("name"),
-          Surname = reader.GetString("surname"),
-          ExamCode = reader.GetInt32("exam"),
-          Professor = reader.GetString("exam_professor"),
-          Course = reader.GetString("course"),
-          Ranking = reader.GetInt32("ranking"),
-          OfaAvailable = reader.GetBoolean("OFA_available"),
-          LastReservation = reader.GetDateTime("last_reservation"),
-          AvailableTutorings = reader.GetInt32("available_tutorings")
-        };
-        tutors.Add(tutor);
-      }
-    }
-    catch (Exception)
-    {
-      _connection.Close();
-      throw;
-    }
-
-    _connection.Close();
+    Connection.Close();
     return tutors;
   }
 
@@ -580,7 +519,7 @@ public class TutorDAO
   /// <returns>List of tutorings from ActiveTutoring table.</returns>
   public List<ActiveTutoring> FindActiveTutorings(bool active)
   {
-    _connection.Open();
+    Connection.Open();
     var query = active
       ? "SELECT * FROM active_tutoring join tutor on tutor=tutor_code " +
         "WHERE end_date IS NULL"
@@ -590,7 +529,7 @@ public class TutorDAO
     var tutorings = new List<ActiveTutoring>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       var reader = command.ExecuteReader();
 
       if (!reader.HasRows)
@@ -606,7 +545,7 @@ public class TutorDAO
           TutorSurname = reader.GetString("surname"),
           StudentCode = reader.GetInt32("student"),
           IsOFA = reader.GetBoolean("is_OFA"),
-          StartDate = reader.GetDateTime("start_date"),
+          StartDate = reader.GetDateTime("start_date")
         };
         if (!tutoring.IsOFA)
           tutoring.ExamCode = reader.GetInt32("exam");
@@ -621,66 +560,14 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return tutorings;
   }
-
-  /// <summary>
-  /// Finds tutors, that are locked, for a specific exam.
-  /// </summary>
-  /// <param name="exam">Exam for which to find tutors.</param>
-  /// <param name="hoursSinceLock">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
-  /// <returns>List of locked tutors for exam.</returns>
-  public List<TutorToExam> FindLockedTutors(string exam, int hoursSinceLock)
-  {
-    _connection.Open();
-    const string query = "SELECT * FROM tutor_to_exam join tutor on name=tutor " +
-                         "WHERE exam=@exam AND lock_timestamp >= NOW() - INTERVAL @hours HOUR";
-    var tutors = new List<TutorToExam>();
-    try
-    {
-      var command = new MySqlCommand(query, _connection);
-      command.Parameters.AddWithValue("@exam", exam);
-      command.Parameters.AddWithValue("@hours", hoursSinceLock);
-      command.Prepare();
-
-      var reader = command.ExecuteReader();
-
-      if (!reader.HasRows)
-        Log.Debug("No unlocked tutors found for {exam} in db", exam);
-
-      while (reader.Read())
-      {
-        var tutor = new TutorToExam
-        {
-          TutorCode = reader.GetInt32("tutor"),
-          Name = reader.GetString("name"),
-          Surname = reader.GetString("surname"),
-          ExamCode = reader.GetInt32("exam"),
-          Professor = reader.GetString("exam_professor"),
-          Course = reader.GetString("course"),
-          Ranking = reader.GetInt32("ranking"),
-          OfaAvailable = reader.GetBoolean("OFA_available"),
-          LastReservation = reader.GetDateTime("last_reservation"),
-          AvailableTutorings = reader.GetInt32("available_tutorings")
-        };
-        tutors.Add(tutor);
-      }
-    }
-    catch (Exception)
-    {
-      _connection.Close();
-      throw;
-    }
-
-    _connection.Close();
-    return tutors;
-  }
-
+  
   /// <summary>
   /// Finds tutors, that are available, for a specific exam.
   /// A tutor is available if it hasn't had a reservation in the last 24 hours and if it has
@@ -691,7 +578,7 @@ public class TutorDAO
   /// <returns>List of non locked tutors for exam.</returns>
   public List<TutorToExam> FindAvailableTutors(int exam, int lockHours)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * FROM tutor_to_exam as e " +
                          "JOIN tutor as t on t.tutor_code=e.tutor " +
                          "JOIN course as c on c.name=t.course " +
@@ -700,7 +587,7 @@ public class TutorDAO
     var tutors = new List<TutorToExam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@exam", exam);
       command.Parameters.AddWithValue("@hours", lockHours);
       command.Prepare();
@@ -731,17 +618,17 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
 
     return tutors;
   }
-  public List<TutorToExam> FindAdditionalAvailableTutors(int exam, string examName, int lockHours)
+  public IEnumerable<TutorToExam> FindAdditionalAvailableTutors(int exam, string examName, int lockHours)
   {
-    _connection.Open();
+    Connection.Open();
     const string query = "SELECT * FROM tutor_to_exam as te " +
                          "JOIN tutor as t on t.tutor_code=te.tutor " +
                          "JOIN course as c on c.name=t.course " +
@@ -751,7 +638,7 @@ public class TutorDAO
     var tutors = new List<TutorToExam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@exam", exam);
       command.Parameters.AddWithValue("@examName", examName);
       command.Parameters.AddWithValue("@hours", lockHours);
@@ -783,11 +670,11 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
 
     return tutors;
   }
@@ -801,12 +688,12 @@ public class TutorDAO
   /// <returns>true if the tutor teaches the exam; otherwise false.</returns>
   public bool IsTutorForExam(int tutor, int exam)
   {
-    _connection.Open();
+    Connection.Open();
     const string query =
       "SELECT * from tutor join tutor_to_exam on tutor_code=tutor WHERE tutor_code=@tutor AND exam=@exam;";
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@tutor", tutor);
       command.Parameters.AddWithValue("@exam", exam);
       command.Prepare();
@@ -815,7 +702,7 @@ public class TutorDAO
 
       if (reader.HasRows)
       {
-        _connection.Close();
+        Connection.Close();
         return true;
       }
 
@@ -823,11 +710,11 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return false;
   }
 
@@ -841,16 +728,15 @@ public class TutorDAO
   /// <param name="studentCode">StudentCode of the user that made the reservation</param>
   public void ReserveTutor(int tutor, int exam, long user, int studentCode)
   {
-    //TODO: trasformare in una transazione con lock dell'utente e aggiornare doc
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
 
     try
     {
       const string query =
         "UPDATE tutor_to_exam SET last_reservation = NOW()" +
         "WHERE tutor=@tutor AND exam=@exam";
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       command.Parameters.AddWithValue("@tutor", tutor);
       command.Parameters.AddWithValue("@exam", exam);
       command.Prepare();
@@ -874,16 +760,16 @@ public class TutorDAO
       transaction.Commit();
       Log.Debug("Tutor {tutor} was reserved", tutor);
     }
-    catch (Exception e)
+    catch (Exception)
     {
       Log.Error("Exception while user {0} with student code {1} was reserving tutor {2} for exam {3}"
         , user, studentCode, tutor, exam);
       transaction.Rollback();
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
   }
 
   /// <summary>
@@ -894,15 +780,15 @@ public class TutorDAO
   /// <param name="studentCode">StudentCode of the user that made the reservation</param>
   public void ReserveOFATutor(int tutor, long user, int studentCode)
   {
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
 
     try
     {
       const string query = "UPDATE telegram_user SET lock_timestamp = NOW() "
                            + "WHERE userID = @userID";
 
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       command.Parameters.AddWithValue("@userID", user);
       command.Prepare();
       command.ExecuteNonQuery();
@@ -917,131 +803,17 @@ public class TutorDAO
       transaction.Commit();
       Log.Debug("Tutor {tutor} was reserved", tutor);
     }
-    catch (Exception e)
+    catch (Exception)
     {
       Log.Error("Exception while user {0} with student code {1} was reserving tutor {2} for OFA"
         , user, studentCode, tutor);
       transaction.Rollback();
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
   }
-
-  /// <summary>
-  /// Updates the lock_timestamp of the given tutor for the given exam to the current time.<br/>
-  /// This Method is only to be called by the web api.
-  /// </summary>
-  /// <param name="tutor">Name of Tutor that needs to be updated.</param>
-  /// <param name="exam">Name of exam that needs to be locked.</param>
-  public void LockTutor(string tutor, string exam)
-  {
-    _connection.Open();
-    const string query =
-      "UPDATE tutor_to_exam SET lock_timestamp = NOW(), locked_by=DEFAULT WHERE tutor=@tutor AND exam=@exam";
-    try
-    {
-      var command = new MySqlCommand(query, _connection);
-      command.Parameters.AddWithValue("@tutor", tutor);
-      command.Parameters.AddWithValue("@exam", exam);
-      command.Prepare();
-
-      command.ExecuteNonQuery();
-      Log.Debug("Tutor {tutor} was locked", tutor);
-    }
-    catch (Exception)
-    {
-      _connection.Close();
-      throw;
-    }
-
-    _connection.Close();
-  }
-
-  /// <summary>
-  /// Updates the lock_timestamp of the given tutor for the given exam to the 0000-00-00 00:00:00 DEFAULT timestamp.
-  /// </summary>
-  /// <param name="tutor">Name of Tutor that needs to be updated.</param>
-  /// <param name="exam">Name of exam that needs to be unlocked.</param>
-  public void UnlockTutor(string tutor, string exam)
-  {
-    _connection.Open();
-    // start local transaction
-    var transaction = _connection.BeginTransaction();
-    const string query1 = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
-                          "WHERE userID IN " +
-                          "(select locked_by from tutor_to_exam where tutor=@tutor AND exam=@exam)";
-
-    const string query2 = "UPDATE tutor_to_exam SET lock_timestamp = DEFAULT ,locked_by = DEFAULT " +
-                          "WHERE tutor=@tutor AND exam=@exam;";
-    try
-    {
-      var command = new MySqlCommand(query1, _connection, transaction);
-      command.Parameters.AddWithValue("@tutor", tutor);
-      command.Parameters.AddWithValue("@exam", exam);
-      command.Prepare();
-      command.ExecuteNonQuery();
-
-      command.CommandText = query2;
-      command.Parameters.Clear();
-      command.Parameters.AddWithValue("@tutor", tutor);
-      command.Parameters.AddWithValue("@exam", exam);
-      command.Prepare();
-      command.ExecuteNonQuery();
-
-      transaction.Commit();
-      Log.Debug("Tutor {tutor} and gatekeeper user were unlocked", tutor);
-    }
-    catch (Exception)
-    {
-      // Attempt to roll back the transaction.
-      try
-      {
-        transaction.Rollback();
-      }
-      catch (Exception ex2)
-      {
-        // This catch block will handle any errors that may have occurred
-        // on the server that would cause the rollback to fail, such as
-        // a closed connection.
-        Log.Error("Rollback Exception Type: {0}", ex2.GetType());
-        Log.Error("  Message: {0}", ex2.Message);
-      }
-
-      _connection.Close();
-      throw;
-    }
-
-    _connection.Close();
-  }
-
-  /// <summary>
-  /// Deletes a tutor from db.
-  /// </summary>
-  /// <param name="tutor">Name of Tutor that needs to be deleted.</param>
-  public void DeleteTutor(string tutor)
-  {
-    _connection.Open();
-    const string query = "DELETE FROM tutor WHERE (`name` = @tutor)";
-    try
-    {
-      var command = new MySqlCommand(query, _connection);
-      command.Parameters.AddWithValue("@tutor", tutor);
-      command.Prepare();
-
-      command.ExecuteNonQuery();
-      Log.Debug("Tutor {tutor} was deleted", tutor);
-    }
-    catch (Exception)
-    {
-      _connection.Close();
-      throw;
-    }
-
-    _connection.Close();
-  }
-
 
   /// <summary>
   /// Activates a tutoring from a given reservation.
@@ -1049,15 +821,15 @@ public class TutorDAO
   /// <param name="reservationId">Id of the given reservation</param>
   public void ActivateTutoring(int reservationId)
   {
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
     const string query =
       "UPDATE tutor_to_exam as t SET available_tutorings = available_tutorings - 1, last_reservation = DEFAULT " +
       "WHERE EXISTS (select * FROM reservation as res WHERE ID=@reservationId AND " +
       "res.exam = t.exam AND res.tutor = t.tutor);";
     try
     {
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       command.Parameters.AddWithValue("@reservationId", reservationId);
       command.Prepare();
       command.ExecuteNonQuery();
@@ -1080,14 +852,14 @@ public class TutorDAO
       command.ExecuteNonQuery();
       transaction.Commit();
     }
-    catch (Exception e)
+    catch (Exception)
     {
       transaction.Rollback();
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
   }
 
   /// <summary>
@@ -1095,8 +867,8 @@ public class TutorDAO
   /// </summary>
   public void ActivateTutoring(int tutor, int student, int exam)
   {
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
     const string query =
       "UPDATE tutor_to_exam as t SET available_tutorings = available_tutorings - 1, last_reservation = DEFAULT " +
       "WHERE exam = @examCode AND tutor = @tutorCode";
@@ -1106,7 +878,7 @@ public class TutorDAO
                           "AND student=@studentCode AND duration IS NULL";
     try
     {
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       command.Parameters.AddWithValue("@examCode", exam);
       command.Parameters.AddWithValue("@tutorCode", tutor);
       command.Prepare();
@@ -1122,7 +894,7 @@ public class TutorDAO
       if (result != null)
       {
         Log.Error($"Tried activating an already active tutoring for tutor: {tutor} and student: {student}");
-        _connection.Close();
+        Connection.Close();
         return;
       }
       
@@ -1147,10 +919,10 @@ public class TutorDAO
           Console.WriteLine(e);
           throw;
       }
-      _connection.Close();
+      Connection.Close();
     }
 
-    _connection.Close();
+    Connection.Close();
   }
   
   /// <summary>
@@ -1158,8 +930,8 @@ public class TutorDAO
   /// </summary>
   public void ActivateTutoring(int tutor, int student)
   {
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
     // Find out if tutor is available for OFA
     const string query =
       "SELECT * FROM tutor WHERE tutor_code = @tutorCode AND OFA_available = 1 ";
@@ -1169,14 +941,14 @@ public class TutorDAO
                           "AND student=@studentCode AND duration IS NULL";
     try
     {
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       command.Parameters.AddWithValue("@tutorCode", tutor);
       command.Prepare();
       var result = command.ExecuteScalar();
       if (result == null)
       {
         Log.Error($"Tried activating an OFA tutoring for tutor:{tutor} who isn't OFA available");
-        _connection.Close();
+        Connection.Close();
         return;
       }
 
@@ -1187,7 +959,7 @@ public class TutorDAO
       if (result != null)
       {
         Log.Error($"Tried activating an already active tutoring for tutor: {tutor} and student: {student}");
-        _connection.Close();
+        Connection.Close();
         return;
       }
       
@@ -1215,10 +987,10 @@ public class TutorDAO
           Console.WriteLine(e);
           throw;
       }
-      _connection.Close();
+      Connection.Close();
     }
 
-    _connection.Close();
+    Connection.Close();
   }
 
   /// <summary>
@@ -1230,13 +1002,13 @@ public class TutorDAO
   /// <returns>false if no rows where affected, otherwise true</returns>
   public bool EndTutoring(int id, int duration)
   {
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
     const string query =
       "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP, duration = @duration WHERE ID = @id AND student = @studentCode";
     try
     {
-      var command = new MySqlCommand(query, _connection, transaction);
+      var command = new MySqlCommand(query, Connection, transaction);
       command.Parameters.AddWithValue("@id", id);
       command.Parameters.AddWithValue("@duration", duration);
       command.Prepare();
@@ -1244,7 +1016,7 @@ public class TutorDAO
       if (affectedRows == 0)
       {
         transaction.Commit();
-        _connection.Close();
+        Connection.Close();
         Log.Debug($"Tried ending a tutoring with id: {id} that didn't exist");
         return false;
       }
@@ -1264,7 +1036,7 @@ public class TutorDAO
       if (!isOfa)
       {
         var exam = reader.GetInt32("exam");
-        ;
+        
         reader.Close();
         command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                               "WHERE exam=@exam AND tutor=@tutor";
@@ -1281,32 +1053,30 @@ public class TutorDAO
     catch (Exception)
     {
       transaction.Rollback();
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return true;
   }
 
   /// <summary>
-  /// Ends a tutoring by adding an end date to an active tutoring,
-  /// and if it wasn't for OFA it updates the number of available tutorings for the relative exam.
+  /// Ends tutorings by adding an end date to an active tutoring and setting the duration.
+  /// if the tutoring wasn't for OFA it updates the number of available tutorings for the relative exam.
   /// </summary>
-  /// <param name="id">Id of the tutoring to End</param>
-  /// <param name="duration">Duration in hours of the tutoring.</param>
-  /// <returns>false if no rows where affected, otherwise true</returns>
-  public bool EndTutorings(List<TutoringToDuration> durations)
+  /// <param name="tutoringToDurationList">list of tutoring to duration associations.</param>
+  public bool EndTutorings(List<TutoringToDuration> tutoringToDurationList)
   {
-    _connection.Open();
-    var transaction = _connection.BeginTransaction();
+    Connection.Open();
+    var transaction = Connection.BeginTransaction();
     const string query =
       "UPDATE active_tutoring SET end_date = CURRENT_TIMESTAMP, duration = @duration WHERE ID = @id";
     try
     {
-      foreach (var (id, duration) in durations)
+      foreach (var (id, duration) in tutoringToDurationList)
       {
-        var command = new MySqlCommand(query, _connection, transaction);
+        var command = new MySqlCommand(query, Connection, transaction);
         command.Parameters.AddWithValue("@id", id);
         command.Parameters.AddWithValue("@duration", duration);
         command.Prepare();
@@ -1314,7 +1084,7 @@ public class TutorDAO
         if (affectedRows == 0)
         {
           transaction.Commit();
-          _connection.Close();
+          Connection.Close();
           Log.Debug($"Tried ending a tutoring with id: {id} that didn't exist");
           return false;
         }
@@ -1328,7 +1098,6 @@ public class TutorDAO
         reader.Read();
 
         var tutor = reader.GetInt32("tutor");
-        var studentCode = reader.GetInt32("student");
         var isOfa = reader.GetBoolean("is_OFA");
 
         if (isOfa)
@@ -1338,7 +1107,7 @@ public class TutorDAO
         }
 
         var exam = reader.GetInt32("exam");
-        ;
+        
         reader.Close();
         command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                               "WHERE exam=@exam AND tutor=@tutor";
@@ -1355,23 +1124,23 @@ public class TutorDAO
     catch (Exception)
     {
       transaction.Rollback();
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return true;
   }
 
   /// <summary>
-  /// Finds al OFA non locked tutors that don't already have an active tutoring.
+  /// Finds all OFA tutors that don't already have an active tutoring.
   /// The tutors are given in ranking order.
   /// </summary>
   /// <param name="lockHours">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
-  /// <returns></returns>
+  /// <returns>List of available tutorings.</returns>
   public List<TutorToExam> FindAvailableOFATutors(int lockHours)
   {
-    _connection.Open();
+    Connection.Open();
     // Finds all OFA available tutorings that don't 
     const string query = "SELECT * FROM tutor " +
                          "WHERE OFA_available = 1 AND tutor_code NOT IN " +
@@ -1381,7 +1150,7 @@ public class TutorDAO
     var tutors = new List<TutorToExam>();
     try
     {
-      var command = new MySqlCommand(query, _connection);
+      var command = new MySqlCommand(query, Connection);
       command.Prepare();
 
       var reader = command.ExecuteReader();
@@ -1405,11 +1174,11 @@ public class TutorDAO
     }
     catch (Exception)
     {
-      _connection.Close();
+      Connection.Close();
       throw;
     }
 
-    _connection.Close();
+    Connection.Close();
     return tutors;
   }
 }

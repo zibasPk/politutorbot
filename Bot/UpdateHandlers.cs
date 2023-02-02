@@ -49,6 +49,6 @@ public static class UpdateHandlers
     
     private static async Task DefaultUpdateHandlerAsync(ITelegramBotClient botClient, Update update)
     {
-        Log.Information("Update type: {type} not implemented.", update.Type);
+        Log.Debug("Received a non-implemented Update type: {type}.", update.Type);
     }
 }

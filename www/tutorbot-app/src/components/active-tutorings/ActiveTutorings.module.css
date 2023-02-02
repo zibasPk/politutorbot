@@ -82,7 +82,6 @@
 .inputDiv {
   display: flex;
   flex-direction: row;
-  max-width: 20em;
 }
 
 .actionBox {

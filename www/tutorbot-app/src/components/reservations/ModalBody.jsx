@@ -12,9 +12,12 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import BlockIcon from '@mui/icons-material/Block';
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { Tooltip } from "react-bootstrap";
+import { makeCall } from "../../MakeCall";
 
-class ModalBody extends React.Component {
-  constructor(props) {
+class ModalBody extends React.Component
+{
+  constructor(props)
+  {
     super(props);
     this.state = {
       ResList: props.selectedContent,
@@ -24,36 +27,34 @@ class ModalBody extends React.Component {
     }
   }
 
-  handleReservation(id, action) {
-    fetch(configData.botApiUrl + '/reservations/' + id + '/' + action, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => {
-      if (!resp.ok)
-        return resp.text();
-        this.setState({
-          ResList: this.state.ResList.filter((res) => res.Id !== id),
-        })
-        this.props.onModalEvent()
-    })
-      .then((text) => {
-        if (text !== undefined) {
-          this.setState({
-            AlertText: text,
-            IsAlertVisible: true
-          })
-          return;
-        }
-        // Hide alert after a positive response
-        this.setState({
-          IsAlertVisible: false
-        })
-      })
+  async handleReservation(id, action)
+  {
+
+    let status = { code: 0 };
+    let result = await makeCall(configData.botApiUrl + '/reservations/' + id + '/' + action,
+      'PUT', 'application/json', true, null, status);
+
+    if (status.code !== 200)
+    {
+      this.setState({
+        AlertText: result,
+        IsAlertVisible: true
+      });
+      return;
+    }
+    // Hide alert after a positive response
+    this.setState({
+      IsAlertVisible: false
+    });
+
+    this.setState({
+      ResList: this.state.ResList.filter((res) => res.Id !== id),
+    });
+    this.props.onModalEvent();
   }
 
-  render() {
+  render()
+  {
     const AlertDisplay = this.state.IsAlertVisible ? { display: "block" } : { display: "none" };
     return (
       <>
@@ -64,10 +65,12 @@ class ModalBody extends React.Component {
     );
   }
 
-  renderContent(props) {
+  renderContent(props)
+  {
     const rows = props.resList;
 
-    const renderBody = rows.map((reservation) => {
+    const renderBody = rows.map((reservation) =>
+    {
       return (
         <tr key={reservation.Id}>
           <td >{reservation.Id}</td>
@@ -83,7 +86,8 @@ class ModalBody extends React.Component {
       );
     });
 
-    if (rows.length !== 0) {
+    if (rows.length !== 0)
+    {
       return (
         <table className={styles.table}>
           <thead>
@@ -111,21 +115,23 @@ class ModalBody extends React.Component {
 export default ModalBody;
 
 
-function RefuseCell(props) {
+function RefuseCell(props)
+{
   return (
     <td className={styles.tdBorderless}>
       <OverlayTrigger
         placement="right"
         overlay={<Tooltip className={styles.modalTooltip}>Rifiuta prenotazione (dopo invio mail)</Tooltip>}
       >
-        <BlockIcon className={styles.btnRefuse} onClick={props.action}/>
+        <BlockIcon className={styles.btnRefuse} onClick={props.action} />
       </OverlayTrigger>
     </td>
   );
 }
 
 
-function MailCell(props) {
+function MailCell(props)
+{
   return (
     <td className={styles.tdBorderless}>
       <OverlayTrigger
@@ -138,10 +144,12 @@ function MailCell(props) {
   );
 }
 
-function MailTemplate() {
+function MailTemplate()
+{
   const [expanded, setExpanded] = React.useState(false);
 
-  const handleExpandClick = () => {
+  const handleExpandClick = () =>
+  {
     setExpanded(!expanded);
   };
 

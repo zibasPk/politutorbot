@@ -179,7 +179,7 @@ public static class MessageHandlers
     }
 
     // lock tutor until email arrive
-    tutorService.ReserveOFATutor(tutor.TutorCode, userId, conversation!.StudentCode);
+    tutorService.ReserveOFATutor(tutor.TutorCode, userId, conversation.StudentCode);
 
     return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.TutorSelected,
@@ -194,7 +194,6 @@ public static class MessageHandlers
     var userId = message.From!.Id;
     UserIdToConversation.TryGetValue(userId, out var conversation);
     
-    var studentCode = conversation!.StudentCode;
     switch (command)
     {
       case "Sì":
@@ -205,10 +204,10 @@ public static class MessageHandlers
       case "No":
       case "no":
       case "NO":
-        conversation.State = UserState.Year;
+        conversation!.State = UserState.Year;
         return await SendYearKeyboard(botClient, message);
       default:
-        Log.Debug("Invalid yes or no answer received in chat {id}.", studentCode, message.Chat.Id);
+        Log.Debug("Invalid yes or no answer received in chat {id}.", message.Chat.Id);
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
           text: ReplyTexts.InvalidYesOrNo);
     }
@@ -477,7 +476,7 @@ public static class MessageHandlers
         conversation.StudentCode = userService.FindUserStudentCode(userId)!.Value;
         return await SendOFAChoice(botClient, message);
       default:
-        Log.Debug("Invalid yes or no answer chosen in chat {id}.", studentCode, message.Chat.Id);
+        Log.Debug("Invalid yes or no answer chosen in chat {id}.", message.Chat.Id);
         return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
           text: ReplyTexts.InvalidYesOrNo);
     }
@@ -590,7 +589,7 @@ public static class MessageHandlers
     // Save shown tutors for conversation
     conversation.ShownTutors = shownTutors;
 
-    var tutorsTexts = shownTutors.Select(x => (shownTutors.IndexOf(x) + 1) + ") " +
+    var tutorsTexts = shownTutors.Select(x => shownTutors.IndexOf(x) + 1 + ") " +
                                               "\ncorso di studi tutor: " + x.Course +
                                               "\nprofessore avuto: " + x.Professor + "\n \n").ToList();
     var text = ReplyTexts.SelectTutor(conversation.Exam.Value.Name);
@@ -658,12 +657,12 @@ public static class MessageHandlers
       replyMarkup: new ReplyKeyboardRemove());
   }
 
-  private static async Task<Message> InternalErrorMessage(ITelegramBotClient botClient, Message message)
+  private static async Task InternalErrorMessage(ITelegramBotClient botClient, Message message)
   {
     UserIdToConversation.TryGetValue(message.From!.Id, out var conversation);
     conversation!.ResetConversation();
 
-    return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
+    await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
       text: ReplyTexts.InternalError,
       replyMarkup: new ReplyKeyboardRemove());
   }

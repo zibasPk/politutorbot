@@ -7,6 +7,7 @@ import RefreshableComponent from "../Interfaces";
 import Table from "../utils/Table";
 import ModalBody from "./ModalBody";
 import CircularProgress from '@mui/material/CircularProgress';
+import { makeCall } from "../../MakeCall";
 
 const Headers = {
   Id: "Prenotazione",
@@ -27,30 +28,26 @@ class Reservations extends RefreshableComponent {
     };
   }
 
-  refreshData() {
-    fetch(configData.botApiUrl + '/reservations', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(configData.authCredentials),
-      }
-    }).then(resp => resp.json())
-      .then((reservations) => {
-        reservations.map((elem) => {
-          if (elem.Exam === null)
-            elem.Exam = "OFA"
-          elem.ReservationTimestamp = new Date(elem.ReservationTimestamp)
-        });
+  async refreshData() {
 
-        const processedReservations = reservations.filter((x) => x.IsProcessed)
-          .map(({ state, ...key }) => key);
-        const pendingReservations = reservations.filter((x) => !x.IsProcessed)
-          .map(({ state, ...key }) => key);
+    let status = {code: 0};
+    let result = await makeCall(configData.botApiUrl + '/reservations', 'GET', 'application/json', true, null, status);
 
-        this.setState({
-          ProcessedReservations: processedReservations,
-          PendingReservations: pendingReservations
-        })
-      })
+    result.map((elem) => {
+      if (elem.Exam === null)
+        elem.Exam = "OFA"
+      elem.ReservationTimestamp = new Date(elem.ReservationTimestamp)
+    });
+
+    const processedReservations = result.filter((x) => x.IsProcessed)
+      .map(({ state, ...key }) => key);
+    const pendingReservations = result.filter((x) => !x.IsProcessed)
+      .map(({ state, ...key }) => key);
+
+    this.setState({
+      ProcessedReservations: processedReservations,
+      PendingReservations: pendingReservations
+    });
   }
 
   render() {
@@ -63,7 +60,7 @@ class Reservations extends RefreshableComponent {
             <Table headers={Headers} content={this.state.PendingReservations} hasChecks={true}
               modalProps={{
                 modalContent: ModalBody,
-                modalTitle: "Conferma prenotazioni selezionate",
+                modalTitle: "Gestisci prenotazioni selezionate",
                 onModalEvent: () => this.refreshData()
               }}
               

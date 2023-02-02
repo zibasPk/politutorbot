@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Bot.WebServer.EndPoints;
 
-public class ReservationEndpoints
+public static class ReservationEndpoints
 {
   public static void FetchReservations(string? value, HttpResponse response)
   {

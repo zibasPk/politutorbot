@@ -53,7 +53,7 @@ public record Reservation
   public DateTime ReservationTimestamp;
   public bool IsProcessed;
   public bool IsOFA;
-};
+}
 
 public record ExtendedReservation : Reservation
 {
