@@ -278,7 +278,7 @@ export default function AddTutor(props)
               infoContent={
                 <>
                   <div>Inserire un file .csv con righe come da figura:</div>
-                  <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+                  <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese le maiuscole**</strong></div>
                   <img src={examplePic}></img>
                 </>}
               uploadEndPoint="/tutor/add"

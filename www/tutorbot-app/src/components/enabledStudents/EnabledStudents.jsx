@@ -289,7 +289,7 @@ export default class EnabledStudents extends RefreshableComponent
                 formText="Carica File CSV con le matricole da abilitare"
                 infoContent={
                   <>
-                    <div>Caricare un file CVS contente un elenco <strong>in colonna</strong> di codici matricola da abilitare.</div>
+                    <div>Caricare un file CSV contente un elenco <strong>in colonna</strong> di codici matricola da abilitare.</div>
                   </>}
                 uploadEndPoint="/students/enable"
                 parseData={(file, alertSetter, sendFile) => this.parseStudentsFile(file, alertSetter, sendFile)}
@@ -311,7 +311,7 @@ export default class EnabledStudents extends RefreshableComponent
                 formText="Carica File CSV con le matricole da rimuovere"
                 infoContent={
                   <>
-                    <div>Caricare un file CVS contente un elenco <strong>in colonna</strong> di codici matricola da rimuovere.</div>
+                    <div>Caricare un file CSV contente un elenco <strong>in colonna</strong> di codici matricola da rimuovere.</div>
                   </>}
                 uploadEndPoint="/students/disable"
                 parseData={(file, alertSetter, sendFile) => this.parseStudentsFile(file, alertSetter, sendFile)}
