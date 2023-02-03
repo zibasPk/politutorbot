@@ -146,7 +146,7 @@ function DeleteExams()
   const handleConfirm = async () =>
   {
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + '/exams/', 'DELETE', null, true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + '/exams/', method: 'DELETE', hasAuth: true, status: status });
 
     if (status.code !== 200)
     {

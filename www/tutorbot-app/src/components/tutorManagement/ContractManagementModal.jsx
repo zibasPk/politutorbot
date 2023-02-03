@@ -19,7 +19,7 @@ function ContractManagementModal(props)
     changedTutorings.forEach(async tutoring =>
     {
       let status = { code: 0 };
-      let result = await makeCall(configData.botApiUrl + '/tutor/' + tutoring.TutorCode + "/contract/" + tutoring.ContractState, 'PUT', 'application/json', true, null, status);
+      let result = await makeCall({ url: configData.botApiUrl + '/tutor/' + tutoring.TutorCode + "/contract/" + tutoring.ContractState, method: "PUT", hasAuth: true, status: status });
 
       if (status.code !== 200)
       {

@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Outlet } from "react-router-dom";
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import Cookies from 'universal-cookie';
+
 
 import Navigation from './components/NavBar';
 import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
@@ -11,12 +14,49 @@ import Reservations from './components/reservations/Reservations';
 import DataManagement from './components/dataManagement/DataManagement';
 import AuthPage from './components/AuthPage';
 import NotFound from './components/NotFound';
+import { makeCall } from './MakeCall';
+import configData from './config/config.json';
+import NoBackEndConnection from './components/NoBackEndConnection';
 
 
 function App()
 {
+  const cookies = new Cookies();
 
-  const [isUserLogged, setUserLog] = useState(false); 
+  const [token, setToken] = useState(cookies.get("authToken") !== undefined);
+
+  const [noBackend, setNoBackend] = useState(null);
+
+  const checkBackend = async () =>
+  {
+    await fetch(configData.botApiUrl + "/", { method: "GET" })
+      .then(function (response)
+      {
+        if (!response.ok)
+        {
+          setNoBackend(true);
+          throw Error(response.statusText);
+        }
+        setNoBackend(false);
+        console.log("Backend is up and running!");
+      })
+      .catch(function (error)
+      {
+        console.log("Backend is down:", error);
+        setNoBackend(true);
+      });
+  }
+
+  useEffect(() =>
+  {
+    setNoBackend(null);
+    checkBackend();
+  }, []);
+
+  const refresh = () =>
+  {
+    setToken(cookies.get("authToken") !== undefined)
+  }
 
   const DefaultLayout = () => (
     <>
@@ -25,10 +65,13 @@ function App()
     </>
   )
 
+  if (noBackend == null) return <></>;
+  if (noBackend) return <NoBackEndConnection />;
+
   return (
     <HashRouter>
       <Routes>
-        {isUserLogged ?
+        {token ?
           <Route path="" element={<DefaultLayout />} >
             <Route path="" element={<Reservations />} />
             <Route path="reservations" element={<Reservations />} />
@@ -39,12 +82,10 @@ function App()
             <Route path="*" element={<NotFound />} />
           </Route>
           :
-          <Route path="*" element={<AuthPage userStateSetter={(value) => setUserLog(value)}/>} />
+          <Route path="*" element={<AuthPage refresh={refresh} />} />
         }
       </Routes>
-
     </HashRouter >
-
   );
 }
 

@@ -73,7 +73,7 @@ export default function DataHistory()
   const fetchHistoryData = async (type) =>
   {
     let status = { code: 0 };
-    let history = await makeCall(configData.botApiUrl + "/history/" + type, 'GET',"application/json", true, null, status);
+    let history = await makeCall({url: configData.botApiUrl + "/history/" + type, method: 'GET', hasAuth: true, status: status})
     if (status.code !== 200)
     {
       setErrorMsg("Errore nel recupero dei dati storici");

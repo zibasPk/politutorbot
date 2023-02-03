@@ -61,8 +61,8 @@ function UploadForm(props)
   const sendFile = async (tutorings) =>
   {
     let status = { code: 0 }
-    let result = await makeCall(configData.botApiUrl + props.uploadEndPoint, "POST","application/json",true , JSON.stringify(tutorings), status);
-
+    let result = await makeCall({ url: configData.botApiUrl + props.uploadEndPoint, method: "POST", hasAuth: true, status: status, body: JSON.stringify(tutorings) });
+   
     if (status.code !== 200)
     {
       setFileAlertText("Errore nella richiesta: " + result);

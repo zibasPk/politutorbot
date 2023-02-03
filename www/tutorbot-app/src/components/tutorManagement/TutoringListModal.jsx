@@ -19,8 +19,7 @@ function TutoringListModal(props)
     });
 
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + '/tutoring/', 'DELETE', 'application/json', true, 
-    JSON.stringify(toDelete), status);
+    let result = await makeCall({ url: configData.botApiUrl + '/tutoring/', method: "DELETE", hasAuth: true, status: status, body: JSON.stringify(toDelete) });
 
     if (status.code !== 200)
     {

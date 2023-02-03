@@ -137,7 +137,7 @@ function DeleteCourses()
   const handleConfirm = async () =>
   {
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + '/courses/', 'DELETE', null, true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + '/courses/', method: 'DELETE', hasAuth: true, status: status });
 
     if (status.code !== 200) {
       if (result === "") {
