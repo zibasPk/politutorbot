@@ -1,10 +1,10 @@
-CREATE DATABASE  IF NOT EXISTS `politutor2.0` /*!40100 DEFAULT CHARACTER SET utf8 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE  IF NOT EXISTS `politutor2.0` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `politutor2.0`;
--- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.30, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: politutor2.0
+-- Host: 192.168.1.88    Database: politutor2.0
 -- ------------------------------------------------------
--- Server version	8.0.28
+-- Server version	8.0.32-0ubuntu0.20.04.2
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -139,6 +139,30 @@ LOCK TABLES `active_tutoring_history` WRITE;
 /*!40000 ALTER TABLE `active_tutoring_history` DISABLE KEYS */;
 INSERT INTO `active_tutoring_history` VALUES (17,'999999','giulio','bartolomei','222222','52522','0','2023-01-31 11:28:12','2023-01-31 11:38:22','123');
 /*!40000 ALTER TABLE `active_tutoring_history` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `auth_token`
+--
+
+DROP TABLE IF EXISTS `auth_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `auth_token` (
+  `token` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `auth_token`
+--
+
+LOCK TABLES `auth_token` WRITE;
+/*!40000 ALTER TABLE `auth_token` DISABLE KEYS */;
+INSERT INTO `auth_token` VALUES ('1aD/zrwCCJbVUa6vVPjBaFMfKmYOf8+hUJnCT6/Z13w=','2023-02-03 18:33:17'),('6OTAJvNvMaTrEH6Z5DzkFWF+G4X/+YEPsdRnbFxqJDs=','2023-02-03 17:55:57'),('75be5GO0pYnK/HGM1tqX3ehl9I8jftySiycG2793f+s=','2023-02-03 18:19:51'),('7T6XOq9s2sKlUA2asI9hjegZWdXqO+4UnYgqFKsS9NA=','2023-02-03 17:00:52'),('9d1M6Dn8lGs317sO77bn+KJnLUDaWO31seHontJZbhQ=','2023-02-03 16:52:38'),('9rsD9/fpCAsj7Hwn6zdbugZwcikxItmCWQPXHLQ1fRA=','2023-02-03 17:06:06'),('aQPdmOIXAdFHaAwmsaaXN83ViKmhMNhkwtEDMTb5e4s=','2023-02-03 16:55:26'),('c1os+6857Obrf5Mi8DiRAgLwtFKq0b03yVIYQqm/Zds=','2023-02-03 18:30:35'),('cUzuAKDo2XZOZIPpGol8wJa490MNzD9YdMbFyzawtPQ=','2023-02-03 17:37:21'),('dMjSYNhYsiKUC0Lsx4IuGWXzA72Jm+r0x2sYS1vmyjU=','2023-02-03 18:06:50'),('evr5LtNV6PeVIcC5Mu6FPDqFgwgg6eHYQkTCD9GvBtw=','2023-02-03 17:34:28'),('fVmYDu2DsnAB7hcKi+zJyaAZVGzrcYBw80sabYvLh+I=','2023-02-03 17:37:26'),('gcdY4+UnqAmEpc/AnFeIGtNxMg8FAIZRR5UTujcN/NM=','2023-02-03 19:08:10'),('gCrF5n9m87/9Feqe0Ay//sqjjftyLKSOe/WsmxPG+NQ=','2023-02-03 17:50:44'),('gz70odKKLcmBSbaPMUmDdolR1Hz76l1e+tujHhRqy7M=','2023-02-03 17:00:58'),('HoXHr+IlGf7WgNKiLpTDZwqgzEdrPbpk089EGmBNOjw=','2023-02-03 18:31:34'),('HUWAP8jjCv1D5srOCytmLLY/3hz3OMp3ZO03HP9JLkQ=','2023-02-03 18:18:52'),('IWXywequFstY7io9FnceyamHmFVOeD+sHLNjbk6/Nmw=','2023-02-03 20:01:12'),('Jo5Iq2/SnobE7Y9nIwn6EIXZfB8v3tpG37PipJBXx0I=','2023-02-03 17:00:59'),('kJ9q1HtL9QkTvKyMXsof2KL8gcoLi8FxTwbMKKb/i1s=','2023-02-03 17:00:58'),('lNqVSaYH6lhOM8k1/pgr2LqulQ3aos7VOE+8sp3pkfc=','2023-02-03 16:50:20'),('lTjaQqvWWie5UcAfatzh24m4xI6gINDVbVWUMLEgGpQ=','2023-02-03 17:59:17'),('lxcqAUujSj4nnjWUyXdNv4vVwBZPJ+EojQ3YiWydZTo=','2023-02-03 17:03:33'),('MIw8i/7vCO7qYiP4IA8x9nP6UPwFWW0W3NY1FWGESnY=','2023-02-03 17:57:33'),('NeBdyXaZY7V4IePrRd12GCle8s2CG+xy8xX3fiTgt3U=','2023-02-03 17:26:13'),('NVyY/rgjya/s7N7i4jk+9KCbbcH16vtHJcsUiylDXxk=','2023-02-03 17:05:42'),('ODfWJOAbpHfi9EebGrO/VWOzXODOO6Hmkl2QhVX13V0=','2023-02-03 18:20:18'),('Q22OgFbTH2Bf1oBiGULXkMzuN0NKtpddW4709ZvVW1E=','2023-02-03 16:49:28'),('Rja22D5Lx6jmCxYIT9/UhpfSsbd7yrs+Mmlw21mwi+g=','2023-02-03 16:54:18'),('rpRJf5n8ApvtAoC2y3HI6r1/vEGlBMK4XbSCmuW+KCY=','2023-02-03 18:03:28'),('rud/rgnF/7t12PCAdHdyslXhy2n3Ipc2ioFyolYKoic=','2023-02-03 19:58:33'),('s1jM8IUN6wMGEeb4KN6nT+ZsGbIeE9A/unhhgoxkyfA=','2023-02-03 17:38:02'),('vqJgkY9+1bEkDnouOgKzkW+V0mUnIc5qXDE4/uNYccU=','2023-02-03 19:34:25'),('vuGdHMxStEZ9jtuvIKHNeJoMQrwkqkUSPh0zbX0Wl3A=','2023-02-03 19:30:48'),('WiDASiR+G34wkr/G5/z3O6k39ao86gBDX3N2la/bKjU=','2023-02-03 18:57:34'),('WjeeeXCKGmD2vgWspYGFykSjFqtWgTNG9bemzb/PWGI=','2023-02-03 18:36:48'),('Wrod4kkH8ssD7BxJZxwtjMCIlQkRfv4+H5yXod+GUgI=','2023-02-03 17:00:54'),('x+b816aU2XzMtaCMxt8KTCY7ZaZ4YhUP63hMwr3FoLI=','2023-02-03 17:48:46'),('xR7PFkAHq2/A/anprOTd4jD5pOelm9JD19745rwhiUo=','2023-02-03 19:28:50'),('Yihlprnxfv0LCTID009yls2gkw5ffKf8sVzcVDs3IwY=','2023-02-03 17:30:57'),('YNrMHlL/b9nh3ffxf0YrtxJofdHQlMzWAKxVpX4z/2s=','2023-02-03 17:36:44');
+/*!40000 ALTER TABLE `auth_token` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -474,4 +498,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-31 11:39:49
+-- Dump completed on 2023-02-03 20:03:44
