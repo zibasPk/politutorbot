@@ -191,7 +191,7 @@ function ManualActivation(props)
           {
             <>
               <div>Inserire un file cvs con righe come da figura:</div>
-              <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese maiuscole**</strong></div>
+              <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese le maiuscole**</strong></div>
               <img src={examplePic} alt="immagine mancante"></img>
             </>
           }
