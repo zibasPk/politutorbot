@@ -114,8 +114,7 @@ function ManualActivation(props)
   const sendTutorings = async (tutorings) =>
   {
     let status = { code: 0 }
-    let result = await makeCall(configData.botApiUrl + '/tutoring/start', 'POST', 'application/json', true,
-      JSON.stringify(tutorings), status);
+    let result = await makeCall({url: configData.botApiUrl + '/tutoring/start', method: 'POST',hasAuth:true, body: JSON.stringify(tutorings), status: status});
 
     if (status.code !== 200)
     {

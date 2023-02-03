@@ -49,9 +49,8 @@ export default class ActiveTutoringsModal extends React.Component
       return;
     }
 
-    let status = {code: 0};
-    let result = await makeCall(configData.botApiUrl + '/tutoring/end', 'PUT', 'application/json', true,
-    JSON.stringify(this.state.DurationList), status);
+    let status = { code: 0 };
+    let result = await makeCall({ url: configData.botApiUrl + '/tutoring/end', method: "PUT", hasAuth: true, status: status, body: JSON.stringify(this.state.DurationList) });
 
     if (status.code !== 200)
     {

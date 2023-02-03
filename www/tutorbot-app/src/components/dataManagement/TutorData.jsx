@@ -65,7 +65,7 @@ function DeleteTutors()
   const handleConfirm = async () =>
   {
     let status = { code: 0 }
-    let result = await makeCall(configData.botApiUrl + '/tutors/', 'DELETE', null, true, null, status);
+    let result = await makeCall({url: configData.botApiUrl + '/tutors/', method: 'DELETE',hasAuth: true, status: status});
 
     if (status.code !== 200)
     {

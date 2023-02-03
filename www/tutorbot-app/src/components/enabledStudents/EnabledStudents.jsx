@@ -32,8 +32,7 @@ export default class EnabledStudents extends RefreshableComponent
   async refreshData()
   {
     let status = { code: 0 };
-
-    let result = await makeCall(configData.botApiUrl + "/students", "GET", 'application/json', true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + "/students", method: "GET", hasAuth: true, status: status });
     if (status.code !== 200)
     {
       return;
@@ -157,7 +156,7 @@ export default class EnabledStudents extends RefreshableComponent
     }
 
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + "/students/enable/" + this.state.StudentToEnable, "POST", "application/json", true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + "/students/enable/" + this.state.StudentToEnable, method: "POST", hasAuth: true, status: status });
 
     if (status.code !== 200)
     {
@@ -192,8 +191,7 @@ export default class EnabledStudents extends RefreshableComponent
     }
 
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + "/students/disable/" + this.state.StudentToDisable, "POST",
-      "application/json", true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + "/students/disable/" + this.state.StudentToDisable, method: "POST", hasAuth: true, status: status });
 
     if (status.code !== 200)
     {
@@ -264,7 +262,7 @@ export default class EnabledStudents extends RefreshableComponent
     return null;
   }
 
-  
+
 
   render()
   {

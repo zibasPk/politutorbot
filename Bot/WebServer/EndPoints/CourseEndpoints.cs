@@ -1,6 +1,8 @@
 ﻿using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Records;
+using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -9,6 +11,7 @@ namespace Bot.WebServer.EndPoints;
 
 public static class CourseEndpoints
 {
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void FetchCourses(HttpResponse response)
   {
     try
@@ -24,6 +27,7 @@ public static class CourseEndpoints
     }
   }
 
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void HandleCourseAction(string action, HttpResponse response, HttpRequest request)
   {
     if (action != "add" && action != "remove")
@@ -94,6 +98,7 @@ public static class CourseEndpoints
     }
   }
   
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void DeleteCourses(HttpResponse response, HttpRequest request)
   {
     try

@@ -50,8 +50,8 @@ class ActiveTutorings extends RefreshableComponent
     let status = { code: 0 };
 
     // fetch and format active tutorings
-    let activeTutorings = await makeCall(configData.botApiUrl + '/tutoring/active', 'GET', 'application/json', true, null, status);
-
+    let activeTutorings = await makeCall({ url: configData.botApiUrl + '/tutoring/active', method: "GET", hasAuth: true, status: status });
+    
     const formatActiveTutoring = (tutoring) => {
       if (tutoring.ExamCode === null)
           tutoring.ExamCode = "OFA"
@@ -67,7 +67,7 @@ class ActiveTutorings extends RefreshableComponent
     });
 
     // fetch and format ended tutorings
-    let endedTutorings = await makeCall(configData.botApiUrl + '/tutoring/ended', 'GET', 'application/json', true, null, status);
+    let endedTutorings = await makeCall({ url: configData.botApiUrl + '/tutoring/ended', method: "GET", hasAuth: true, status: status });
 
     endedTutorings.forEach((elem) =>
     {

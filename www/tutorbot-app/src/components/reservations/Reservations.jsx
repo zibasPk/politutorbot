@@ -31,7 +31,7 @@ class Reservations extends RefreshableComponent {
   async refreshData() {
 
     let status = {code: 0};
-    let result = await makeCall(configData.botApiUrl + '/reservations', 'GET', 'application/json', true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + '/reservations', method: "GET", hasAuth: true, status: status });
 
     result.map((elem) => {
       if (elem.Exam === null)

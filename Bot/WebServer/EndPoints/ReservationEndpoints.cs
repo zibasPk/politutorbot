@@ -1,5 +1,7 @@
 ﻿using Bot.Database;
 using Bot.Database.Dao;
+using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -8,6 +10,7 @@ namespace Bot.WebServer.EndPoints;
 
 public static class ReservationEndpoints
 {
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void FetchReservations(string? value, HttpResponse response)
   {
     try
@@ -47,6 +50,7 @@ public static class ReservationEndpoints
     }
   }
   
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void HandleReservationAction(int id, string action, HttpResponse response)
   {
     if (action is not ("confirm" or "refuse"))

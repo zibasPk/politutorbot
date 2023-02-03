@@ -1,10 +1,11 @@
 using Bot.configs;
-using Bot.Database;
-using Bot.Database.Dao;
+using Bot.WebServer.Authentication;
 using Bot.WebServer.EndPoints;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -37,10 +38,12 @@ public static class WebServer
         policyBuilder => { policyBuilder.WithOrigins(GlobalConfig.WebConfig!.AllowedCors).AllowAnyMethod().AllowAnyHeader(); }));
 
     // Authorization handler
-    builder.Services.AddAuthentication("BasicAuthentication")
-      .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
-        ("BasicAuthentication", null);
     builder.Services.AddAuthorization();
+    builder.Services.AddAuthentication(TokenAuthOptions.DefaultSchemeName)
+      .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
+        ("BasicAuthentication", null)
+      .AddScheme<TokenAuthOptions,TokenAuthHandler>
+        (TokenAuthOptions.DefaultSchemeName, null);
 
     // Swagger config
     builder.Services.AddEndpointsApiExplorer();
@@ -53,88 +56,72 @@ public static class WebServer
     app.UseCors("corsapp");
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseAuthentication();
     app.UseAuthorization();
-    app.UseHttpsRedirection();
 
-
-    // Get endpoints
-    app.MapGet("/", async (HttpResponse response) =>
+    // Login endpoint
+    app.MapPost("/login", async (HttpResponse response, [FromServices] IAuthenticationService authenticationService) =>
     {
-      response.ContentType = "application/json; charset=utf-8";
+      var result = await authenticationService.AuthenticateAsync(response.HttpContext, "BasicAuthentication");
+      if (result.Succeeded)
+      {
+        try
+        {
+          var token = TokenHandler.GenerateToken();
+          response.ContentType = "application/json; charset=utf-8";
+          await response.WriteAsync(JsonConvert.SerializeObject(new { token = token }));
+        }
+        catch (Exception e)
+        {
+          Console.WriteLine(e);
+          response.StatusCode = e switch
+          {
+            MySqlException _ => StatusCodes.Status502BadGateway,
+            _ => StatusCodes.Status500InternalServerError
+          };
+        }
+      }
+      else
+      {
+        response.StatusCode = 401;
+        response.ContentType = "text/html; charset=utf-8";
+        await response.WriteAsync("Unauthorized");
+      }
+    }).AllowAnonymous();
+    
+    app.MapGet("/", [AllowAnonymous] async (HttpResponse response) =>
+    {
+      response.ContentType = "text/html; charset=utf-8";
       await response.WriteAsync("OK");
     });
-    app.MapGet("/tutor", TutorEndPoints.FetchTutors).RequireAuthorization();
-    app.MapGet("/tutoring/{tutorType?}/{exam:int?}", TutoringEndpoints.FetchTutorings).RequireAuthorization();
-    app.MapGet("/reservations/{value?}", ReservationEndpoints.FetchReservations).RequireAuthorization();
-    app.MapGet("/students", StudentEndpoints.FetchStudents).RequireAuthorization();
-    app.MapGet("/course", CourseEndpoints.FetchCourses).RequireAuthorization();
-    app.MapGet("/history/{content}/{contentType?}", FetchHistory).RequireAuthorization();
+    app.MapGet("/tutor", TutorEndPoints.FetchTutors);
+    app.MapGet("/tutoring/{tutorType?}/{exam:int?}", TutoringEndpoints.FetchTutorings);
+    app.MapGet("/reservations/{value?}", ReservationEndpoints.FetchReservations);
+    app.MapGet("/students", StudentEndpoints.FetchStudents);
+    app.MapGet("/course", CourseEndpoints.FetchCourses);
+    app.MapGet("/history/{content}/{contentType?}", HistoryEndpoints.FetchHistory);
 
 
     // Put endpoint
-    app.MapPut("/tutoring/end/{id:int?}/{duration:int?}", TutoringEndpoints.EndTutoringAction)
-      .RequireAuthorization();
-    app.MapPut("/tutor/{tutorCode:int}/contract/{state:int}", TutorEndPoints.HandleContractAction).RequireAuthorization();
-    app.MapPut("/reservations/{id:int}/{action}", ReservationEndpoints.HandleReservationAction).RequireAuthorization();
+    app.MapPut("/tutoring/end/{id:int?}/{duration:int?}", TutoringEndpoints.EndTutoringAction);
+    app.MapPut("/tutor/{tutorCode:int}/contract/{state:int}", TutorEndPoints.HandleContractAction);
+    app.MapPut("/reservations/{id:int}/{action}", ReservationEndpoints.HandleReservationAction);
 
     // Post endpoints
-    app.MapPost("/tutoring/start/{tutorCode:int?}/{studentCode:int?}/{examCode:int?}", TutoringEndpoints.StartTutoringAction)
-      .RequireAuthorization();
-    app.MapPost("/tutor/{action}", TutorEndPoints.HandleTutorAction).RequireAuthorization();
-    app.MapPost("/exam/{action}", ExamEndpoints.HandleExamAction).RequireAuthorization();
-    app.MapPost("/course/{action}", CourseEndpoints.HandleCourseAction).RequireAuthorization();
-    app.MapPost("/students/{action}/{studentCode:int?}", StudentEndpoints.HandleStudentAction).RequireAuthorization();
+    app.MapPost("/tutoring/start/{tutorCode:int?}/{studentCode:int?}/{examCode:int?}", TutoringEndpoints.StartTutoringAction);
+    app.MapPost("/tutor/{action}", TutorEndPoints.HandleTutorAction);
+    app.MapPost("/exam/{action}", ExamEndpoints.HandleExamAction);
+    app.MapPost("/course/{action}", CourseEndpoints.HandleCourseAction);
+    app.MapPost("/students/{action}/{studentCode:int?}", StudentEndpoints.HandleStudentAction);
 
     // Delete endpoints
-    app.MapDelete("/tutoring/", TutoringEndpoints.RemoveTutoring).RequireAuthorization();
-    app.MapDelete("/tutors", TutorEndPoints.DeleteTutors).RequireAuthorization();
-    app.MapDelete("/exams", ExamEndpoints.DeleteExams).RequireAuthorization();
-    app.MapDelete("/courses", CourseEndpoints.DeleteCourses).RequireAuthorization();
+    app.MapDelete("/tutoring/", TutoringEndpoints.RemoveTutoring);
+    app.MapDelete("/tutors", TutorEndPoints.DeleteTutors);
+    app.MapDelete("/exams", ExamEndpoints.DeleteExams);
+    app.MapDelete("/courses", CourseEndpoints.DeleteCourses);
 
 
     var url = GlobalConfig.WebConfig!.Url + ":" + GlobalConfig.WebConfig.Port;
     app.Urls.Add(url);
     app.Run();
-  }
-
-  private static void FetchHistory(string content, string? contentType, HttpResponse response)
-  {
-    try
-    {
-      var historyService = new HistoryDAO(DbConnection.GetMySqlConnection());
-      switch (content)
-      {
-        case "tutorings":
-          if (contentType == "active")
-          {
-            var activeTutoringHistory = historyService.FindActiveTutoringHistory(out var activeHeaders);
-            var result = new { header = activeHeaders, content = activeTutoringHistory };
-            response.ContentType = "application/json; charset=utf-8";
-            response.WriteAsync(JsonConvert.SerializeObject(result));
-            return;
-          }
-
-          var tutoringHistory = historyService.FindTutoringHistory(out var tutoringHeaders);
-          var tutoringResult = new { header = tutoringHeaders, content = tutoringHistory };
-          response.ContentType = "application/json; charset=utf-8";
-          response.WriteAsync(JsonConvert.SerializeObject(tutoringResult));
-          return;
-        case "reservations":
-          var reservationHistory = historyService.FindReservationHistory(out var reservationHeaders);
-          var reservationResult = new { header = reservationHeaders, content = reservationHistory };
-          response.ContentType = "application/json; charset=utf-8";
-          response.WriteAsync(JsonConvert.SerializeObject(reservationResult));
-          return;
-        default:
-          response.StatusCode = StatusCodes.Status404NotFound;
-          return;
-      }
-    }
-    catch (MySqlException e)
-    {
-      Console.WriteLine(e);
-      response.StatusCode = StatusCodes.Status502BadGateway;
-    }
   }
 }

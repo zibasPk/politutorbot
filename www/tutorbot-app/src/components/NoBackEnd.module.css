@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.errorCard {
+  width: 400px;
+  padding: 40px;
+  background-color: #ffffff;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 2em;
+  color: #ff0000;
+  margin-bottom: 24px;
+}
+
+.errorMessage {
+  font-size: 24px;
+  color: #666666;
+  margin-bottom: 24px;
+}
+
+.tryAgainButton {
+  padding: 12px 24px;
+  background-color: #ff0000;
+  color: #ffffff;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+  display: inline-block;
+}

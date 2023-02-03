@@ -31,8 +31,7 @@ class ModalBody extends React.Component
   {
 
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + '/reservations/' + id + '/' + action,
-      'PUT', 'application/json', true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + '/reservations/' + id + '/' + action, method: "PUT", hasAuth: true, status: status});
 
     if (status.code !== 200)
     {

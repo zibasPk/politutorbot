@@ -40,7 +40,7 @@ export default function TutorManagement()
   const refreshData = async () =>
   {
     let status = { code: 0 };
-    let result = await makeCall(configData.botApiUrl + '/tutor', 'GET', "application/json", true, null, status);
+    let result = await makeCall({ url: configData.botApiUrl + '/tutor', method: "GET", hasAuth: true,status: status});
 
     result.forEach((tutor, i) =>
     {
@@ -64,7 +64,7 @@ export default function TutorManagement()
     });
     setTutors(result);
 
-    result = await makeCall(configData.botApiUrl + '/tutoring', 'GET', "application/json", true, null, status);
+    result = await makeCall({ url: configData.botApiUrl + '/tutoring', method: "GET", hasAuth: true, status: status });
 
     result.forEach((tutoring, i) =>
     {
