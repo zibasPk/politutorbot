@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Bot.WebServer;
+namespace Bot.WebServer.Authentication;
 
 public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
@@ -37,12 +37,10 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
             }
 
             Response.StatusCode = 401;
-            Response.Headers.Add("WWW-Authenticate", "Basic realm=\"dotnetthoughts.net\"");
             return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
         }
         
         Response.StatusCode = 401;
-        Response.Headers.Add("WWW-Authenticate", "Basic realm=\"dotnetthoughts.net\"");
         return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
     }
 }

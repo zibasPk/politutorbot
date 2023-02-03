@@ -3,6 +3,8 @@ using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Records;
+using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using MySql.Data.MySqlClient;
 
@@ -10,6 +12,7 @@ namespace Bot.WebServer.EndPoints;
 
 public static class ExamEndpoints
 {
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void HandleExamAction(string action, HttpResponse response, HttpRequest request)
   {
     if (action != "add" && action != "remove")
@@ -77,6 +80,7 @@ public static class ExamEndpoints
     }
   }
   
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void DeleteExams(HttpResponse response, HttpRequest request)
   {
     try

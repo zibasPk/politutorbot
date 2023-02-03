@@ -4,14 +4,18 @@ using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Records;
+using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
 namespace Bot.WebServer.EndPoints;
 
+[Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
 public static class TutoringEndpoints
 {
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void FetchTutorings(string? tutorType, int? exam, HttpResponse response)
   {
     try
@@ -105,6 +109,7 @@ public static class TutoringEndpoints
     }
   }
 
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void EndTutoringAction(int? id, int? duration, HttpResponse response,
     HttpRequest request)
   {
@@ -176,6 +181,7 @@ public static class TutoringEndpoints
     }
   }
 
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void StartTutoringAction(int? tutorCode, int? studentCode, int? examCode,
     HttpResponse response,
     HttpRequest request)
@@ -233,6 +239,7 @@ public static class TutoringEndpoints
     }
   }
 
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   private static async Task<bool> StartTutoring(TutorToStudentToExam tutoringData, HttpResponse response)
   {
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
@@ -308,6 +315,7 @@ public static class TutoringEndpoints
     return true;
   }
   
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void RemoveTutoring(HttpResponse response, HttpRequest request)
   {
     // Enable all given students

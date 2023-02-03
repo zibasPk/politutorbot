@@ -3,6 +3,8 @@ using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
 using Bot.Database.Records;
+using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -11,6 +13,7 @@ namespace Bot.WebServer.EndPoints;
 
 public static class TutorEndPoints
 {
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void FetchTutors(HttpResponse response)
   {
     try
@@ -26,6 +29,7 @@ public static class TutorEndPoints
     }
   }
 
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void HandleContractAction(int tutorCode, int state, HttpResponse response)
   {
     if (state is > 2 or < 0)
@@ -53,6 +57,7 @@ public static class TutorEndPoints
     }
   }
 
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void HandleTutorAction(string action, HttpResponse response, HttpRequest request)
   {
     if (action != "add" && action != "remove")
@@ -138,6 +143,7 @@ public static class TutorEndPoints
     }
   }
   
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void DeleteTutors(HttpResponse response, HttpRequest request)
   {
     try

@@ -2,6 +2,8 @@
 using Bot.Constants;
 using Bot.Database;
 using Bot.Database.Dao;
+using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -10,6 +12,7 @@ namespace Bot.WebServer.EndPoints;
 
 public static class StudentEndpoints
 {
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static void FetchStudents(HttpResponse response)
   {
     try
@@ -25,6 +28,7 @@ public static class StudentEndpoints
     }
   }
   
+  [Authorize(AuthenticationSchemes = TokenAuthOptions.DefaultSchemeName)]
   public static async void HandleStudentAction(string action, int? studentCode, HttpResponse response,
     HttpRequest request)
   {
