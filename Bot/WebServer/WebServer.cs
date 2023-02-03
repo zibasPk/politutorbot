@@ -55,8 +55,6 @@ public static class WebServer
     app.UseSwaggerUI();
     app.UseAuthentication();
     app.UseAuthorization();
-    app.UseHttpsRedirection();
-
 
     // Get endpoints
     app.MapGet("/", async (HttpResponse response) =>
