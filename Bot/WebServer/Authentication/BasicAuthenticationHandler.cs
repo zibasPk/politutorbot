@@ -1,10 +1,12 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using Bot.configs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace Bot.WebServer.Authentication;
 
@@ -28,7 +30,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
             
             var credentialString = Encoding.UTF8.GetString(Convert.FromBase64String(token));
             var credentials = credentialString.Split(':');
-            if (credentials[0] == GlobalConfig.WebConfig!.AuthUsr && credentials[1] == GlobalConfig.WebConfig!.AuthPsw)
+            if (credentials[0] == GlobalConfig.WebConfig!.AuthUsr && HashPassword(credentials[1]) == GlobalConfig.WebConfig!.AuthPsw)
             {
                 var claims = new[] { new Claim("name", credentials[0]), new Claim(ClaimTypes.Role, "Admin") };
                 var identity = new ClaimsIdentity(claims, "Basic");
@@ -42,5 +44,14 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
         
         Response.StatusCode = 401;
         return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
+    }
+
+    private static string HashPassword(string password)
+    {
+        var passwordBytes = Encoding.UTF8.GetBytes(password);
+        var sha256 = SHA256.Create();
+        var hashBytes = sha256.ComputeHash(passwordBytes);
+        var hashedString = Convert.ToBase64String(hashBytes);
+        return hashedString;
     }
 }
