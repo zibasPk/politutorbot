@@ -1,6 +1,5 @@
 import React, { useEffect } from "react"
 import { Button } from "react-bootstrap";
-import MicrosoftLogin from "react-microsoft-login";
 import Cookies from 'universal-cookie';
 import configData from "../config/config.json";
 
@@ -45,71 +44,59 @@ export default function (props)
       return;
     }
 
-    const cookies = new Cookies();
-
-    // Save the token to a cookie
-    cookies.set('authToken', result.token, {
-      maxAge: 60 * 60 * 24 * 29, // expires in 29 days
-      path: '/',
-      sameSite: 'strict',
-      secure: true,
-      httpOnly: false
-    });
-
-    props.refresh();
+    saveTokenAndRefresh(result.token);
     // await makeCall({ url: configData.botApiUrl + '/authenticate', method: "POST", hasAuth: true, status: status });
     // console.log(status.code);
   }
 
-  const authCallback = async (err, data) =>
+  useEffect(() =>
   {
-    console.log(err);
-    console.log(data);
-  }
-
-  useEffect(
-    async function call()
+    async function ssoAuthCallBack()
     {
       let code = new URL(window.location.href).searchParams.get("code");
       let state = new URL(window.location.href).searchParams.get("state");
-      if (code)
+      if (!code || !state) return;
+
+      let status = { code: 0 };
+      let url = new URL(configData.botApiUrl + '/auth/callback');
+      url.searchParams.append("code", code);
+      url.searchParams.append("state", state);
+
+      let result = await makeCall({ url: url, method: "GET", hasAuth: false, status: status });
+
+      if (!result)
       {
-        let status = { code: 0 };
-        let url = new URL(configData.botApiUrl + '/auth/callback');
-        url.searchParams.append("code", code);
-        url.searchParams.append("state", state);
-
-        let result = await makeCall({ url: url, method: "GET", hasAuth: false, status: status });
-
-        if (!result)
-        {
-          setAlert("Errore nel login.");
-          return;
-        }
-
-        const cookies = new Cookies();
-
-        // Save the token to a cookie
-        cookies.set('authToken', result.token, {
-          maxAge: 60 * 60 * 24 * 29, // expires in 29 days
-          path: '/',
-          sameSite: 'strict',
-          secure: true,
-          httpOnly: false
-        });
-
-        props.refresh();
-
+        setAlert("Errore nel login.");
+        return;
       }
-      call();
-    }, []);
 
+      saveTokenAndRefresh(result.token);      
+    }
+    ssoAuthCallBack();
+  }, []);
+
+
+  const saveTokenAndRefresh = (token) => {
+    const cookies = new Cookies();
+      // Save the token to a cookie
+      cookies.set('authToken', token, {
+        maxAge: 60 * 60 * 24 * 29, // expires in 29 days
+        path: '/',
+        sameSite: 'Strict',
+        secure: true,
+        httpOnly: false
+      });
+
+      props.refresh();
+     
+      window.location.pathname ="/PoliTutorBot/active-tutorings";
+  }
 
   return (
     <div className="Auth-form-container">
       <form className="Auth-form">
         <div className="Auth-form-content">
-          <h3 className="Auth-form-title">Sign In</h3>
+          <h3 className="Auth-form-title"></h3>
           <div className="form-group mt-3">
             <label>Nome Utente</label>
             <input
@@ -134,7 +121,9 @@ export default function (props)
             </Button>
           </div>
           <>
-            <Button onClick={() =>
+            <Button 
+            className="btnSsoLogin"
+            onClick={() =>
             {
               window.location.href = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=a7e32595-42de-4cfe-a6e7-b299cd9c5a38&scope=openid%20offline_access&response_type=code&state=10020&login_hint=nome@mail.polimi.it&redirect_uri=https://zibaspk.github.io/PoliTutorBot/";
             }}>Accedi con Polimi</Button>
