@@ -14,9 +14,11 @@ import Reservations from './components/reservations/Reservations';
 import DataManagement from './components/dataManagement/DataManagement';
 import AuthPage from './components/AuthPage';
 import NotFound from './components/NotFound';
-import { makeCall } from './MakeCall';
 import configData from './config/config.json';
 import NoBackEndConnection from './components/NoBackEndConnection';
+import { Logout } from '@mui/icons-material';
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import { Tooltip } from "react-bootstrap";
 
 
 function App()
@@ -51,6 +53,7 @@ function App()
   {
     setNoBackend(null);
     checkBackend();
+    setToken(cookies.get("authToken") !== undefined);
   }, []);
 
   const refresh = () =>
@@ -58,9 +61,22 @@ function App()
     setToken(cookies.get("authToken") !== undefined)
   }
 
+  const logout = () => {
+    cookies.remove("authToken", { path: "/" });
+    window.location.pathname ="/PoliTutorBot/active-tutorings";
+    refresh();
+  }
+
   const DefaultLayout = () => (
     <>
       <Navigation />
+      <OverlayTrigger
+        placement="left"
+        overlay={<Tooltip className="logoutTooltip">Logout</Tooltip>}
+      >
+        <Logout className='logoutBtn' onClick={logout}/>
+      </OverlayTrigger>
+
       <Outlet />
     </>
   )
