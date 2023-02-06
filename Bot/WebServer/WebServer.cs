@@ -66,7 +66,7 @@ public static class WebServer
       {
         try
         {
-          var token = TokenHandler.GenerateToken();
+          var token = AuthUtils.GenerateToken();
           response.ContentType = "application/json; charset=utf-8";
           await response.WriteAsync(JsonConvert.SerializeObject(new { token = token }));
         }
@@ -93,6 +93,8 @@ public static class WebServer
       response.ContentType = "text/html; charset=utf-8";
       await response.WriteAsync("OK");
     });
+    app.MapGet("/auth/callback", AuthEndPoints.AuthCallback);
+    
     app.MapGet("/tutor", TutorEndPoints.FetchTutors);
     app.MapGet("/tutoring/{tutorType?}/{exam:int?}", TutoringEndpoints.FetchTutorings);
     app.MapGet("/reservations/{value?}", ReservationEndpoints.FetchReservations);

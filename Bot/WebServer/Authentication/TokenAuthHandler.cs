@@ -36,7 +36,7 @@ public class TokenAuthHandler : AuthenticationHandler<TokenAuthOptions>
     try
     {
       
-      if (!TokenHandler.CheckToken(token))
+      if (!AuthUtils.CheckToken(token))
       {
         Response.StatusCode = 401;
         return Task.FromResult(AuthenticateResult.Fail("Invalid Token Header"));

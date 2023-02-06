@@ -13,6 +13,8 @@ public class WebAppConfig : Config
     public string AuthUsr;
     public string AuthPsw;
     public string AllowedCors;
+    public string AzureSecret;
+    public string AzureClientId;
     public WebAppConfig()
     {
         // default log level 3: information
@@ -25,5 +27,6 @@ public class WebAppConfig : Config
         AuthPsw = "admin";
         AllowedCors = "*";
         FilePath = Paths.WebAppConfig;
+        AzureSecret = "";
     }
 }
