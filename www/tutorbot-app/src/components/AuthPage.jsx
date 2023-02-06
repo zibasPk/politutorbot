@@ -1,4 +1,5 @@
 import React from "react"
+import MicrosoftLogin from "react-microsoft-login";
 import Cookies from 'universal-cookie';
 import configData from "../config/config.json";
 
@@ -56,6 +57,11 @@ export default function (props)
     // await makeCall({ url: configData.botApiUrl + '/authenticate', method: "POST", hasAuth: true, status: status });
     // console.log(status.code);
   }
+  
+  const authCallback = async (err, data) => {
+    console.log(err);
+    console.log(data);
+  }
 
 
   return (
@@ -86,6 +92,9 @@ export default function (props)
               Accedi
             </button>
           </div>
+          <MicrosoftLogin clientId="a7e32595-42de-4cfe-a6e7-b299cd9c5a38" 
+          redirectUri="https://api.polinetwork.org/tutorapp/auth/callback"
+          authCallback={(a,b,c) =>{}}/>
           <div className="alertText">{alert}</div>
         </div>
       </form>

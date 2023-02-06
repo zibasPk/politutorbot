@@ -80,9 +80,12 @@ function App()
             <Route path="manage-tutors" element={<TutorManagement />} />
             <Route path="manage-data" element={<DataManagement />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="" element={<NotFound />} />
           </Route>
           :
-          <Route path="*" element={<AuthPage refresh={refresh} />} />
+          <>
+            <Route path="*" element={<AuthPage refresh={refresh} />} />
+          </>
         }
       </Routes>
     </HashRouter >
