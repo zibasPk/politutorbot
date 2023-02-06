@@ -36,7 +36,7 @@ public static class AuthUtils
         case 10020:
         {
           formContent.Add("redirect_uri",
-            "https://zibasPk.github.io/PoliTutorApp/");
+            "https://zibaspk.github.io/PoliTutorBot/");
           break;
         }
 

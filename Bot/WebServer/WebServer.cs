@@ -58,6 +58,9 @@ public static class WebServer
     app.UseSwaggerUI();
     app.UseAuthorization();
 
+    // Authentication Endpoints
+    app.MapGet("/auth/callback", AuthEndPoints.AuthCallback);
+
     // Login endpoint
     app.MapPost("/login", async (HttpResponse response, [FromServices] IAuthenticationService authenticationService) =>
     {
@@ -93,7 +96,6 @@ public static class WebServer
       response.ContentType = "text/html; charset=utf-8";
       await response.WriteAsync("OK");
     });
-    app.MapGet("/auth/callback", AuthEndPoints.AuthCallback);
     
     app.MapGet("/tutor", TutorEndPoints.FetchTutors);
     app.MapGet("/tutoring/{tutorType?}/{exam:int?}", TutoringEndpoints.FetchTutorings);
