@@ -63,7 +63,7 @@ function App()
 
   const logout = () => {
     cookies.remove("authToken", { path: "/" });
-    window.location.pathname ="/PoliTutorBot/active-tutorings";
+    window.location.pathname ="/PoliTutorBot/";
     refresh();
   }
 
