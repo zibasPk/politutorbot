@@ -75,7 +75,7 @@ code {
   border-radius: 5px;
   margin: 2px;
   position: sticky !important;
-  z-index: 1020;
+  z-index: 500;
   top: 2px;
 }
 
@@ -135,4 +135,35 @@ code {
 .alertText {
   color: var(--alert-color);
   text-align: center;
+}
+
+.logoutBtn {
+  color: white;
+  position: fixed;
+  font-size: 2em !important;
+  top: 0.2em;
+  right: 0.1em;
+  z-index: 1000;
+}
+
+.logoutBtn:hover {
+  cursor: pointer;
+  color: var(--contrast-color);
+}
+
+.logoutTooltip{
+  z-index: 1001;
+}
+
+.btnSsoLogin {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 5px;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
 }
