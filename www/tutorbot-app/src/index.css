@@ -5,8 +5,9 @@
 }
 
 :root {
-  --primary-color: #4a9ce3;
-  --contrast-color: #FFCA2C;
+  --primary-color: #03A9F4;
+  --contrast-color: #FFD600;
+  --primary-light-color: #4FC3F7;
   --success-color: #2ECC71;
   --alert-color: #C0392B;
   --tooltip-background-color: rgba(97, 97, 97, 0.92);
@@ -29,6 +30,23 @@ code {
     monospace;
 }
 
+
+.btn-warning  {
+  --bs-btn-color: #000;
+  --bs-btn-bg: var(--contrast-color) !important;
+  --bs-btn-border-color: var(--contrast-color) !important;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #ffca2c;
+  --bs-btn-hover-border-color: #ffc720;
+  --bs-btn-focus-shadow-rgb: 217,164,6;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #ffcd39;
+  --bs-btn-active-border-color: #ffc720;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #000;
+  --bs-btn-disabled-bg: var(--contrast-color) !important;
+  --bs-btn-disabled-border-color: var(--contrast-color) !important;
+}
 
 .helpIcon {
   color: rgb(157, 196, 223);
@@ -94,8 +112,16 @@ code {
   top: 50px;
   bottom: 0;
   overflow: auto;
-  scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0);
+  scrollbar-color: var(--primary-light-color) rgba(0, 0, 0, 0);
   scrollbar-width: thin;
+}
+
+.notFound {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
 }
 
 .App {
@@ -156,7 +182,8 @@ code {
 }
 
 .btnSsoLogin {
-  background-color: var(--primary-color);
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
   color: white;
   border-radius: 5px;
   border: none;
@@ -166,4 +193,10 @@ code {
   margin-top: 20px;
   margin-bottom: 20px;
   width: 100%;
+}
+
+.btnSsoLogin:hover {
+  background-color: var(--primary-light-color) !important;
+  border-color: var(--primary-light-color) !important;
+  color: white;
 }
