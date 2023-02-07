@@ -1,4 +1,5 @@
 using Bot.Constants;
+using Newtonsoft.Json;
 
 namespace Bot.configs;
 
@@ -7,13 +8,20 @@ namespace Bot.configs;
 /// </summary>
 public class WebAppConfig : Config
 {
+    [JsonProperty(Required = Required.Always)]
     public string Url;
+    [JsonProperty(Required = Required.Always)]
     public int Port;
     public int WebLogLevel;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AuthUsr;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AuthPsw;
+    [JsonProperty(Required = Required.Always)]
     public string AllowedCors;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AzureSecret;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AzureClientId;
     public string TokenValidityDays;
     public WebAppConfig()

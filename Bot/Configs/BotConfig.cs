@@ -1,4 +1,5 @@
 using Bot.Constants;
+using Newtonsoft.Json;
 
 namespace Bot.configs;
 
@@ -7,6 +8,7 @@ namespace Bot.configs;
 /// </summary>
 public class BotConfig: Config
 {
+    [JsonProperty(Required = Required.Always)]
     public string BotToken;
     public int BotLogLevel;
     public int UserTimeOut;
