@@ -70,26 +70,42 @@ export default function (props)
         return;
       }
 
-      saveTokenAndRefresh(result.token);      
+      saveTokenAndRefresh(result.token);
     }
     ssoAuthCallBack();
   }, []);
 
 
-  const saveTokenAndRefresh = (token) => {
+  const saveTokenAndRefresh = (token) =>
+  {
     const cookies = new Cookies();
-      // Save the token to a cookie
-      cookies.set('authToken', token, {
-        maxAge: 60 * 60 * 24 * 29, // expires in 29 days
-        path: '/',
-        sameSite: 'Strict',
-        secure: true,
-        httpOnly: false
-      });
+    // Save the token to a cookie
+    cookies.set('authToken', token, {
+      maxAge: 60 * 60 * 24 * 29, // expires in 29 days
+      path: '/',
+      sameSite: 'Strict',
+      secure: true,
+      httpOnly: false
+    });
 
-      props.refresh();
-     
-      window.location.pathname ="/PoliTutorBot/active-tutorings";
+    props.refresh();
+
+    window.location.pathname = "/PoliTutorBot/active-tutorings";
+  }
+
+  const loginWithPolimi = () =>
+  {
+    let url = new URL("https://login.microsoftonline.com/common/oauth2/v2.0/authorize");
+    url.searchParams.append("client_id", "a7e32595-42de-4cfe-a6e7-b299cd9c5a38");
+    url.searchParams.append("scope", "openid offline_access");
+    url.searchParams.append("response_type", "code");
+    url.searchParams.append("state", "10020");
+    url.searchParams.append("login_hint", "nome@mail.polimi.it");
+    url.searchParams.append("redirect_uri", "https://zibaspk.github.io/PoliTutorBot/");
+
+    console.log(url.href);
+    window.location.href = url.href;
+
   }
 
   return (
@@ -121,12 +137,9 @@ export default function (props)
             </Button>
           </div>
           <>
-            <Button 
-            className="btnSsoLogin"
-            onClick={() =>
-            {
-              window.location.href = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=a7e32595-42de-4cfe-a6e7-b299cd9c5a38&scope=openid%20offline_access&response_type=code&state=10020&login_hint=nome@mail.polimi.it&redirect_uri=https://zibaspk.github.io/PoliTutorBot/";
-            }}>Accedi con Polimi</Button>
+            <Button
+              className="btnSsoLogin"
+              onClick={loginWithPolimi}>Accedi con Polimi</Button>
           </>
           <div className="alertText">{alert}</div>
         </div>
