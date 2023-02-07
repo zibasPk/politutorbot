@@ -336,7 +336,7 @@ class Table extends Component
   filterContent(value)
   {
     return this.state.Content.filter(
-      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(value)
+      (item) => item[this.state.SearchOption].toString().toLowerCase().includes(value.toLowerCase())
     );
   }
 

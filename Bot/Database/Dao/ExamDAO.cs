@@ -24,6 +24,7 @@ public class ExamDAO : DAO
       var command = new MySqlCommand(query, Connection);
       command.ExecuteNonQuery();
       Log.Debug("All exams where deleted from db");
+      Connection.Close();
     }
     catch (Exception)
     {
@@ -63,6 +64,7 @@ public class ExamDAO : DAO
         }
         catch (Exception e)
         {
+          Connection.Close();
           switch (e)
           {
             case MySqlException { Number: 1062 }:
@@ -72,14 +74,12 @@ public class ExamDAO : DAO
               break;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              Connection.Close();
               errorMessage =
                 $"Adding new exam: {exam.Code} with non-existing course: {exam.Course}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              Connection.Close();
               errorMessage =
                 $"Tried adding new exam: {exam.Code} {exam.Course} with an empty value";
               Log.Warning(errorMessage);

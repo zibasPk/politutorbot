@@ -46,11 +46,15 @@ public class HistoryDAO : DAO
     {
       var data = DbUtil.ExecuteSelect(query, Connection);
       if (data == null)
+      {
+        Connection.Close();
         return objRows;
+      }
 
       var rows = data.Rows;
       objRows = (from DataRow row in rows select row.ItemArray).Cast<object>().ToList();
       columnNames = data.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToList();
+      Connection.Close();
       return objRows;
     }
     catch (Exception)
