@@ -1,4 +1,5 @@
 using Bot.Constants;
+using Newtonsoft.Json;
 
 namespace Bot.configs;
 
@@ -7,14 +8,21 @@ namespace Bot.configs;
 /// </summary>
 public class WebAppConfig : Config
 {
+    [JsonProperty(Required = Required.Always)]
     public string Url;
+    [JsonProperty(Required = Required.Always)]
     public int Port;
     public int WebLogLevel;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AuthUsr;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AuthPsw;
     public string AllowedCors;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AzureSecret;
+    [JsonProperty(Required = Required.AllowNull)]
     public string AzureClientId;
+    public string TokenValidityDays;
     public WebAppConfig()
     {
         // default log level 3: information
@@ -28,5 +36,7 @@ public class WebAppConfig : Config
         AllowedCors = "*";
         FilePath = Paths.WebAppConfig;
         AzureSecret = "";
+        AzureClientId = "";
+        TokenValidityDays = "30";
     }
 }

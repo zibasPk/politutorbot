@@ -1,6 +1,10 @@
+using Bot.configs;
 using Bot.WebServer.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog;
@@ -9,6 +13,37 @@ namespace Bot.WebServer.EndPoints;
 
 public static class AuthEndPoints
 {
+  [AllowAnonymous]
+  public static async void BasicAuthLogin(HttpResponse response, [FromServices] IAuthenticationService authenticationService)
+  {
+    var result = await authenticationService.AuthenticateAsync(response.HttpContext, "BasicAuthentication");
+    if (result.Succeeded)
+    {
+      try
+      {
+        var token = AuthUtils.GenerateToken();
+        response.ContentType = "application/json; charset=utf-8";
+        await response.WriteAsJsonAsync(new { token = token , expiresIn = GlobalConfig.WebConfig!.TokenValidityDays});
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        response.StatusCode = e switch
+        {
+          MySqlException _ => StatusCodes.Status502BadGateway,
+          _ => StatusCodes.Status500InternalServerError
+        };
+      }
+    }
+    else
+    {
+      response.StatusCode = 401;
+      response.ContentType = "text/html; charset=utf-8";
+      await response.WriteAsync("Unauthorized");
+    }
+  }
+  
+  
   [AllowAnonymous]
   public static async void AuthCallback(HttpContext context, string code, int state)
   {
@@ -36,7 +71,7 @@ public static class AuthEndPoints
       var token = AuthUtils.GenerateToken();
       
       context.Response.ContentType = "application/json; charset=utf-8";
-      await context.Response.WriteAsJsonAsync(new { token = token });
+      await context.Response.WriteAsJsonAsync(new { token = token , expiresIn = GlobalConfig.WebConfig!.TokenValidityDays});
     }
     catch (Exception ex)
     {

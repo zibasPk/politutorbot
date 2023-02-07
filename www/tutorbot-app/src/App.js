@@ -61,9 +61,11 @@ function App()
     setToken(cookies.get("authToken") !== undefined)
   }
 
-  const logout = () => {
+  const logout = () =>
+  {
     cookies.remove("authToken", { path: "/" });
-    window.location.pathname ="/PoliTutorBot/";
+    window.location.pathname = "/PoliTutorBot/";
+    window.location.hash ="";
     refresh();
   }
 
@@ -74,10 +76,11 @@ function App()
         placement="left"
         overlay={<Tooltip className="logoutTooltip">Logout</Tooltip>}
       >
-        <Logout className='logoutBtn' onClick={logout}/>
+        <Logout className='logoutBtn' onClick={logout} />
       </OverlayTrigger>
-
-      <Outlet />
+      <div className='page'>
+        <Outlet />
+      </div>
     </>
   )
 
@@ -85,6 +88,7 @@ function App()
   if (noBackend) return <NoBackEndConnection />;
 
   return (
+
     <HashRouter>
       <Routes>
         {token ?
@@ -105,6 +109,7 @@ function App()
         }
       </Routes>
     </HashRouter >
+
   );
 }
 

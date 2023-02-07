@@ -1,0 +1,28 @@
+.deleteModal {
+  width: fit-content;
+  max-width: 75% !important;
+}
+
+.deletionAlert {
+  color: var(--alert-color);
+  font-size: 1.3em;
+  font-weight: bold;
+  text-align: center; 
+}
+
+.successAlert {
+  color: var(--success-color);
+  font-size: 1.3em;
+  font-weight: bold;
+  text-align: center; 
+}
+
+.btnDelete{
+  margin-top: 1em;
+}
+
+
+.errorMsg {
+  color: var(--alert-color);
+  text-align: center;
+}

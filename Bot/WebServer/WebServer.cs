@@ -58,44 +58,16 @@ public static class WebServer
     app.UseSwaggerUI();
     app.UseAuthorization();
 
-    // Authentication Endpoints
-    app.MapGet("/auth/callback", AuthEndPoints.AuthCallback);
-
-    // Login endpoint
-    app.MapPost("/login", async (HttpResponse response, [FromServices] IAuthenticationService authenticationService) =>
-    {
-      var result = await authenticationService.AuthenticateAsync(response.HttpContext, "BasicAuthentication");
-      if (result.Succeeded)
-      {
-        try
-        {
-          var token = AuthUtils.GenerateToken();
-          response.ContentType = "application/json; charset=utf-8";
-          await response.WriteAsync(JsonConvert.SerializeObject(new { token = token }));
-        }
-        catch (Exception e)
-        {
-          Console.WriteLine(e);
-          response.StatusCode = e switch
-          {
-            MySqlException _ => StatusCodes.Status502BadGateway,
-            _ => StatusCodes.Status500InternalServerError
-          };
-        }
-      }
-      else
-      {
-        response.StatusCode = 401;
-        response.ContentType = "text/html; charset=utf-8";
-        await response.WriteAsync("Unauthorized");
-      }
-    }).AllowAnonymous();
-    
     app.MapGet("/", [AllowAnonymous] async (HttpResponse response) =>
     {
       response.ContentType = "text/html; charset=utf-8";
       await response.WriteAsync("OK");
     });
+    
+    // Authentication Endpoints
+    app.MapGet("/auth/callback", AuthEndPoints.AuthCallback);
+    app.MapPost("/login", AuthEndPoints.BasicAuthLogin).AllowAnonymous();
+    
     
     app.MapGet("/tutor", TutorEndPoints.FetchTutors);
     app.MapGet("/tutoring/{tutorType?}/{exam:int?}", TutoringEndpoints.FetchTutorings);

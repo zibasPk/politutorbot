@@ -1,13 +1,19 @@
 using Bot.Constants;
+using Newtonsoft.Json;
 
 namespace Bot.configs;
 
 public class DbConfig : Config
-{
+{   
+    [JsonProperty(Required = Required.Always)]
     public string Host = "";
+    [JsonProperty(Required = Required.Always)]
     public string Port = "";
+    [JsonProperty(Required = Required.Always)]
     public string User = "";
+    [JsonProperty(Required = Required.Always)]
     public string Password = "";
+    [JsonProperty(Required = Required.Always)]
     public string DbName = "";
 
     public DbConfig()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 
 import styles from './DataManagement.module.css'
 import configData from "../../config/config.json";
@@ -6,9 +6,8 @@ import configData from "../../config/config.json";
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import { makeCall } from '../../MakeCall';
+
+import DeleteButton from '../utils/DeleteButton';
 
 export default function TutorData()
 {
@@ -40,64 +39,12 @@ export default function TutorData()
       <div className={styles.dropDownContent}>
         <h1>Gestione Dati Tutor{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.tutorDataCont}>
-          <DeleteTutors />
+          <div>Usa questa funzionalità per eliminare tutti i tutor e tutoraggi dal sistema</div>
+          <DeleteButton btnText='Reset dati Tutor e Tutoraggi' 
+          modalTitle='Eliminazione Tutor e Tutoraggi' 
+          deleteEndpoint={configData.botApiUrl + '/tutors/'}/>
         </Collapse>
       </div>
     </>
   );
-}
-
-function DeleteTutors()
-{
-  const [show, setShow] = useState(false);
-  const [modalText, setText] = useState("");
-  const [textClass, setTextClass] = useState(styles.deletionAlert);
-  const [showButton, setShowButton] = useState(true);
-
-  const handleShow = () =>
-  {
-    setText("Attenzione! Questa azione é irreversibile sei sicuro di voler continuare?");
-    setTextClass(styles.deletionAlert);
-    setShow(true);
-    setShowButton(true);
-  };
-
-  const handleConfirm = async () =>
-  {
-    let status = { code: 0 }
-    let result = await makeCall({url: configData.botApiUrl + '/tutors/', method: 'DELETE',hasAuth: true, status: status});
-
-    if (status.code !== 200)
-    {
-      if (result != "")
-        setText(result);
-      return
-    }
-    setText("Eliminazione avvenuta con successo");
-    setTextClass(styles.successAlert);
-    setShowButton(false);
-  }
-
-  return (
-    <>
-      <div>Usa questa funzionalità per eliminare tutti i tutor e tutoraggi dal sistema</div>
-      <Button className={styles.btnDeleteTutors} variant="danger" onClick={handleShow}>
-        Reset dati Tutor e Tutoraggi
-      </Button>
-      <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Eliminazione Tutor e Tutoraggi</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className={textClass}>{modalText}</Modal.Body>
-        {
-          showButton ? <Modal.Footer>
-            <Button variant="danger" onClick={handleConfirm}>
-              Conferma
-            </Button>
-          </Modal.Footer>
-            :
-            <></>
-        }
-      </Modal>
-    </>);
 }

@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import { Button } from "react-bootstrap";
 import Cookies from 'universal-cookie';
 import configData from "../config/config.json";
+import authConfig from "../config/microsoft-auth-config.json";
 
 import { makeCall } from "../MakeCall";
 
@@ -70,18 +71,18 @@ export default function (props)
         return;
       }
 
-      saveTokenAndRefresh(result.token);
+      saveTokenAndRefresh(result.token, result.expiresIn);
     }
     ssoAuthCallBack();
   }, []);
 
 
-  const saveTokenAndRefresh = (token) =>
+  const saveTokenAndRefresh = (token, expiresIn) =>
   {
     const cookies = new Cookies();
     // Save the token to a cookie
     cookies.set('authToken', token, {
-      maxAge: 60 * 60 * 24 * 29, // expires in 29 days
+      maxAge: 60 * 60 * 24 * expiresIn,
       path: '/',
       sameSite: 'Strict',
       secure: true,
@@ -90,20 +91,20 @@ export default function (props)
 
     props.refresh();
 
-    window.location.pathname = "/PoliTutorBot/active-tutorings";
+    window.location.pathname = "/PoliTutorBot/";
+    window.location.hash = "/reservations";
   }
 
   const loginWithPolimi = () =>
   {
     let url = new URL("https://login.microsoftonline.com/common/oauth2/v2.0/authorize");
-    url.searchParams.append("client_id", "a7e32595-42de-4cfe-a6e7-b299cd9c5a38");
+    url.searchParams.append("client_id", authConfig.clientId);
     url.searchParams.append("scope", "openid offline_access");
     url.searchParams.append("response_type", "code");
     url.searchParams.append("state", "10020");
     url.searchParams.append("login_hint", "nome@mail.polimi.it");
-    url.searchParams.append("redirect_uri", "https://zibaspk.github.io/PoliTutorBot/");
+    url.searchParams.append("redirect_uri", authConfig.redirectUri);
 
-    console.log(url.href);
     window.location.href = url.href;
 
   }
