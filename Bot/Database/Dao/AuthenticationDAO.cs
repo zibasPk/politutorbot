@@ -1,11 +1,10 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Bot.configs;
+using MySql.Data.MySqlClient;
 
 namespace Bot.Database.Dao;
 
 public class AuthenticationDAO : DAO
 {
-  private const int TokenValidityDays = 30;
-  
   public AuthenticationDAO(MySqlConnection connection): base(connection)
   {
   }
@@ -25,7 +24,7 @@ public class AuthenticationDAO : DAO
     {
       var command = new MySqlCommand(query, Connection);
       command.Parameters.AddWithValue("@token", token);
-      command.Parameters.AddWithValue("@days", TokenValidityDays);
+      command.Parameters.AddWithValue("@days", GlobalConfig.WebConfig!.TokenValidityDays);
       var reader = command.ExecuteReader();
       var result = reader.HasRows;
       Connection.Close();
@@ -51,7 +50,7 @@ public class AuthenticationDAO : DAO
     try
     {
       var command = new MySqlCommand(cleanupQuery, Connection);
-      command.Parameters.AddWithValue("@days", TokenValidityDays);
+      command.Parameters.AddWithValue("@days", GlobalConfig.WebConfig!.TokenValidityDays);
       command.Prepare();
       command.ExecuteNonQuery();
     }

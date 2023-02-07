@@ -1,3 +1,4 @@
+using Bot.configs;
 using Bot.WebServer.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ public static class AuthEndPoints
       {
         var token = AuthUtils.GenerateToken();
         response.ContentType = "application/json; charset=utf-8";
-        await response.WriteAsync(JsonConvert.SerializeObject(new { token = token }));
+        await response.WriteAsJsonAsync(new { token = token , expiresIn = GlobalConfig.WebConfig!.TokenValidityDays});
       }
       catch (Exception e)
       {
@@ -70,7 +71,7 @@ public static class AuthEndPoints
       var token = AuthUtils.GenerateToken();
       
       context.Response.ContentType = "application/json; charset=utf-8";
-      await context.Response.WriteAsJsonAsync(new { token = token });
+      await context.Response.WriteAsJsonAsync(new { token = token , expiresIn = GlobalConfig.WebConfig!.TokenValidityDays});
     }
     catch (Exception ex)
     {

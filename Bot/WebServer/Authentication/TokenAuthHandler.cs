@@ -1,8 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Bot.configs;
-using Bot.Database;
-using Bot.Database.Dao;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

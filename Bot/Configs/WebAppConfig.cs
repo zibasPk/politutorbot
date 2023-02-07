@@ -15,6 +15,7 @@ public class WebAppConfig : Config
     public string AllowedCors;
     public string AzureSecret;
     public string AzureClientId;
+    public string TokenValidityDays;
     public WebAppConfig()
     {
         // default log level 3: information
@@ -28,5 +29,7 @@ public class WebAppConfig : Config
         AllowedCors = "*";
         FilePath = Paths.WebAppConfig;
         AzureSecret = "";
+        AzureClientId = "";
+        TokenValidityDays = "30";
     }
 }

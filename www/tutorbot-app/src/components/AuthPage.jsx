@@ -71,18 +71,18 @@ export default function (props)
         return;
       }
 
-      saveTokenAndRefresh(result.token);
+      saveTokenAndRefresh(result.token, result.expiresIn);
     }
     ssoAuthCallBack();
   }, []);
 
 
-  const saveTokenAndRefresh = (token) =>
+  const saveTokenAndRefresh = (token, expiresIn) =>
   {
     const cookies = new Cookies();
     // Save the token to a cookie
     cookies.set('authToken', token, {
-      maxAge: 60 * 60 * 24 * 29, // expires in 29 days
+      maxAge: 60 * 60 * 24 * expiresIn,
       path: '/',
       sameSite: 'Strict',
       secure: true,
