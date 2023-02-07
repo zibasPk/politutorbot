@@ -316,6 +316,7 @@ public class ReservationDAO : DAO
             command.ExecuteNonQuery();
             Log.Warning("Reservation with id: {0} was refused", id);
             transaction.Commit();
+            Connection.Close();
         }
         catch (Exception)
         {

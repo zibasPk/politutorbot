@@ -4,9 +4,9 @@ using Serilog;
 
 namespace Bot.Database.Dao;
 
-public class TutorDAO: DAO
+public class TutorDAO : DAO
 {
-  public TutorDAO(MySqlConnection connection): base(connection)
+  public TutorDAO(MySqlConnection connection) : base(connection)
   {
   }
 
@@ -30,9 +30,12 @@ public class TutorDAO: DAO
       command.Prepare();
       var result = command.ExecuteNonQuery();
 
-      if (result != 0) 
+      if (result != 0)
+      {
+        Connection.Close();
         return true;
-      
+      }
+
       Log.Debug($"Tried changing contract of non existing tutor: {tutorCode}");
       Connection.Close();
       return false;
@@ -43,7 +46,7 @@ public class TutorDAO: DAO
       throw;
     }
   }
-  
+
   /// <summary>
   /// Finds a tutor saved in db.
   /// </summary>
@@ -184,6 +187,7 @@ public class TutorDAO: DAO
             errorMessage = $"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
                            $"with the same rank as tutor: {code}";
             Log.Warning(errorMessage);
+            Connection.Close();
             return false;
           }
         }
@@ -203,6 +207,7 @@ public class TutorDAO: DAO
             errorMessage = $"Tried adding tutoring for tutor: {tutorToExam.TutorCode} " +
                            $"with rank: {tutorToExam.Ranking} that is different from the already present rank: {ranking}";
             Log.Warning(errorMessage);
+            Connection.Close();
             return false;
           }
         }
@@ -220,6 +225,7 @@ public class TutorDAO: DAO
         }
         catch (Exception e)
         {
+          Connection.Close();
           switch (e)
           {
             case MySqlException { Number: 1062 }:
@@ -228,20 +234,17 @@ public class TutorDAO: DAO
               break;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              Connection.Close();
               errorMessage =
                 $"Adding new tutor: {tutorToExam.TutorCode} with non-existing course: {tutorToExam.Course}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              Connection.Close();
               errorMessage =
                 $"Tried adding new tutor: {tutorToExam.TutorCode} with no name or surname";
               Log.Warning(errorMessage);
               return false;
             default:
-              Console.WriteLine(e);
               throw;
           }
         }
@@ -259,31 +262,28 @@ public class TutorDAO: DAO
         }
         catch (Exception e)
         {
+          Connection.Close();
           switch (e)
           {
             case MySqlException { Number: 1062 }:
               // duplicate key entry
-              Connection.Close();
               errorMessage =
                 $"Duplicate key entry while adding exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1452 }:
               // foreign key fail
-              Connection.Close();
               errorMessage =
                 $"Adding tutoring for non-existing exam: {tutorToExam.ExamCode} for tutor: {tutorToExam.TutorCode}";
               Log.Warning(errorMessage);
               return false;
             case MySqlException { Number: 1048 }:
               // null value
-              Connection.Close();
               errorMessage =
                 $"Tried adding new tutoring for tutor: {tutorToExam.TutorCode} with missing exam, professor or available tutorings";
               Log.Warning(errorMessage);
               return false;
             default:
-              Console.WriteLine(e);
               throw;
           }
         }
@@ -300,7 +300,7 @@ public class TutorDAO: DAO
       throw;
     }
   }
-  
+
   /// <summary>
   /// Tries to delete a list of tutorings.
   /// </summary>
@@ -324,7 +324,7 @@ public class TutorDAO: DAO
         command.Parameters.AddWithValue("@exam", tutorToExam.ExamCode);
         command.Prepare();
         var result = command.ExecuteNonQuery();
-        if (result != 0) 
+        if (result != 0)
           continue;
         errorMessage = $"No tutoring found in db with code {tutorToExam.TutorCode} for exam {tutorToExam.ExamCode}";
         Log.Error(errorMessage);
@@ -334,6 +334,7 @@ public class TutorDAO: DAO
 
       errorMessage = "";
       transaction.Commit();
+      Connection.Close();
       return true;
     }
     catch (Exception)
@@ -342,7 +343,7 @@ public class TutorDAO: DAO
       throw;
     }
   }
-  
+
   /// <summary>
   /// Deletes all tutors and tutorings from the db
   /// </summary>
@@ -356,6 +357,7 @@ public class TutorDAO: DAO
       var command = new MySqlCommand(query, Connection);
       command.ExecuteNonQuery();
       Log.Debug("All tutors where deleted from db");
+      Connection.Close();
     }
     catch (Exception)
     {
@@ -363,8 +365,7 @@ public class TutorDAO: DAO
       throw;
     }
   }
-  
-  
+
 
   public TutorToExam? FindTutoring(int tutor, int exam)
   {
@@ -567,7 +568,7 @@ public class TutorDAO: DAO
     Connection.Close();
     return tutorings;
   }
-  
+
   /// <summary>
   /// Finds tutors, that are available, for a specific exam.
   /// A tutor is available if it hasn't had a reservation in the last 24 hours and if it has
@@ -626,6 +627,7 @@ public class TutorDAO: DAO
 
     return tutors;
   }
+
   public IEnumerable<TutorToExam> FindAdditionalAvailableTutors(int exam, string examName, int lockHours)
   {
     Connection.Open();
@@ -872,7 +874,7 @@ public class TutorDAO: DAO
     const string query =
       "UPDATE tutor_to_exam as t SET available_tutorings = available_tutorings - 1, last_reservation = DEFAULT " +
       "WHERE exam = @examCode AND tutor = @tutorCode";
-    
+
     // Find out if the same tutoring is already active
     const string query2 = "SELECT * FROM active_tutoring WHERE tutor=@tutorCode " +
                           "AND student=@studentCode AND duration IS NULL";
@@ -883,10 +885,10 @@ public class TutorDAO: DAO
       command.Parameters.AddWithValue("@tutorCode", tutor);
       command.Prepare();
       command.ExecuteNonQuery();
-  
+
       command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                             "WHERE student_code = @studentCode";
-      
+
       command.CommandText = query2;
       command.Parameters.AddWithValue("@studentCode", student);
       command.Prepare();
@@ -897,7 +899,7 @@ public class TutorDAO: DAO
         Connection.Close();
         return;
       }
-      
+
       command.Prepare();
       command.ExecuteNonQuery();
 
@@ -919,12 +921,13 @@ public class TutorDAO: DAO
           Console.WriteLine(e);
           throw;
       }
+
       Connection.Close();
     }
 
     Connection.Close();
   }
-  
+
   /// <summary>
   /// Activates an OFA tutoring from a tutor for a given student.
   /// </summary>
@@ -962,7 +965,7 @@ public class TutorDAO: DAO
         Connection.Close();
         return;
       }
-      
+
       command.CommandText = "UPDATE telegram_user SET lock_timestamp = DEFAULT " +
                             "WHERE student_code = @studentCode";
 
@@ -987,6 +990,7 @@ public class TutorDAO: DAO
           Console.WriteLine(e);
           throw;
       }
+
       Connection.Close();
     }
 
@@ -1036,7 +1040,7 @@ public class TutorDAO: DAO
       if (!isOfa)
       {
         var exam = reader.GetInt32("exam");
-        
+
         reader.Close();
         command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                               "WHERE exam=@exam AND tutor=@tutor";
@@ -1107,7 +1111,7 @@ public class TutorDAO: DAO
         }
 
         var exam = reader.GetInt32("exam");
-        
+
         reader.Close();
         command.CommandText = "UPDATE tutor_to_exam SET available_tutorings = available_tutorings + 1 " +
                               "WHERE exam=@exam AND tutor=@tutor";
