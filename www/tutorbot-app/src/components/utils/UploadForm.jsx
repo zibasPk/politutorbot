@@ -7,6 +7,8 @@ import Form from 'react-bootstrap/Form';
 import InfoIconBis from '../utils/InfoIconBis';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { makeCall } from "../../MakeCall";
+import { CircularProgress } from "@mui/material";
+import { Spinner } from "react-bootstrap";
 
 export const allowedExtensions = ["csv", "vnd.ms-excel"];
 
@@ -24,6 +26,7 @@ function UploadForm(props)
   const [fileAlert, setFileAlertText] = useState("");
   const [alertClass, setFileAlertClass] = useState(styles.alertText);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [isPending, setIsPending] = useState(false);
 
 
   const handleFileChange = (e) =>
@@ -60,9 +63,11 @@ function UploadForm(props)
 
   const sendFile = async (tutorings) =>
   {
+    setIsPending(true);
     let status = { code: 0 }
     let result = await makeCall({ url: configData.botApiUrl + props.uploadEndPoint, method: "POST", hasAuth: true, status: status, body: JSON.stringify(tutorings) });
    
+    setIsPending(false);
     if (status.code !== 200)
     {
       setFileAlertText("Errore nella richiesta: " + result);
@@ -86,6 +91,7 @@ function UploadForm(props)
         <div className={alertClass}>{fileAlert}</div>
         <div className={styles.inputDiv}>
           <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
+          {true && <Spinner animation="border" className={styles.pendingCircle}/>}
           <FileUploadIcon className={styles.actionBox} onClick={() => parseFile(uploadedFile)} />
         </div>
       </Form.Group>
