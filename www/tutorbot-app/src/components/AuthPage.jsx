@@ -105,8 +105,7 @@ export default function (props)
     url.searchParams.append("login_hint", "nome@mail.polimi.it");
     url.searchParams.append("redirect_uri", authConfig.redirectUri);
 
-    window.location.href = url.href;
-
+    window.location.href = url;
   }
 
   return (
