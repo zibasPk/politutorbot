@@ -17,7 +17,6 @@ public class WebAppConfig : Config
     public string AuthUsr;
     [JsonProperty(Required = Required.AllowNull)]
     public string AuthPsw;
-    [JsonProperty(Required = Required.Always)]
     public string AllowedCors;
     [JsonProperty(Required = Required.AllowNull)]
     public string AzureSecret;
