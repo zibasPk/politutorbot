@@ -11,9 +11,7 @@ import UploadForm from '../utils/UploadForm';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import { makeCall } from '../../MakeCall';
+import DeleteButton from '../utils/DeleteButton';
 
 export default function CourseData()
 {
@@ -112,66 +110,15 @@ export default function CourseData()
             uploadEndPoint="/course/add"
             parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
           />
-          <DeleteCourses />
+          <div>Usa questa funzionalità per eliminare tutti i dati sui Corsi di Studio dal sistema</div>
+          <DeleteButton 
+          btnText='Reset dati Corsi di Studio' 
+          modalTitle='Eliminazione datu Corsi di Studio'
+          deleteEndpoint={configData.botApiUrl + '/courses/'}
+          />
         </Collapse>
       </div>
     </>
   );
 }
 
-function DeleteCourses()
-{
-  const [show, setShow] = useState(false);
-  const [modalText, setText] = useState("");
-  const [textClass, setTextClass] = useState(styles.deletionAlert);
-  const [showButton, setShowButton] = useState(true);
-
-  const handleShow = () =>
-  {
-    setText("Attenzione! Questa azione é irreversibile sei sicuro di voler continuare?");
-    setTextClass(styles.deletionAlert);
-    setShow(true);
-    setShowButton(true);
-  };
-
-  const handleConfirm = async () =>
-  {
-    let status = { code: 0 };
-    let result = await makeCall({ url: configData.botApiUrl + '/courses/', method: 'DELETE', hasAuth: true, status: status });
-
-    if (status.code !== 200) {
-      if (result === "") {
-        return;
-      }
-      setText(result);
-      return;
-    }
-
-    setText("Eliminazione avvenuta con successo");
-    setTextClass(styles.successAlert);
-    setShowButton(false);
-  }
-
-  return (
-    <>
-      <div>Usa questa funzionalità per eliminare tutti i dati sui Corsi di Studio dal sistema</div>
-      <Button className={styles.btnDeleteTutors} variant="danger" onClick={handleShow}>
-        Reset dati Corsi di Studio
-      </Button>
-      <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Eliminazione datu Corsi di Studio</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className={textClass}>{modalText}</Modal.Body>
-        {
-          showButton ? <Modal.Footer>
-            <Button variant="danger" onClick={handleConfirm}>
-              Conferma
-            </Button>
-          </Modal.Footer>
-            :
-            <></>
-        }
-      </Modal>
-    </>);
-}

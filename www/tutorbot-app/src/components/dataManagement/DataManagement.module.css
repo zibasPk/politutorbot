@@ -41,29 +41,6 @@
   width: 100%;
 }
 
-.deleteTutorModal {
-  width: fit-content;
-  max-width: 75% !important;
-}
-
-.deletionAlert {
-  color: var(--alert-color);
-  font-size: 1.3em;
-  font-weight: bold;
-  text-align: center; 
-}
-
-.successAlert {
-  color: var(--success-color);
-  font-size: 1.3em;
-  font-weight: bold;
-  text-align: center; 
-}
-
-.btnDeleteTutors{
-  margin-top: 1em;
-}
-
 .csvDownloadLable{
   font-size: 1.2em;
 }

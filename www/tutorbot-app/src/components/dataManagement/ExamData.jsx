@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 
 import styles from './DataManagement.module.css'
 import configData from "../../config/config.json";
@@ -11,9 +11,7 @@ import UploadForm from '../utils/UploadForm';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import { makeCall } from '../../MakeCall';
+import DeleteButton from '../utils/DeleteButton';
 
 export default function ExamData()
 {
@@ -121,65 +119,14 @@ export default function ExamData()
             uploadEndPoint="/exam/add"
             parseData={(file, alertSetter, sendFile) => parseExamFile(file, alertSetter, sendFile)}
           />
-          <DeleteExams />
+          <div>Usa questa funzionalità per eliminare tutti i dati sugli Esami dal sistema</div>
+          <DeleteButton 
+          btnText="Reset dati Esami" 
+          modalTitle='Eliminazione esami' 
+          deleteEndpoint={configData.botApiUrl + '/exams/'}
+          />
         </Collapse>
       </div>
     </>
   );
-}
-
-function DeleteExams()
-{
-  const [show, setShow] = useState(false);
-  const [modalText, setText] = useState("");
-  const [textClass, setTextClass] = useState(styles.deletionAlert);
-  const [showButton, setShowButton] = useState(true);
-
-  const handleShow = () =>
-  {
-    setText("Attenzione! Questa azione é irreversibile sei sicuro di voler continuare?");
-    setTextClass(styles.deletionAlert);
-    setShow(true);
-    setShowButton(true);
-  };
-
-  const handleConfirm = async () =>
-  {
-    let status = { code: 0 };
-    let result = await makeCall({ url: configData.botApiUrl + '/exams/', method: 'DELETE', hasAuth: true, status: status });
-
-    if (status.code !== 200)
-    {
-      if (result == "")
-        return;
-      setText(result);
-      return
-    }
-    setText("Eliminazione avvenuta con successo");
-    setTextClass(styles.successAlert);
-    setShowButton(false);
-  }
-
-  return (
-    <>
-      <div>Usa questa funzionalità per eliminare tutti i dati sugli Esami dal sistema</div>
-      <Button className={styles.btnDeleteTutors} variant="danger" onClick={handleShow}>
-        Reset dati Esami
-      </Button>
-      <Modal show={show} onHide={() => setShow(false)} dialogClassName={styles.deleteTutorModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Eliminazione Esami</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className={textClass}>{modalText}</Modal.Body>
-        {
-          showButton ? <Modal.Footer>
-            <Button variant="danger" onClick={handleConfirm}>
-              Conferma
-            </Button>
-          </Modal.Footer>
-            :
-            <></>
-        }
-      </Modal>
-    </>);
 }
