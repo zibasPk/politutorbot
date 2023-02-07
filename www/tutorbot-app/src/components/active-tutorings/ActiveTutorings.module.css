@@ -93,3 +93,9 @@
   cursor: pointer;
   color: var(--contrast-color);
 }
+
+.pendingCircle {
+  margin-left: 1em !important;
+  margin-top: 0.2em;
+  color: var(--primary-color) !important;
+}

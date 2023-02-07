@@ -14,6 +14,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import UploadForm from '../utils/UploadForm';
 import { makeCall } from '../../MakeCall';
+import { Spinner } from "react-bootstrap";
 
 
 export default function AddTutor(props)
@@ -35,6 +36,7 @@ export default function AddTutor(props)
   const [tutoringFile, setTutoringFile] = useState(null);
   const [expanded, setExpanded] = useState(false);
   const [checkBoxState, setCheckBox] = useState(0);
+  const [isPending,setIsPending] =useState(false);
 
   const refreshData = async () =>
   {
@@ -57,8 +59,10 @@ export default function AddTutor(props)
 
   const sendTutorings = async (tutorings, action) =>
   {
+    setIsPending(true);
     let status = { code: 0 };
     let result = await makeCall({url: configData.botApiUrl + '/tutor/' + action, method: 'POST', hasAuth: true, status: status, body: JSON.stringify(tutorings)});
+    setIsPending(false);
     if (status.code !== 200)
     {
       setFileAlertText("Errore nella richiesta: " + result);
@@ -270,6 +274,7 @@ export default function AddTutor(props)
                 >
                   Aggiungi
                 </Button>
+                {isPending && <Spinner animation="border" className={styles.pendingCircle}/>}
                 <div className={styles.tutorFileAlert}>{tutorFileAlert}</div>
               </Form>
             </div>

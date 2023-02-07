@@ -76,3 +76,8 @@
   color: var(--alert-color);
   text-align: center;
 }
+
+.pendingCircle {
+  margin-left: 1em !important;
+  color: var(--primary-color) !important;
+}

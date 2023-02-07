@@ -3,12 +3,14 @@ import styles from './EnabledStudents.module.css';
 import configData from "../../config/config.json"
 import validationConfig from "../../config/validation-config.json"
 
+
 import Papa from "papaparse";
 
 import Form from 'react-bootstrap/Form';
 import RefreshableComponent from '../Interfaces';
 import { CircularProgress } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { Spinner } from "react-bootstrap";
 import { makeCall } from '../../MakeCall';
 import UploadForm from '../utils/UploadForm';
 
@@ -25,7 +27,8 @@ export default class EnabledStudents extends RefreshableComponent
       StudentToDisable: null,
       StudentsToEnableFile: null,
       StudentsToDisableFile: null,
-      AlertText: ""
+      AlertText: "",
+      IsPending: [false,false]
     };
   }
 
@@ -155,8 +158,19 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
+
+    let temp = this.state.IsPending;
+    temp[0] = true;
+    this.setState({
+          IsPending: temp
+    })
     let status = { code: 0 };
     let result = await makeCall({ url: configData.botApiUrl + "/students/enable/" + this.state.StudentToEnable, method: "POST", hasAuth: true, status: status });
+
+    temp[0] = false;
+    this.setState({
+          IsPending: temp
+    })
 
     if (status.code !== 200)
     {
@@ -190,8 +204,18 @@ export default class EnabledStudents extends RefreshableComponent
       return;
     }
 
+
+    let temp = this.state.IsPending;
+    temp[1] = true;
+    this.setState({
+          IsPending: temp
+    })
     let status = { code: 0 };
     let result = await makeCall({ url: configData.botApiUrl + "/students/disable/" + this.state.StudentToDisable, method: "POST", hasAuth: true, status: status });
+    temp[1] = false;
+    this.setState({
+          IsPending: temp
+    })
 
     if (status.code !== 200)
     {
@@ -278,6 +302,7 @@ export default class EnabledStudents extends RefreshableComponent
               <h1>Abilita Studenti</h1>
               <Form.Group controlId="formTextEnable" className="mb-3">
                 <Form.Label>Abilita Studente</Form.Label>
+                {this.state.IsPending[0] && <Spinner animation="border" className={styles.pendingCircle} />}
                 <div className={styles.inputDiv}>
                   <Form.Control type="text" placeholder="Matr. Studente"
                     onChange={(e) => this.changeStudentToEnable(parseInt(e.target.value))}
@@ -300,6 +325,7 @@ export default class EnabledStudents extends RefreshableComponent
               <h1>Rimuovi Studenti</h1>
               <Form.Group controlId="formTextRemove" className="mb-3">
                 <Form.Label>Rimuovi Studente</Form.Label>
+                {this.state.IsPending[1] && <Spinner animation="border" className={styles.pendingCircle} />}
                 <div className={styles.inputDiv}>
                   <Form.Control type="text" placeholder="Matr. Studente"
                     onChange={(e) => this.changeStudentToDisable(parseInt(e.target.value))}

@@ -24,6 +24,4 @@
 .pendingCircle {
   margin-left: 1em !important;
   color: var(--primary-color) !important;
-  width: 2em;
-  height: 2em;
 }
