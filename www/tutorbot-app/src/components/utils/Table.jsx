@@ -15,8 +15,10 @@ import configData from "../../config/config.json";
  * The Table component will return a table with selection, sorting and search functions and a personalizable modal popup that will receive 
  * the selected rows. The displayed columns are those in the headers prop, only the elements in the content prop with the same keys of the header prop will be displayed as rows. 
  */
-class Table extends Component {
-  constructor(props) {
+class Table extends Component
+{
+  constructor(props)
+  {
     super(props);
     if (props.hasChecks)
       props.content.forEach(item => item.selected = false);
@@ -36,8 +38,10 @@ class Table extends Component {
     };
   }
 
-  static getDerivedStateFromProps(props, state) {
-    if (props.content !== state.Content) {
+  static getDerivedStateFromProps(props, state)
+  {
+    if (props.content !== state.Content)
+    {
       //Change in props
       props.content.forEach((elem) => elem.selected = false);
 
@@ -54,9 +58,11 @@ class Table extends Component {
   }
 
 
-  render() {
+  render()
+  {
     let i = 0;
-    const HeaderRow = Object.keys(this.state.Headers).map((key) => {
+    const HeaderRow = Object.keys(this.state.Headers).map((key) =>
+    {
       let temp = i;
       const cell = <HeaderCellWithHover arrowDirection={this.state.HeaderArrows[temp]}
         text={this.state.Headers[key]}
@@ -67,7 +73,8 @@ class Table extends Component {
       return cell;
     });
 
-    const SearchOptions = Object.keys(this.state.Headers).map((key, i) => {
+    const SearchOptions = Object.keys(this.state.Headers).map((key, i) =>
+    {
       return <option value={key} key={i} > {this.state.Headers[key]}</option>;
     });
 
@@ -151,13 +158,17 @@ class Table extends Component {
     );
   }
 
-  renderRow(props) {
-    const variableRows = Object.keys(props.headers).map((key, i) => {
-      if (props.row[key] instanceof Date) {
+  renderRow(props)
+  {
+    const variableRows = Object.keys(props.headers).map((key, i) =>
+    {
+      if (props.row[key] instanceof Date)
+      {
         return <td key={i}>{props.row[key].toLocaleString()}</td>;
       }
 
-      if (props.row[key] === "OFA") {
+      if (props.row[key] === "OFA")
+      {
         return <td key={i} className={styles.tdCentered}>OFA</td>;
       }
 
@@ -186,7 +197,8 @@ class Table extends Component {
   }
 
   // Select/ UnSelect Table rows
-  onMasterCheck(e) {
+  onMasterCheck(e)
+  {
     let tempList = this.state.FilteredContent;
     // Check/ UnCheck All Items
     tempList.map((user) => (user.selected = e.target.checked));
@@ -200,10 +212,13 @@ class Table extends Component {
   }
 
   // Update List Item's state and Master Checkbox State
-  onItemCheck(e, item) {
+  onItemCheck(e, item)
+  {
     let tempList = this.state.FilteredContent;
-    tempList.map((row) => {
-      if (row.Id === item.Id) {
+    tempList.map((row) =>
+    {
+      if (row.Id === item.Id)
+      {
         row.selected = e.target.checked;
       }
       return row;
@@ -222,9 +237,11 @@ class Table extends Component {
     });
   }
 
-  handleHeaderClick(key, i) {
+  handleHeaderClick(key, i)
+  {
     const arrows = this.state.HeaderArrows;
-    switch (arrows[i]) {
+    switch (arrows[i])
+    {
       case 0:
         arrows[i] = -1;
         break;
@@ -238,7 +255,8 @@ class Table extends Component {
         console.error("Invalid HeaderCell arrow direction: " + arrows[i]);
         return;
     }
-    arrows.forEach((index) => {
+    arrows.forEach((index) =>
+    {
       if (i !== index) arrows[index] = 0;
     });
     this.setState({
@@ -247,8 +265,19 @@ class Table extends Component {
     this.sortBy(key, i);
   }
 
-  comparator(x, y, order) {
-    if (x === y) return 0;
+  comparator(x, y, order)
+  {
+    if (typeof x !== typeof y)
+    {
+      let xStr = x.toString();
+      let yStr = y.toString();
+      if(order === 1) 
+        return xStr.localeCompare(yStr);
+      if(order === -1)
+        return yStr.localeCompare(xStr);
+    }
+
+    if (x == y) return 0;
     if (order === 1)
       return (x > y) ? 1 : -1;
     if (order === -1)
@@ -256,7 +285,8 @@ class Table extends Component {
     return 0;
   }
 
-  sortBy(key, i) {
+  sortBy(key, i)
+  {
     const tempList = this.state.FilteredContent;
     tempList.sort((x, y) => this.comparator(x[key], y[key], this.state.HeaderArrows[i]));
 
@@ -264,7 +294,8 @@ class Table extends Component {
     const totalCheckedItems = tempList.filter((e) => e.selected).length;
     let SelectedContentTemp = this.state.SelectedContent;
     let mastercheck = totalItems === totalCheckedItems;
-    if (!mastercheck) {
+    if (!mastercheck)
+    {
       tempList.map((reservation) => reservation.selected = false);
       // Can be removed if we want to keep checked items after order change
       SelectedContentTemp = [];
@@ -276,20 +307,23 @@ class Table extends Component {
     });
   }
 
-  handleShowMoreClick() {
+  handleShowMoreClick()
+  {
     let newAmount = this.state.VisibleRows + configData.addonTableRows;
     this.setState({
       VisibleRows: newAmount,
     })
   }
 
-  handleModalVisibility() {
+  handleModalVisibility()
+  {
     this.setState({
       IsModalVisible: !this.state.IsModalVisible,
     });
   }
 
-  handleVisibleAmountChange(e) {
+  handleVisibleAmountChange(e)
+  {
     let amount = e.target.value;
     const regex = /^[0-9]+$/;
     if (!amount || !regex.test(amount) || amount === 0)
@@ -299,13 +333,15 @@ class Table extends Component {
     });
   }
 
-  filterContent(value) {
+  filterContent(value)
+  {
     return this.state.Content.filter(
       (item) => item[this.state.SearchOption].toString().toLowerCase().includes(value)
     );
   }
 
-  handleSearch(event) {
+  handleSearch(event)
+  {
     let tempList;
     tempList = this.filterContent(event.target.value.toLowerCase());
     this.setState({
@@ -314,14 +350,16 @@ class Table extends Component {
     })
   }
 
-  changeSearch(event) {
+  changeSearch(event)
+  {
     this.setState({
       SearchOption: event.target.value
     })
   }
 }
 
-export function HeaderCellWithHover(props) {
+export function HeaderCellWithHover(props)
+{
   const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
   const [style, setStyle] = useState({});
   let arrow;
@@ -332,14 +370,17 @@ export function HeaderCellWithHover(props) {
     arrow = <KeyboardArrowUpIcon style={iconStyle} className={styles.arrow} />
   return (
     <th scope="col" style={style} key={props.text}
-      onMouseEnter={e => {
+      onMouseEnter={e =>
+      {
         setIconStyle({ visibility: 'visible' });
         setStyle({ cursor: 'pointer' })
       }}
-      onMouseLeave={e => {
+      onMouseLeave={e =>
+      {
         setIconStyle({ visibility: 'hidden' })
       }}
-      onClick={e => {
+      onClick={e =>
+      {
         props.arrowAction();
       }}
     >
@@ -347,9 +388,11 @@ export function HeaderCellWithHover(props) {
     </th >)
 }
 
-export function ShowMoreButton(props) {
+export function ShowMoreButton(props)
+{
 
-  if (props.visibleRows >= props.maximumRows) {
+  if (props.visibleRows >= props.maximumRows)
+  {
     return (
       <div
         onClick={() => props.onClick()}
@@ -359,7 +402,8 @@ export function ShowMoreButton(props) {
         Mostra altri
       </div>
     )
-  } else {
+  } else
+  {
     return (
       <div
         onClick={() => props.onClick()}
