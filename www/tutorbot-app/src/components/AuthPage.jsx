@@ -45,7 +45,7 @@ export default function (props)
       return;
     }
 
-    saveTokenAndRefresh(result.token);
+    saveTokenAndRefresh(result.token, result.expiresIn);
     // await makeCall({ url: configData.botApiUrl + '/authenticate', method: "POST", hasAuth: true, status: status });
     // console.log(status.code);
   }
