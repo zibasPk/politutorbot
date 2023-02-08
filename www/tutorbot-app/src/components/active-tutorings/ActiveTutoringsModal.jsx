@@ -5,6 +5,7 @@ import configData from "../../config/config.json"
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { makeCall } from "../../MakeCall";
+import { Spinner } from "react-bootstrap";
 
 
 export default class ActiveTutoringsModal extends React.Component
@@ -18,7 +19,8 @@ export default class ActiveTutoringsModal extends React.Component
       {
         return {
           Id: tutoring.Id,
-          Duration: 0
+          Duration: 0,
+          IsPending: false
         }
       }),
       AlertText: "",
@@ -49,8 +51,15 @@ export default class ActiveTutoringsModal extends React.Component
       return;
     }
 
+    this.setState({
+      IsPending: true
+    })
     let status = { code: 0 };
     let result = await makeCall({ url: configData.botApiUrl + '/tutoring/end', method: "PUT", hasAuth: true, status: status, body: JSON.stringify(this.state.DurationList) });
+
+    this.setState({
+      IsPending: false
+    })
 
     if (status.code !== 200)
     {
@@ -127,9 +136,12 @@ export default class ActiveTutoringsModal extends React.Component
             </tbody>
           </table>
           <div>
-            <Button className={styles.endTutoringsBtn} variant="warning" onClick={() => props.tryEndingTutorings()}>
-              Concludi
-            </Button>
+            <div className={styles.confirmStateChangeDiv}>
+              {props.isPending && <div className={styles.pendingCircleModal}><Spinner animation="border" /></div>}
+              <Button className={styles.endTutoringsBtn} variant="warning" onClick={() => props.tryEndingTutorings()}>
+                Concludi
+              </Button>
+            </div>
           </div>
         </>
       )
@@ -148,6 +160,7 @@ export default class ActiveTutoringsModal extends React.Component
             : <></>
         }
         <this.renderContent
+          isPending={this.state.IsPending}
           selectedList={this.state.TutoringsList}
           durations={this.state.DurationList}
           tryEndingTutorings={() => this.tryEndingTutorings()}

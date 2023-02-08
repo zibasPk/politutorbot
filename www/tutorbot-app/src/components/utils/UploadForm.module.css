@@ -20,3 +20,8 @@
   cursor: pointer;
   color: var(--contrast-color);
 }
+
+.pendingCircle {
+  margin-left: 1em !important;
+  color: var(--primary-color) !important;
+}

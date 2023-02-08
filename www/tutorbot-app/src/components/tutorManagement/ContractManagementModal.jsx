@@ -8,18 +8,22 @@ import configData from "../../config/config.json";
 import { Form } from "react-bootstrap";
 import { Button } from 'react-bootstrap';
 import { makeCall } from "../../MakeCall";
+import { Spinner } from "react-bootstrap";
 
 function ContractManagementModal(props)
 {
   const [changedTutorings, setChangedTutorings] = useState([]);
   const [alert, setAlert] = useState("");
+  const [isPending, setIsPending] = useState(false);
 
   const changeContracts = async () =>
   {
     changedTutorings.forEach(async tutoring =>
     {
+      setIsPending(true);
       let status = { code: 0 };
       let result = await makeCall({ url: configData.botApiUrl + '/tutor/' + tutoring.TutorCode + "/contract/" + tutoring.ContractState, method: "PUT", hasAuth: true, status: status });
+      setIsPending(false);
 
       if (status.code !== 200)
       {
@@ -95,9 +99,12 @@ function ContractManagementModal(props)
           </tbody>
         </table>
         <div>
-          <Button className={styles.confirmStateChangeBtn} variant="warning" onClick={() => changeContracts()}>
-            Conferma
-          </Button>
+          <div className={styles.confirmStateChangeDiv}>
+          {isPending && <div className={styles.pendingCircleModal}><Spinner animation="border" /></div>}
+            <Button className={styles.confirmStateChangeBtn} variant="warning" onClick={() => changeContracts()}>
+              Conferma
+            </Button>
+          </div>
         </div>
       </>
     );

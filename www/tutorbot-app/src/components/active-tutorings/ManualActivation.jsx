@@ -11,12 +11,14 @@ import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import { makeCall } from '../../MakeCall';
 import UploadForm from '../utils/UploadForm';
+import { Spinner } from "react-bootstrap";
 
 
 function ManualActivation(props)
 {
   const [checkBoxState, setCheckBox] = useState(0);
   const [alertText, setAlert] = useState("");
+  const [isPending,setIsPending] = useState(false)
 
 
   const handleSubmit = () =>
@@ -113,8 +115,10 @@ function ManualActivation(props)
 
   const sendTutorings = async (tutorings) =>
   {
+    setIsPending(true);
     let status = { code: 0 }
     let result = await makeCall({url: configData.botApiUrl + '/tutoring/start', method: 'POST',hasAuth:true, body: JSON.stringify(tutorings), status: status});
+    setIsPending(false);
 
     if (status.code !== 200)
     {
@@ -182,6 +186,7 @@ function ManualActivation(props)
         >
           Attiva
         </Button>
+        {isPending && <Spinner animation="border" className={styles.pendingCircle}/>}
       </div>
       <div className={styles.AlertText}>{alertText}</div>
       <div className={styles.inputDiv}>
