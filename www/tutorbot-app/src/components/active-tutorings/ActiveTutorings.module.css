@@ -56,11 +56,23 @@
 }
 
 .endTutoringsBtn {
-  margin-top: 1em;
-  float: right;
+  margin-top: 0em;
   background-color: rgb(197, 59, 59);
   border-color: rgb(197, 59, 59);
 }
+
+.confirmStateChangeDiv {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: row;
+  float: right;
+}
+
+.pendingCircleModal {
+  margin-right: 1em !important;
+  color: var(--primary-color) !important;
+}
+
 
 .activateForm {
   display: flex;
@@ -99,3 +111,4 @@
   margin-top: 0.2em;
   color: var(--primary-color) !important;
 }
+

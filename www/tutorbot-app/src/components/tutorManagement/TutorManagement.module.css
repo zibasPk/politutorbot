@@ -49,10 +49,22 @@
   text-align: center;
 }
 
-.confirmStateChangeBtn {
+.confirmStateChangeDiv {
   margin-top: 1em;
+  display: flex;
+  flex-direction: row;
   float: right;
 }
+
+.pendingCircleModal {
+  margin-right: 1em !important;
+  color: var(--primary-color) !important;
+}
+
+.confirmStateChangeBtn {
+  margin-top: 0;
+}
+
 
 .alertText {
   color: var(--alert-color);
