@@ -67,7 +67,7 @@ export default function ExamData()
         alertMsg = validateExam(exam);
         if (alertMsg != null)
         {
-          alertSetter("Errore nei dati per l'esame " + exam.Code + " in corso" + exam.Course + ": " + alertMsg);
+          alertSetter("Errore nei dati per l'esame <" + exam.Code + "> in corso <" + exam.Course + ">: " + alertMsg);
           return false;
         }
       }
