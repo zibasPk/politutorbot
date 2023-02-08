@@ -5,7 +5,6 @@
   margin-right: auto;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .newTutorForm {
