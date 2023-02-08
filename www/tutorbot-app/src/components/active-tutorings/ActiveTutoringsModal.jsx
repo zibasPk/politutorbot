@@ -119,22 +119,24 @@ export default class ActiveTutoringsModal extends React.Component
     {
       return (
         <>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Cod. Matr. Tutor</th >
-                <th scope="col">Cognome Tutor</th >
-                <th scope="col">Nome Tutor</th >
-                <th scope="col">Cod. Matr. Studente</th >
-                <th scope="col">Codice Esame</th >
-                <th scope="col">Data Inizio</th >
-                <th scope="col">Durata in Ore</th >
-              </tr>
-            </thead>
-            <tbody>
-              {renderBody}
-            </tbody>
-          </table>
+          <div className={styles.modalBody}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th scope="col">Cod. Matr. Tutor</th >
+                  <th scope="col">Cognome Tutor</th >
+                  <th scope="col">Nome Tutor</th >
+                  <th scope="col">Cod. Matr. Studente</th >
+                  <th scope="col">Codice Esame</th >
+                  <th scope="col">Data Inizio</th >
+                  <th scope="col">Durata in Ore</th >
+                </tr>
+              </thead>
+              <tbody>
+                {renderBody}
+              </tbody>
+            </table>
+          </div>
           <div>
             <div className={styles.confirmStateChangeDiv}>
               {props.isPending && <div className={styles.pendingCircleModal}><Spinner animation="border" /></div>}

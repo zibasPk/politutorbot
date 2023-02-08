@@ -50,7 +50,7 @@ export default class TableModal extends React.Component {
         <Modal.Header closeButton>
           <Modal.Title>{this.state.Title}</Modal.Title>
         </Modal.Header>
-        <Modal.Body >
+        <Modal.Body>
           <this.renderBody
             content={this.state.Body}
             contentHeaders={this.props.contentHeaders}
