@@ -89,7 +89,7 @@ export default function (props)
 
     props.refresh();
 
-    window.location.pathname = "/PoliTutorBot/";
+    window.location.pathname = "/politutorbot/";
     window.location.hash = "/reservations";
   }
 
