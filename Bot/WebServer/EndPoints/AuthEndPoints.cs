@@ -60,15 +60,14 @@ public static class AuthEndPoints
       }
 
       // Print the response
-      Log.Debug(oAuthResponse.Content.ReadAsStringAsync().Result);
-      
-      
+
       if (!oAuthResponse.IsSuccessStatusCode)
       {
         Log.Error("Unsuccessful response from OAuth server: {response}", oAuthResponse);
         context.Response.StatusCode = StatusCodes.Status502BadGateway;
         return;
       }
+      Log.Debug("Successful response from OAuth server: {response}", oAuthResponse);
 
       var token = AuthUtils.GenerateToken();
       
