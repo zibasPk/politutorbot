@@ -201,3 +201,10 @@ code {
   border-color: var(--primary-light-color) !important;
   color: white;
 }
+
+.pendingDiv {
+  text-align: center;
+  padding-top: 2em;
+  padding-bottom: 2em;
+
+}

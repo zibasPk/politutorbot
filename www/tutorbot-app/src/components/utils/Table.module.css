@@ -77,19 +77,31 @@
   background-color: rgba(210, 231, 248, 0.488);
 }
 
+.selected {
+  background-color: #FFF9C4;
+}
+
 table,
 th,
 td {
   border: 1px solid black;
+  text-align: center;
+}
+
+tr {
+ 
 }
 
 th {
+  padding-left: 0.1em;
+  padding-right: 0.1em;
   vertical-align: text-top;
-  text-align: left;
+  text-align: center;
+  white-space: nowrap;
 }
 
-td:hover .arrow {
-  display: inline-block;
+.arrow {
+  display: none;
 }
 
 .firstCell {

@@ -8,6 +8,7 @@ import ContractManagementModal from './ContractManagementModal';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { CircularProgress } from '@mui/material';
 import Table from '../utils/Table';
 
 
@@ -40,6 +41,7 @@ export default function TutorsList(props) {
         <h1>Lista Tutor{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <div className={styles.tutorListContent}>
+            {props.tutorList != undefined ?
             <Table headers={props.headers} content={props.tutorList} hasChecks={true}
               modalProps={{
                 modalTitle: "Cambia stato tutor selezionati",
@@ -47,6 +49,9 @@ export default function TutorsList(props) {
                 contentHeaders: props.headers,
                 onModalEvent: props.refreshData
               }} />
+            :
+            <div className='pendingDiv'><CircularProgress /></div>
+            }
           </div>
           
         </Collapse>

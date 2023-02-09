@@ -4,20 +4,6 @@ table {
   border-collapse: collapse;
 }
 
-table, th, td {
-  border: 1px solid black;
-}
-
-th {
-  vertical-align: text-top;
-  text-align: left;
-}
-
-td:hover .arrow {
-  display: inline-block;
-}
-
-
 .myModal {
   width: fit-content;
   max-width: 75% !important;
