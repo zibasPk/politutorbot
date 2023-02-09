@@ -111,3 +111,7 @@
   color: var(--primary-color) !important;
 }
 
+.modalBody {
+  overflow: auto;
+}
+

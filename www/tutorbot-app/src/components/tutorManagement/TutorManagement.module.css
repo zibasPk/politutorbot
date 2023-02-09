@@ -78,3 +78,7 @@
   margin-left: 1em !important;
   color: var(--primary-color) !important;
 }
+
+.modalBody {
+  overflow: auto;
+}

@@ -7,7 +7,7 @@ import Cookies from 'universal-cookie';
 
 
 import Navigation from './components/NavBar';
-import ActiveTutorings from './components/active-tutorings/ActiveTutorings';
+import ActiveTutorings from './components/activeTutorings/ActiveTutorings';
 import EnabledStudents from './components/enabledStudents/EnabledStudents';
 import TutorManagement from './components/tutorManagement/TutorManagement';
 import Reservations from './components/reservations/Reservations';

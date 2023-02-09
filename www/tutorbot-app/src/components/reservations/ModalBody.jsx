@@ -31,7 +31,7 @@ class ModalBody extends React.Component
   {
 
     let status = { code: 0 };
-    let result = await makeCall({ url: configData.botApiUrl + '/reservations/' + id + '/' + action, method: "PUT", hasAuth: true, status: status});
+    let result = await makeCall({ url: configData.botApiUrl + '/reservations/' + id + '/' + action, method: "PUT", hasAuth: true, status: status });
 
     if (status.code !== 200)
     {
@@ -88,22 +88,24 @@ class ModalBody extends React.Component
     if (rows.length !== 0)
     {
       return (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col">Prenotazione</th >
-              <th scope="col">Cod. Matr. Tutor</th >
-              <th scope="col">Cognome Tutor</th >
-              <th scope="col">Nome Tutor</th >
-              <th scope="col">Codice Esame</th >
-              <th scope="col">Cod. Matr. Studente</th >
-              <th scope="col">Data</th >
-            </tr>
-          </thead>
-          <tbody>
-            {renderBody}
-          </tbody>
-        </table>
+        <div className={styles.modalBody}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Prenotazione</th >
+                <th scope="col">Cod. Matr. Tutor</th >
+                <th scope="col">Cognome Tutor</th >
+                <th scope="col">Nome Tutor</th >
+                <th scope="col">Codice Esame</th >
+                <th scope="col">Cod. Matr. Studente</th >
+                <th scope="col">Data</th >
+              </tr>
+            </thead>
+            <tbody>
+              {renderBody}
+            </tbody>
+          </table>
+        </div>
       )
     }
     else

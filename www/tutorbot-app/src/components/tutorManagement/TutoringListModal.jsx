@@ -48,19 +48,21 @@ function TutoringListModal(props)
   {
     return (
       <>
-        <div className={styles.alertText}>{alert}</div>
-        <table>
-          <thead>
-            <tr>
-              {headerRow}
-            </tr>
-          </thead>
-          <tbody>
-            {props.selectedContent.map((tutoring, i) => <tr key={i}>
-              {contentRow(tutoring)}
-            </tr>)}
-          </tbody>
-        </table>
+        <div className={styles.modalBody}>
+          <div className={styles.alertText}>{alert}</div>
+          <table>
+            <thead>
+              <tr>
+                {headerRow}
+              </tr>
+            </thead>
+            <tbody>
+              {props.selectedContent.map((tutoring, i) => <tr key={i}>
+                {contentRow(tutoring)}
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
         <div>
           <div className={styles.confirmStateChangeDiv}>
             {isPending && <div className={styles.pendingCircleModal}><Spinner animation="border" /></div>}

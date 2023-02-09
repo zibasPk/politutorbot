@@ -77,23 +77,25 @@ export default class EndedTutoringsModal extends React.Component
             <Form.Label>Download file CVS</Form.Label>
             <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => exportCsv()} />
           </Form.Group>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Cod. Matr. Tutor</th >
-                <th scope="col">Cognome Tutor</th >
-                <th scope="col">Nome Tutor</th >
-                <th scope="col">Codice Esame</th >
-                <th scope="col">Cod. Matr. Studente</th >
-                <th scope="col">Data Inizio</th >
-                <th scope="col">Data Fine</th >
-                <th scope="col">Durata in Ore</th >
-              </tr>
-            </thead>
-            <tbody>
-              {renderBody}
-            </tbody>
-          </table>
+          <div className={styles.modalBody}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th scope="col">Cod. Matr. Tutor</th >
+                  <th scope="col">Cognome Tutor</th >
+                  <th scope="col">Nome Tutor</th >
+                  <th scope="col">Codice Esame</th >
+                  <th scope="col">Cod. Matr. Studente</th >
+                  <th scope="col">Data Inizio</th >
+                  <th scope="col">Data Fine</th >
+                  <th scope="col">Durata in Ore</th >
+                </tr>
+              </thead>
+              <tbody>
+                {renderBody}
+              </tbody>
+            </table>
+          </div>
         </>
       )
     }
