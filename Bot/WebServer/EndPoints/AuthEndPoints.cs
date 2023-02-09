@@ -59,8 +59,9 @@ public static class AuthEndPoints
         return;
       }
 
-      //var responseJson = JToken.Parse(oAuthResponse.Content.ReadAsStringAsync().Result);
-
+      //var responseJson = JToken.Parse(oAuthResponse.Content.ReadAsStringAsync().Result)
+      // Print the response
+      Log.Debug(oAuthResponse.Content.ReadAsStringAsync().Result);
       if (!oAuthResponse.IsSuccessStatusCode)
       {
         Log.Error("Unsuccessful response from OAuth server: {response}", oAuthResponse);
