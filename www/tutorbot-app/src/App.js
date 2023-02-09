@@ -16,7 +16,7 @@ import AuthPage from './components/AuthPage';
 import NotFound from './components/NotFound';
 import configData from './config/config.json';
 import NoBackEndConnection from './components/NoBackEndConnection';
-import { Logout } from '@mui/icons-material';
+import { Logout} from '@mui/icons-material';
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { Tooltip } from "react-bootstrap";
 
@@ -66,6 +66,7 @@ function App()
     cookies.remove("authToken", { path: "/" });
     window.location.pathname = "/politutorbot/";
     window.location.hash ="";
+    window.location.search= "";
     refresh();
   }
 

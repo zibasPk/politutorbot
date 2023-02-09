@@ -54,7 +54,11 @@ export default function (props)
     {
       let code = new URL(window.location.href).searchParams.get("code");
       let state = new URL(window.location.href).searchParams.get("state");
-      if (code == null || state == null || code.length === 0 ||state.length === 0) return;
+      if (code == null || state == null || code.length === 0 || state.length === 0)
+      {
+        setAlert("Unexpected Error with microsoft login.");
+        return;
+      }
 
 
       let status = { code: 0 };
@@ -91,6 +95,7 @@ export default function (props)
 
     window.location.pathname = "/politutorbot/";
     window.location.hash = "/reservations";
+    window.location.search = "";
   }
 
   const loginWithPolimi = () =>
