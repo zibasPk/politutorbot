@@ -50,17 +50,8 @@ export default function (props)
 
   useEffect(() =>
   {
-    async function ssoAuthCallBack()
+    async function ssoAuthCallBack(code, state)
     {
-      let code = new URL(window.location.href).searchParams.get("code");
-      let state = new URL(window.location.href).searchParams.get("state");
-      if (code == null || state == null || code.length === 0 || state.length === 0)
-      {
-        setAlert("Unexpected Error with microsoft login.");
-        return;
-      }
-
-
       let status = { code: 0 };
       let url = new URL(configData.botApiUrl + '/auth/callback');
       url.searchParams.append("code", code);
@@ -75,7 +66,19 @@ export default function (props)
       }
       saveTokenAndRefresh(result.token, result.expiresIn);
     }
-    ssoAuthCallBack();
+
+    let error = new URL(window.location.href).searchParams.get("code");
+    if (error != null)
+    {
+      setAlert("Errore nel login: " + error);
+      return;
+    }
+
+    let code = new URL(window.location.href).searchParams.get("code");
+    let state = new URL(window.location.href).searchParams.get("state");
+    if (code == null || state == null || code.length === 0 || state.length === 0)
+      return;
+    ssoAuthCallBack(code, state);
   }, []);
 
 
