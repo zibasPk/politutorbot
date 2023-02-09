@@ -7,7 +7,8 @@ public record struct Tutor(
   string Course,
   bool OfaAvailable,
   int Ranking,
-  int? ContractState
+  int? ContractState,
+  int? HoursDone
 );
 
 public record struct TutorToExam(
@@ -22,7 +23,8 @@ public record struct TutorToExam(
   int Ranking,
   bool OfaAvailable,
   DateTime? LastReservation,
-  int AvailableTutorings
+  int AvailableTutorings,
+  int? ContractState
 );
 
 public record struct TutorCodeToExamCode

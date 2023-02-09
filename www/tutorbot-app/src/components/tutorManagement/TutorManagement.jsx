@@ -14,6 +14,7 @@ const TutorHeaders = {
   Course: "Corso di studi",
   OfaAvailable: "Per OFA",
   Ranking: "# Graduatoria",
+  HoursDone: "# Ore svolte",
   ContractState: "Stato Contratto"
 };
 

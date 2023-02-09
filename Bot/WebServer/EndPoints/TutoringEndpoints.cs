@@ -252,12 +252,19 @@ public static class TutoringEndpoints
       await response.WriteAsync($"Student: {tutoringData.StudentCode} isn't enabled for tutoring");
       return false;
     }
+    var tutor = tutorService.FindTutor(tutoringData.TutorCode);
+
+    if (tutor!.Value.ContractState != 2) // 2 = signed contract
+    {
+      response.StatusCode = StatusCodes.Status400BadRequest;
+      response.ContentType = "text/html; charset=utf-8";
+      await response.WriteAsync($"Tutor: {tutoringData.TutorCode} doesn't have a signed contract");
+      return false;
+    }
 
     if (tutoringData.IsOFA)
     {
       // OFA tutoring
-      var tutor = tutorService.FindTutor(tutoringData.TutorCode);
-
       // Check if tutor exists and is available for OFA
       if (tutor is not { OfaAvailable: true })
       {

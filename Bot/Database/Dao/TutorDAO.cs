@@ -122,7 +122,8 @@ public class TutorDAO : DAO
           Course = reader.GetString("course"),
           Ranking = reader.GetInt32("ranking"),
           OfaAvailable = reader.GetBoolean("OFA_available"),
-          ContractState = reader.GetInt32("contract_state")
+          ContractState = reader.GetInt32("contract_state"),
+          HoursDone = reader.GetInt32("hours_done")
         };
         tutors.Add(tutor);
       }
@@ -571,8 +572,8 @@ public class TutorDAO : DAO
 
   /// <summary>
   /// Finds tutors, that are available, for a specific exam.
-  /// A tutor is available if it hasn't had a reservation in the last 24 hours and if it has
-  /// enough available tutorings.
+  /// A tutor is available if it hasn't had a reservation in the last 24 hours, if it has
+  /// enough available tutorings and his contract state is 2 (signed).
   /// </summary>
   /// <param name="exam">The code of the exam for which to find tutors.</param>
   /// <param name="lockHours">The amount of hours that need to have passed before a tutor isn't locked anymore.</param>
@@ -583,7 +584,7 @@ public class TutorDAO : DAO
     const string query = "SELECT * FROM tutor_to_exam as e " +
                          "JOIN tutor as t on t.tutor_code=e.tutor " +
                          "JOIN course as c on c.name=t.course " +
-                         "WHERE exam=@exam AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
+                         "WHERE t.contract_state != 2 AND exam=@exam AND last_reservation <= NOW() - INTERVAL @hours HOUR " +
                          "AND available_tutorings > 0 ORDER BY ranking ASC";
     var tutors = new List<TutorToExam>();
     try
@@ -635,7 +636,7 @@ public class TutorDAO : DAO
                          "JOIN tutor as t on t.tutor_code=te.tutor " +
                          "JOIN course as c on c.name=t.course " +
                          "JOIN exam as e on e.code=te.exam " +
-                         "WHERE exam!=@exam AND e.name = @examName AND last_reservation <= (NOW() - INTERVAL @hours HOUR) " +
+                         "WHERE t.contract_state != 2 AND exam!=@exam AND e.name = @examName AND last_reservation <= (NOW() - INTERVAL @hours HOUR) " +
                          "AND available_tutorings > 0 ORDER BY ranking ASC";
     var tutors = new List<TutorToExam>();
     try
@@ -1147,7 +1148,7 @@ public class TutorDAO : DAO
     Connection.Open();
     // Finds all OFA available tutorings that don't 
     const string query = "SELECT * FROM tutor " +
-                         "WHERE OFA_available = 1 AND tutor_code NOT IN " +
+                         "WHERE OFA_available = 1 AND tutor_code AND contract_state != 2 NOT IN " +
                          "(SELECT tutor FROM active_tutoring " +
                          "WHERE end_date IS NULL) " +
                          "ORDER BY ranking ASC";
