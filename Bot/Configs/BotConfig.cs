@@ -21,17 +21,15 @@ public class BotConfig: Config
 
     public BotConfig()
     {
-        // Default log level 3: information
         BotToken = "";
-        BotLogLevel = 3;
+        BotLogLevel = 3;  // Default log level 3: information
         UserTimeOut = 120000;
         TutorLockHours = 24;
         HasOnlineAuth = false;
         MaxTutoringDuration = 150;
         ShownTutorsInList = 5;
-        ShownTutorsInOFAList = 8;
-        // default link for online authentication
-        AuthLink = "www.example.com";
+        ShownTutorsInOFAList = 8; 
+        AuthLink = "www.example.com"; // default link for online authentication on bot
         
         // initialize file path
         FilePath = Paths.BotConfig;

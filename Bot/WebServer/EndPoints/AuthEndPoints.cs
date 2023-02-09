@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
@@ -52,7 +53,7 @@ public static class AuthEndPoints
     try
     {
       HttpClient httpClient = new();
-      var oAuthResponse = AuthUtils.GetAzureResponse(code, state, GrantTypeEnum.authorization_code);
+      var oAuthResponse = AuthUtils.GetAzureResponse(code, state);
       if (oAuthResponse == null)
       {
         Log.Error("OAuth response is null");
@@ -70,25 +71,24 @@ public static class AuthEndPoints
       var responseJson = JObject.Parse(await oAuthResponse.Content.ReadAsStringAsync());
       responseJson.TryGetValue("access_token", out var accessToken);
       var strToken = accessToken.Value<string>();
-      Log.Information(strToken);
       // Get the user mail from the access token
-      var userMail = AuthUtils.GetMailResponse(strToken);
-      if (!userMail!.IsSuccessStatusCode)
+      var handler = new JwtSecurityTokenHandler();
+      var email = handler.ReadJwtToken(strToken).Payload.Claims.First(e=>e.Type == "unique_name").Value;
+      var tenantId = handler.ReadJwtToken(strToken).Payload.Claims.First(e=>e.Type == "tid").Value;
+      
+      // Check if the users' email tenant is authorized to access the application
+      if (!GlobalConfig.WebConfig!.AllowedTenants.Contains(tenantId))
       {
-        Log.Error("Unsuccessful response from OAuth server on mail request: {response}", userMail);
+        Log.Information("User with mail: {userMail} tried accessing the application from an unauthorized tenant.", email);
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return;
+        return; 
       }
       
-      responseJson = JObject.Parse(await userMail.Content.ReadAsStringAsync());
-      responseJson.TryGetValue("email", out var email);
-      var emailStr = email.Value<string>();
-
       var authDao = new AuthenticationDAO(DbConnection.GetMySqlConnection());
-      // Check if the user is authorized to access the application
-      if (!authDao.VerifyMail(emailStr))
+      // Check if the user specific email is authorized to access the application
+      if (!authDao.VerifyMail(email))
       {
-        Log.Information("User with Unauthorized mail: {userMail} tried accessing the application.", userMail);
+        Log.Information("User with Unauthorized mail: {email} tried accessing the application.", email);
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         return; 
       }

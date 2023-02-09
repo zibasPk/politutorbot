@@ -254,6 +254,7 @@ public static class TutoringEndpoints
     }
     var tutor = tutorService.FindTutor(tutoringData.TutorCode);
 
+    // Check if tutor has signed his contract
     if (tutor!.Value.ContractState != 2) // 2 = signed contract
     {
       response.StatusCode = StatusCodes.Status400BadRequest;

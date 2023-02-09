@@ -22,21 +22,21 @@ public class WebAppConfig : Config
     public string AzureSecret;
     [JsonProperty(Required = Required.AllowNull)]
     public string AzureClientId;
+    public string[] AllowedTenants;
     public string TokenValidityDays;
     public WebAppConfig()
     {
-        // default log level 3: information
-        WebLogLevel = 3;
-        // default port
+        WebLogLevel = 3; // default log level 3: information
         Url = "http://+";
         Port = 5000;
-        // default Api authentication
+        // default Api basic authentication credentials
         AuthUsr = "admin";
         AuthPsw = "admin";
         AllowedCors = "*";
         FilePath = Paths.WebAppConfig;
         AzureSecret = "";
         AzureClientId = "";
+        AllowedTenants = new[] { "0a17712b-6df3-425d-808e-309df28a5eeb" };
         TokenValidityDays = "30";
     }
 }
