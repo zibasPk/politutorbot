@@ -67,7 +67,7 @@ export default function (props)
       saveTokenAndRefresh(result.token, result.expiresIn);
     }
 
-    let error = new URL(window.location.href).searchParams.get("code");
+    let error = new URL(window.location.href).searchParams.get("error");
     if (error != null)
     {
       setAlert("Errore nel login: " + error);
