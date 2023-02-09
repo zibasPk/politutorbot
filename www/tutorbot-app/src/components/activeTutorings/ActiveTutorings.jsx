@@ -90,7 +90,7 @@ class ActiveTutorings extends RefreshableComponent
           <h1>Attivazione Manuale</h1>
           <ManualActivation onChange={() => this.refreshData()} />
           <h1>Tutoraggi Attivi</h1>
-          {this.state.ActiveTutoringsArray === undefined ? <CircularProgress /> :
+          {this.state.ActiveTutoringsArray === undefined ? <div className='pendingDiv'><CircularProgress /></div>:
             <>
               <Table headers={ActiveHeaders}
                 content={this.state.ActiveTutoringsArray} hasChecks={true}
@@ -102,7 +102,7 @@ class ActiveTutorings extends RefreshableComponent
             </>
           }
           <h1>Tutoraggi Conclusi</h1>
-          {this.state.EndedTutoringsArray === undefined ? <CircularProgress /> :
+          {this.state.EndedTutoringsArray === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
             <>
               <Table headers={EndedHeaders}
                 content={this.state.EndedTutoringsArray} hasChecks={true}

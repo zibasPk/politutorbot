@@ -30,8 +30,8 @@ const TutoringHeaders = {
 export default function TutorManagement()
 {
 
-  const [tutorsArray, setTutors] = useState([]);
-  const [tutoringArray, setTutorings] = useState([]);
+  const [tutorsArray, setTutors] = useState(undefined);
+  const [tutoringArray, setTutorings] = useState(undefined);
 
   useEffect(() =>
   {

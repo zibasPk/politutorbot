@@ -74,7 +74,7 @@ export default class EndedTutoringsModal extends React.Component
       return (
         <>
           <Form.Group controlId="formTutorCode" className="mb-3">
-            <Form.Label>Download file CVS</Form.Label>
+            <Form.Label>Download file CSV</Form.Label>
             <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => exportCsv()} />
           </Form.Group>
           <div className={styles.modalBody}>

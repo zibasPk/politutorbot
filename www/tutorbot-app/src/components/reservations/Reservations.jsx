@@ -55,7 +55,7 @@ class Reservations extends RefreshableComponent {
       <div className={styles.content}>
         <h1>Prenotazioni da Gestire</h1>
 
-        {this.state.PendingReservations === undefined ? <CircularProgress /> :
+        {this.state.PendingReservations === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
           <>
             <Table headers={Headers} content={this.state.PendingReservations} hasChecks={true}
               modalProps={{
@@ -68,7 +68,7 @@ class Reservations extends RefreshableComponent {
           </>
         }
         <h1>Storico Prenotazioni</h1>
-        {this.state.ProcessedReservations === undefined ? <CircularProgress /> :
+        {this.state.ProcessedReservations === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
           <Table headers={Headers} content={this.state.ProcessedReservations} hasChecks={false} />
         }
       </div>

@@ -345,7 +345,7 @@ export default class EnabledStudents extends RefreshableComponent
               />
             </div>
           </div>
-          {this.state.EnabledStudents === undefined ? <CircularProgress /> :
+          {this.state.EnabledStudents === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
             <StudentList studentArray={this.state.EnabledStudents} />}
         </div>
       </>
@@ -404,6 +404,7 @@ class StudentList extends React.Component
           <Form.Control type="text" placeholder="Matr. Studente" onChange={(e) => this.filterList(e)} />
         </Form.Group>
         <div className={styles.resultAlert}>{this.state.FilteredStudents.length} risultati</div>
+        <div style={{fontSize: "0.9em",fontStyle: "italic"}}>Lista codici matricola studenti abilitati</div>
         <div className={styles.listContainer}>
           <ul className={styles.studentList}>
             {this.state.FilteredStudents.map((s) => (<li key={s}>{s}</li>))}

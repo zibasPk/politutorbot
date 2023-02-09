@@ -55,7 +55,6 @@ export async function makeCall(props)
 
   let respContentType = response.headers.get('Content-Type');
   if (!respContentType)
-
     return "";
 
   if (respContentType.split(";")[0] === 'application/json')

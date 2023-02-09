@@ -360,7 +360,7 @@ class Table extends Component
 
 export function HeaderCellWithHover(props)
 {
-  const [iconStyle, setIconStyle] = useState({ visibility: 'hidden' });
+  const [iconStyle, setIconStyle] = useState({ display: 'none' });
   const [style, setStyle] = useState({});
   let arrow;
 
@@ -372,12 +372,12 @@ export function HeaderCellWithHover(props)
     <th scope="col" style={style} key={props.text}
       onMouseEnter={e =>
       {
-        setIconStyle({ visibility: 'visible' });
+        setIconStyle({ display: 'inline'});
         setStyle({ cursor: 'pointer' })
       }}
       onMouseLeave={e =>
       {
-        setIconStyle({ visibility: 'hidden' })
+        setIconStyle({ display: 'none' })
       }}
       onClick={e =>
       {
