@@ -1,8 +1,10 @@
-﻿using System.Security.Cryptography;
+﻿using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
+using Microsoft.AspNetCore.Http;
 
 namespace Bot.WebServer.Authentication;
 
@@ -14,7 +16,7 @@ public enum GrantTypeEnum
 
 public static class AuthUtils
 {
-  public static HttpResponseMessage? GetResponse(string code, int state, GrantTypeEnum grantType)
+  public static HttpResponseMessage? GetAzureResponse(string code, int state, GrantTypeEnum grantType)
   {
     HttpClient httpClient = new();
 
@@ -51,6 +53,15 @@ public static class AuthUtils
     return httpClient.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token",
       formUrlEncodedContent).Result;
   }
+
+  public static HttpResponseMessage? GetMailResponse(string accessCode)
+  {
+    HttpClient httpClient = new();
+    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessCode);
+    return httpClient.GetAsync("https://graph.microsoft.com/oidc/userinfo").Result;
+  }
+  
+  
   
   /// <summary>
   /// Method to generate new unique token. And saves it in db.

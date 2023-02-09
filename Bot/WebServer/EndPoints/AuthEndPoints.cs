@@ -50,7 +50,7 @@ public static class AuthEndPoints
   
     try
     {
-      var oAuthResponse = AuthUtils.GetResponse(code, state, GrantTypeEnum.authorization_code);
+      var oAuthResponse = AuthUtils.GetAzureResponse(code, state, GrantTypeEnum.authorization_code);
 
       if (oAuthResponse == null)
       {
@@ -58,17 +58,36 @@ public static class AuthEndPoints
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         return;
       }
-
-      // Print the response
-      var responseString = await oAuthResponse.Content.ReadAsStringAsync();
-      Log.Information("OAuth response: {response}", responseString);
+      
       if (!oAuthResponse.IsSuccessStatusCode)
       {
         Log.Error("Unsuccessful response from OAuth server: {response}", oAuthResponse);
         context.Response.StatusCode = StatusCodes.Status502BadGateway;
         return;
       }
-
+      
+      // Print the response
+      var responseString = await oAuthResponse.Content.ReadAsStringAsync();
+      var responseJson = JObject.Parse(responseString); 
+      var accessToken = responseJson.GetValue("access_token").ToString(Formatting.None);
+      Log.Information("Access token: {token}", accessToken);
+      
+      var userMail = AuthUtils.GetMailResponse(accessToken);
+      if(userMail == null)
+      {
+        Log.Error("Mail response is null");
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        return;
+      }
+      
+      if (!userMail!.IsSuccessStatusCode)
+      {
+        Log.Error("Unsuccessful response from OAuth server on mail request: {response}", userMail);
+        context.Response.StatusCode = StatusCodes.Status502BadGateway;
+        return;
+      }
+      
+      
       var token = AuthUtils.GenerateToken();
       
       context.Response.ContentType = "application/json; charset=utf-8";
