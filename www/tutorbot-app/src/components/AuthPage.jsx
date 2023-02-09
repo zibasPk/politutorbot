@@ -65,7 +65,6 @@ export default function (props)
           setAlert("Errore nel login: email non autorizzata");
         else
           setAlert("Errore nel login.");
-        window.location.search = "";
         return;
       }
       saveTokenAndRefresh(result.token, result.expiresIn);
@@ -75,7 +74,6 @@ export default function (props)
     if (error != null)
     {
       setAlert("Errore nel login: " + error);
-      window.location.search = "";
       return;
     }
 
