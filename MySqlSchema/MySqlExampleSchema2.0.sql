@@ -186,6 +186,28 @@ INSERT INTO `auth_token` VALUES ('1aD/zrwCCJbVUa6vVPjBaFMfKmYOf8+hUJnCT6/Z13w=',
 UNLOCK TABLES;
 
 --
+-- Table structure for table `authorized_email`
+--
+
+DROP TABLE IF EXISTS `authorized_email`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `authorized_email` (
+  `email` varchar(300) NOT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `authorized_email`
+--
+
+LOCK TABLES `authorized_email` WRITE;
+/*!40000 ALTER TABLE `authorized_email` DISABLE KEYS */;
+/*!40000 ALTER TABLE `authorized_email` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `course`
 --
 
@@ -519,4 +541,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-09 14:12:53
+-- Dump completed on 2023-02-09 16:13:28
