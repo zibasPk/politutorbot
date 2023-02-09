@@ -46,8 +46,6 @@ export default function (props)
     }
 
     saveTokenAndRefresh(result.token, result.expiresIn);
-    // await makeCall({ url: configData.botApiUrl + '/authenticate', method: "POST", hasAuth: true, status: status });
-    // console.log(status.code);
   }
 
   useEffect(() =>
@@ -56,7 +54,8 @@ export default function (props)
     {
       let code = new URL(window.location.href).searchParams.get("code");
       let state = new URL(window.location.href).searchParams.get("state");
-      if (!code || !state) return;
+      if (code == null || state == null || code.length === 0 ||state.length === 0) return;
+
 
       let status = { code: 0 };
       let url = new URL(configData.botApiUrl + '/auth/callback');
@@ -70,7 +69,6 @@ export default function (props)
         setAlert("Errore nel login.");
         return;
       }
-
       saveTokenAndRefresh(result.token, result.expiresIn);
     }
     ssoAuthCallBack();
