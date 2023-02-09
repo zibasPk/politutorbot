@@ -1,4 +1,6 @@
 using Bot.configs;
+using Bot.Database;
+using Bot.Database.Dao;
 using Bot.WebServer.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -65,30 +67,34 @@ public static class AuthEndPoints
         return;
       }
 
-      // Print the response
-      var responseString = await oAuthResponse.Content.ReadAsStringAsync();
-      var responseJson = JObject.Parse(responseString);
+      var responseJson = JObject.Parse(await oAuthResponse.Content.ReadAsStringAsync());
       responseJson.TryGetValue("access_token", out var accessToken);
       var strToken = accessToken.Value<string>();
-      Log.Information("Access token: {token}", strToken);
+      
+      // Get the user mail from the access token
       var userMail = AuthUtils.GetMailResponse(strToken);
-      if (userMail == null)
-      {
-        Log.Error("Mail response is null");
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        return;
-      }
-
       if (!userMail!.IsSuccessStatusCode)
       {
         Log.Error("Unsuccessful response from OAuth server on mail request: {response}", userMail);
-        context.Response.StatusCode = StatusCodes.Status502BadGateway;
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         return;
       }
+      
+      responseJson = JObject.Parse(await userMail.Content.ReadAsStringAsync());
+      responseJson.TryGetValue("email", out var email);
+      var emailStr = email.Value<string>();
 
-
+      var authDao = new AuthenticationDAO(DbConnection.GetMySqlConnection());
+      // Check if the user is authorized to access the application
+      if (!authDao.VerifyMail(emailStr))
+      {
+        Log.Information("User with Unauthorized mail: {userMail} tried accessing the application.", userMail);
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return; 
+      }
+      
+      // Generate a token for the user
       var token = AuthUtils.GenerateToken();
-
       context.Response.ContentType = "application/json; charset=utf-8";
       await context.Response.WriteAsJsonAsync(new { token = token, expiresIn = GlobalConfig.WebConfig!.TokenValidityDays });
     }

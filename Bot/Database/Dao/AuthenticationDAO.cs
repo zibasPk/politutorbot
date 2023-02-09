@@ -75,4 +75,29 @@ public class AuthenticationDAO : DAO
       throw;
     }
   }
+
+  public bool VerifyMail(string emailStr)
+  {
+    Connection.Open();
+    const string query = "SELECT * authorized_email WHERE email = @email";
+    try
+    {
+      var command = new MySqlCommand(query, Connection);
+      command.Parameters.AddWithValue("@email", emailStr);
+      command.Prepare();
+      var reader = command.ExecuteReader();
+      if (reader.HasRows)
+      {
+        Connection.Close();
+        return true;
+      }
+      Connection.Close();
+      return false;
+    }
+    catch (Exception)
+    {
+      Connection.Close();
+      throw;
+    }
+  }
 }
