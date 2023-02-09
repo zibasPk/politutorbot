@@ -36,7 +36,7 @@ public class WebAppConfig : Config
         FilePath = Paths.WebAppConfig;
         AzureSecret = "";
         AzureClientId = "";
-        AllowedTenants = new[] { "0a17712b-6df3-425d-808e-309df28a5eeb" };
+        AllowedTenants = new[] { "0a17712b-6df3-425d-808e-309df28a5eeb" }; // @mail.polimi.it tentant id
         TokenValidityDays = "30";
     }
 }
