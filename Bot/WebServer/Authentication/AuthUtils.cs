@@ -5,6 +5,8 @@ using Bot.configs;
 using Bot.Database;
 using Bot.Database.Dao;
 using Microsoft.AspNetCore.Http;
+using RestSharp;
+using Serilog;
 
 namespace Bot.WebServer.Authentication;
 
@@ -16,9 +18,11 @@ public enum GrantTypeEnum
 
 public static class AuthUtils
 {
+  private static readonly HttpClient HttpClient = new HttpClient();
+
+  
   public static HttpResponseMessage? GetAzureResponse(string code, int state, GrantTypeEnum grantType)
   {
-    HttpClient httpClient = new();
 
     var clientSecret = GlobalConfig.WebConfig!.AzureSecret;
     if (clientSecret == "") return null;
@@ -50,15 +54,14 @@ public static class AuthUtils
       }
 
     var formUrlEncodedContent = new FormUrlEncodedContent(formContent);
-    return httpClient.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    return HttpClient.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token",
       formUrlEncodedContent).Result;
   }
 
-  public static HttpResponseMessage? GetMailResponse(string accessCode)
+  public static HttpResponseMessage GetMailResponse(string accessCode)
   {
-    HttpClient httpClient = new();
-    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessCode);
-    return httpClient.GetAsync("https://graph.microsoft.com/oidc/userinfo").Result;
+    HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessCode);
+    return HttpClient.GetAsync("https://graph.microsoft.com/oidc/userinfo").Result;
   }
   
   
