@@ -70,7 +70,7 @@ public static class AuthEndPoints
       var responseJson = JObject.Parse(await oAuthResponse.Content.ReadAsStringAsync());
       responseJson.TryGetValue("access_token", out var accessToken);
       var strToken = accessToken.Value<string>();
-      
+      Log.Information(strToken);
       // Get the user mail from the access token
       var userMail = AuthUtils.GetMailResponse(strToken);
       if (!userMail!.IsSuccessStatusCode)

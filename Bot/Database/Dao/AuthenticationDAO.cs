@@ -79,7 +79,7 @@ public class AuthenticationDAO : DAO
   public bool VerifyMail(string emailStr)
   {
     Connection.Open();
-    const string query = "SELECT * authorized_email WHERE email = @email";
+    const string query = "SELECT * FROM authorized_email WHERE email = @email";
     try
     {
       var command = new MySqlCommand(query, Connection);
