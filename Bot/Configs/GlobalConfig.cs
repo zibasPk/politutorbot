@@ -33,7 +33,7 @@ public static class GlobalConfig
       3 => LogEventLevel.Information,
       4 => LogEventLevel.Warning,
       5 => LogEventLevel.Error,
-      6 => LogEventLevel.Debug,
+      6 => LogEventLevel.Fatal,
       _ => LogEventLevel.Information
     };
   }
@@ -51,7 +51,7 @@ public static class GlobalConfig
       3 => LogEventLevel.Information,
       4 => LogEventLevel.Warning,
       5 => LogEventLevel.Error,
-      6 => LogEventLevel.Debug,
+      6 => LogEventLevel.Fatal,
       _ => LogEventLevel.Information
     };
   }
