@@ -105,7 +105,7 @@ export default function (props)
   {
     let url = new URL("https://login.microsoftonline.com/common/oauth2/v2.0/authorize");
     url.searchParams.append("client_id", authConfig.clientId);
-    url.searchParams.append("scope", "mail");
+    url.searchParams.append("scope", "offline_access openid email");
     url.searchParams.append("response_type", "code");
     url.searchParams.append("state", "10020");
     url.searchParams.append("login_hint", "nome@mail.polimi.it");
