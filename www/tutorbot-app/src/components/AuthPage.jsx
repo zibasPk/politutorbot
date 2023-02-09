@@ -61,7 +61,11 @@ export default function (props)
 
       if (!result)
       {
-        setAlert("Errore nel login.");
+        if (status.code === 401) // Unauthorized
+          setAlert("Errore nel login: email non autorizzata");
+        else
+          setAlert("Errore nel login.");
+        window.location.search = "";
         return;
       }
       saveTokenAndRefresh(result.token, result.expiresIn);
@@ -71,6 +75,7 @@ export default function (props)
     if (error != null)
     {
       setAlert("Errore nel login: " + error);
+      window.location.search = "";
       return;
     }
 
