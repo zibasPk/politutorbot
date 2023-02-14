@@ -84,7 +84,7 @@
 table,
 th,
 td {
-  border: 1px solid black;
+  border: 1px solid #78909C;
   text-align: center;
 }
 
@@ -94,6 +94,8 @@ th {
   vertical-align: text-top;
   text-align: center;
   white-space: nowrap;
+  background-color: var(--primary-lighter-color);
+  border-color:  var(--primary-color);
 }
 
 .arrow {
