@@ -300,6 +300,7 @@ export default class EnabledStudents extends RefreshableComponent
           <div className={styles.functionsHeader}>
             <div className={styles.addFunctions}>
               <h1>Abilita Studenti</h1>
+              <div className="contentWithBg">
               <Form.Group controlId="formTextEnable" className="mb-3">
                 <Form.Label>Abilita Studente</Form.Label>
                 {this.state.IsPending[0] && <Spinner animation="border" className={styles.pendingCircle} />}
@@ -320,9 +321,11 @@ export default class EnabledStudents extends RefreshableComponent
                 parseData={(file, alertSetter, sendFile) => this.parseStudentsFile(file, alertSetter, sendFile)}
                 callBack={() => this.refreshData()}
               />
+              </div>
             </div>
             <div className={styles.removeFunctions}>
               <h1>Rimuovi Studenti</h1>
+              <div className='contentWithBg'>
               <Form.Group controlId="formTextRemove" className="mb-3">
                 <Form.Label>Rimuovi Studente</Form.Label>
                 {this.state.IsPending[1] && <Spinner animation="border" className={styles.pendingCircle} />}
@@ -343,6 +346,7 @@ export default class EnabledStudents extends RefreshableComponent
                 parseData={(file, alertSetter, sendFile) => this.parseStudentsFile(file, alertSetter, sendFile)}
                 callBack={() => this.refreshData()}
               />
+              </div>
             </div>
           </div>
           {this.state.EnabledStudents === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
@@ -399,6 +403,7 @@ class StudentList extends React.Component
     return (
       <div>
         <h2>Studenti Abilitati</h2>
+        <div className='contentWithBg'>
         <Form.Group controlId="formTextSearch" className="mb-3">
           <Form.Label>Cerca Studente</Form.Label>
           <Form.Control type="text" placeholder="Matr. Studente" onChange={(e) => this.filterList(e)} />
@@ -409,6 +414,7 @@ class StudentList extends React.Component
           <ul className={styles.studentList}>
             {this.state.FilteredStudents.map((s) => (<li key={s}>{s}</li>))}
           </ul>
+        </div>
         </div>
       </div>
     )

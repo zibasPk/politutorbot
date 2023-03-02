@@ -41,6 +41,7 @@
 .addTutorContent {
   max-width: 900px;
   min-width: 0px;
+  background-color: var(--background-color-component);
 }
 
 .tutorFileAlert {
