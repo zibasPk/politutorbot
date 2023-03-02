@@ -38,7 +38,7 @@ export default function TutorData()
     <>
       <div className={styles.dropDownContent}>
         <h1>Gestione Dati Tutor{icon}</h1>
-        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.tutorDataCont}>
+        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.tutorDataCont + " contentWithBg"}>
           <div>Usa questa funzionalità per eliminare tutti i tutor e tutoraggi dal sistema</div>
           <DeleteButton btnText='Reset dati Tutor e Tutoraggi' 
           modalTitle='Eliminazione Tutor e Tutoraggi' 

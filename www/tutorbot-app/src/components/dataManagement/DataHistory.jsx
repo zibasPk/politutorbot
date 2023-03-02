@@ -53,7 +53,7 @@ export default function DataHistory()
 
     if (history.content == null)
       return;
-    
+
     const csv = jsonToCSV(
       {
         fields: history.header,
@@ -73,7 +73,7 @@ export default function DataHistory()
   const fetchHistoryData = async (type) =>
   {
     let status = { code: 0 };
-    let history = await makeCall({url: configData.botApiUrl + "/history/" + type, method: 'GET', hasAuth: true, status: status})
+    let history = await makeCall({ url: configData.botApiUrl + "/history/" + type, method: 'GET', hasAuth: true, status: status })
     if (status.code !== 200)
     {
       setErrorMsg("Errore nel recupero dei dati storici");
@@ -90,23 +90,25 @@ export default function DataHistory()
         <h1>Download Dati Storici{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.historyDataCont}>
           <div className={styles.errorMsg}>{errorMsg}</div>
-          <p>
-            <Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Svolti</Form.Label>
-            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() =>
-              exportCsv("storico_tutoraggi_attivi.csv", "tutorings/active")} />
-          </p>
+          <div className='contentWithBg'>
+            <p>
+              <Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Svolti</Form.Label>
+              <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() =>
+                exportCsv("storico_tutoraggi_attivi.csv", "tutorings/active")} />
+            </p>
 
-          <p>
-            <Form.Label className={styles.csvDownloadLable}>Download storico Prenotazioni</Form.Label>
-            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => 
-              exportCsv("storico_prenotazioni.csv", "reservations")} />
-          </p>
+            <p>
+              <Form.Label className={styles.csvDownloadLable}>Download storico Prenotazioni</Form.Label>
+              <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() =>
+                exportCsv("storico_prenotazioni.csv", "reservations")} />
+            </p>
 
-          <p>
-            <Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Disponibili</Form.Label>
-            <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() => 
-              exportCsv("storico_tutoraggi.csv", "tutorings")} />
-          </p>
+            <p>
+              <Form.Label className={styles.csvDownloadLable}>Download storico Tutoraggi Disponibili</Form.Label>
+              <FileDownloadIcon className={styles.btnDownloadCvs} onClick={() =>
+                exportCsv("storico_tutoraggi.csv", "tutorings")} />
+            </p>
+          </div>
         </Collapse>
       </div>
     </>
