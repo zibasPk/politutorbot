@@ -78,11 +78,13 @@ code {
   border-top-right-radius: 5px;
   box-shadow: -3px 0px 1px -2px rgba(0, 0, 0, 0.137);
   background-color: var(--background-color-primary);
+  z-index: 2;
 }
 
 .navItem:hover {
   color: black !important;
-  background-color: var(--background-color-primary);
+  background-color: var(--background-color-component);
+  z-index: 1;
   box-shadow: -5px 0px 3px -2px rgba(0, 0, 0, 0.137);
 }
 
