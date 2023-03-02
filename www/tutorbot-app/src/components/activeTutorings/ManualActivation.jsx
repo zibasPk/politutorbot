@@ -18,7 +18,7 @@ function ManualActivation(props)
 {
   const [checkBoxState, setCheckBox] = useState(0);
   const [alertText, setAlert] = useState("");
-  const [isPending,setIsPending] = useState(false)
+  const [isPending, setIsPending] = useState(false)
 
 
   const handleSubmit = () =>
@@ -117,7 +117,7 @@ function ManualActivation(props)
   {
     setIsPending(true);
     let status = { code: 0 }
-    let result = await makeCall({url: configData.botApiUrl + '/tutoring/start', method: 'POST',hasAuth:true, body: JSON.stringify(tutorings), status: status});
+    let result = await makeCall({ url: configData.botApiUrl + '/tutoring/start', method: 'POST', hasAuth: true, body: JSON.stringify(tutorings), status: status });
     setIsPending(false);
 
     if (status.code !== 200)
@@ -161,49 +161,51 @@ function ManualActivation(props)
 
   return (
     <>
-      <div>Attiva un nuovo tutoraggio:</div>
-      <div className={styles.activateForm} >
-        <Form.Check label="per OFA" type="switch" name="IsOFA"
-          onChange={handleFormChange}
-          className={styles.ofaSwitch}
-        />
-        <Form.Control type="text" placeholder="Matr. Tutor" name="TutorCode"
-          onChange={handleFormChange}
-          className={styles.activateInput}
-        />
-        <Form.Control type="text" placeholder="Matr. Studente" name="StudentCode"
-          onChange={handleFormChange}
-          className={styles.activateInput}
-        />
-        <Form.Control type="text" placeholder="Codice Esame" name="ExamCode"
-          onChange={handleFormChange}
-          className={styles.activateInput}
-          disabled={disabled}
-        />
-        <Button variant="warning" type="button"
-          onClick={e => handleSubmit(e)}
-          className={styles.activateInput}
-        >
-          Attiva
-        </Button>
-        {isPending && <Spinner animation="border" className={styles.pendingCircle}/>}
-      </div>
-      <div className={styles.AlertText}>{alertText}</div>
-      <div className={styles.inputDiv}>
-        <UploadForm
-          formText="Carica File CSV con i tutoraggi da attivare"
-          infoContent=
-          {
-            <>
-              <div>Inserire un file cvs con righe come da figura:</div>
-              <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese le maiuscole**</strong></div>
-              <img src={examplePic} alt="immagine mancante"></img>
-            </>
-          }
-          uploadEndPoint="/tutoring/start"
-          parseData={(file, alertSetter, sendFile) => parseTutoringsFile(file, alertSetter, sendFile)}
-          callBack={() => props.onChange()}
-        />
+      <div className="contentWithBg">
+        <div>Attiva un nuovo tutoraggio:</div>
+        <div className={styles.activateForm} >
+          <Form.Check label="per OFA" type="switch" name="IsOFA"
+            onChange={handleFormChange}
+            className={styles.ofaSwitch}
+          />
+          <Form.Control type="text" placeholder="Matr. Tutor" name="TutorCode"
+            onChange={handleFormChange}
+            className={styles.activateInput}
+          />
+          <Form.Control type="text" placeholder="Matr. Studente" name="StudentCode"
+            onChange={handleFormChange}
+            className={styles.activateInput}
+          />
+          <Form.Control type="text" placeholder="Codice Esame" name="ExamCode"
+            onChange={handleFormChange}
+            className={styles.activateInput}
+            disabled={disabled}
+          />
+          <Button variant="warning" type="button"
+            onClick={e => handleSubmit(e)}
+            className={styles.activateInput}
+          >
+            Attiva
+          </Button>
+          {isPending && <Spinner animation="border" className={styles.pendingCircle} />}
+        </div>
+        <div className={styles.AlertText}>{alertText}</div>
+        <div className={styles.inputDiv}>
+          <UploadForm
+            formText="Carica File CSV con i tutoraggi da attivare"
+            infoContent=
+            {
+              <>
+                <div>Inserire un file cvs con righe come da figura:</div>
+                <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese le maiuscole**</strong></div>
+                <img src={examplePic} alt="immagine mancante"></img>
+              </>
+            }
+            uploadEndPoint="/tutoring/start"
+            parseData={(file, alertSetter, sendFile) => parseTutoringsFile(file, alertSetter, sendFile)}
+            callBack={() => props.onChange()}
+          />
+        </div>
       </div>
     </>);
 }

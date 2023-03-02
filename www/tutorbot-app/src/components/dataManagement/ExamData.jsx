@@ -107,7 +107,7 @@ export default function ExamData()
     <>
       <div className={styles.dropDownContent}>
         <h1>Gestione Dati Esami{icon}</h1>
-        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.examDataCont}>
+        <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.examDataCont + " contentWithBg"}>
           <UploadForm
             formText="Carica File CSV Esami da aggiungere"
             infoContent={

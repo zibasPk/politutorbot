@@ -3,8 +3,7 @@
   max-width: 70%;
   margin-left: auto;
   margin-right: auto;
-  display: flex;
-  flex-direction: column;
+  display: grid;
 }
 
 .newTutorForm {
@@ -41,6 +40,7 @@
 .addTutorContent {
   max-width: 900px;
   min-width: 0px;
+  background-color: var(--background-color-component);
 }
 
 .tutorFileAlert {

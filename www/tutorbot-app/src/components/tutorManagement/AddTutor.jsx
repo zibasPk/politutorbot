@@ -211,7 +211,7 @@ export default function AddTutor(props)
       <div className={styles.dropDownContent}>
         <h1>Aggiungi Tutor{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <div className={styles.addTutorContent}>
+          <div className={styles.addTutorContent + " contentWithBg"}>
             <div className={styles.newTutorForm}>
               <Form>
                 <Form.Group controlId="formTutorCode" className="mb-3">

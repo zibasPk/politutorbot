@@ -78,14 +78,18 @@
 }
 
 .selected {
-  background-color: #FFF9C4;
+  background-color: #FFF9C4 !important;
 }
 
 table,
 th,
 td {
-  border: 1px solid black;
+  border: 1px solid #78909C;
   text-align: center;
+}
+
+tr {
+  background-color: var(--background-color-primary);
 }
 
 th {
@@ -94,6 +98,8 @@ th {
   vertical-align: text-top;
   text-align: center;
   white-space: nowrap;
+  background-color: var(--primary-lighter-color);
+  border-color:  var(--primary-color);
 }
 
 .arrow {

@@ -91,7 +91,7 @@ class ActiveTutorings extends RefreshableComponent
           <ManualActivation onChange={() => this.refreshData()} />
           <h1>Tutoraggi Attivi</h1>
           {this.state.ActiveTutoringsArray === undefined ? <div className='pendingDiv'><CircularProgress /></div>:
-            <>
+            <div className='contentWithBg'>
               <Table headers={ActiveHeaders}
                 content={this.state.ActiveTutoringsArray} hasChecks={true}
                 modalProps={{
@@ -99,11 +99,11 @@ class ActiveTutorings extends RefreshableComponent
                   modalTitle: "Concludi Tutoraggi selezionati",
                   onModalEvent: () => this.refreshData()
                 }} />
-            </>
+            </div>
           }
           <h1>Tutoraggi Conclusi</h1>
           {this.state.EndedTutoringsArray === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
-            <>
+            <div className='contentWithBg'>
               <Table headers={EndedHeaders}
                 content={this.state.EndedTutoringsArray} hasChecks={true}
                 modalProps={{
@@ -111,7 +111,7 @@ class ActiveTutorings extends RefreshableComponent
                   modalTitle: "Esporta File CSV",
                 }}
               />
-            </>}
+            </div>}
 
         </div>
       </>

@@ -79,7 +79,7 @@ public static class AuthEndPoints
       // Check if the users' email tenant is authorized to access the application
       if (!GlobalConfig.WebConfig!.AllowedTenants.Contains(tenantId))
       {
-        Log.Information("User with mail: {userMail} tried accessing the application from an unauthorized tenant.", email);
+        Log.Warning("User with mail: {userMail} tried accessing the application from an unauthorized tenant.", email);
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         return; 
       }

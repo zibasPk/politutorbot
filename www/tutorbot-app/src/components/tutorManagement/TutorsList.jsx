@@ -40,7 +40,7 @@ export default function TutorsList(props) {
       <div className={styles.dropDownContent}>
         <h1>Lista Tutor{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <div className={styles.tutorListContent}>
+          <div className={styles.tutorListContent + " contentWithBg"}>
             {props.tutorList != undefined ?
             <Table headers={props.headers} content={props.tutorList} hasChecks={true}
               modalProps={{

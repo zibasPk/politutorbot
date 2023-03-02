@@ -94,7 +94,7 @@ class Table extends Component
           <div className={styles.functionsHeader}>
             <div className={styles.searchDiv}>
               <label htmlFor="search">
-                Ricerca:
+                Ricerca:&ensp;
                 <Form.Select className={styles.searchSelect} onChange={(e) => this.changeSearch(e)}>
                   {SearchOptions}
                 </Form.Select>

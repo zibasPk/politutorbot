@@ -99,23 +99,25 @@ export default function CourseData()
       <div className={styles.dropDownContent}>
         <h1>Gestione Dati Corsi di Studi{icon}</h1>
         <Collapse in={expanded} timeout="auto" unmountOnExit className={styles.courseDataCont}>
-          <UploadForm
-            formText="Carica File CSV Corsi da aggiungere"
-            infoContent={
-              <>
-                <div>Inserire un file .csv con righe come da figura:</div>
-                <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese le maiuscole**</strong></div>
-                <img src={examplePic} alt="immagine mancante"></img>
-              </>}
-            uploadEndPoint="/course/add"
-            parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
-          />
-          <div>Usa questa funzionalità per eliminare tutti i dati sui Corsi di Studio dal sistema</div>
-          <DeleteButton 
-          btnText='Reset dati Corsi di Studio' 
-          modalTitle='Eliminazione datu Corsi di Studio'
-          deleteEndpoint={configData.botApiUrl + '/courses/'}
-          />
+          <div className='contentWithBg'>
+            <UploadForm
+              formText="Carica File CSV Corsi da aggiungere"
+              infoContent={
+                <>
+                  <div>Inserire un file .csv con righe come da figura:</div>
+                  <div><strong>Attenzione i nomi dell'intestazione devono essere come da figura **comprese le maiuscole**</strong></div>
+                  <img src={examplePic} alt="immagine mancante"></img>
+                </>}
+              uploadEndPoint="/course/add"
+              parseData={(file, alertSetter, sendFile) => parseCourseFile(file, alertSetter, sendFile)}
+            />
+            <div>Usa questa funzionalità per eliminare tutti i dati sui Corsi di Studio dal sistema</div>
+            <DeleteButton
+              btnText='Reset dati Corsi di Studio'
+              modalTitle='Eliminazione datu Corsi di Studio'
+              deleteEndpoint={configData.botApiUrl + '/courses/'}
+            />
+          </div>
         </Collapse>
       </div>
     </>
