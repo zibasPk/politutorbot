@@ -91,7 +91,7 @@ function ManualActivation(props)
       {
         if (tutoring.IsOFA == "1")
           tutoring.IsOFA = true;
-        else
+        else if (tutoring.IsOFA == "0")
           tutoring.IsOFA = false;
 
         if (tutoring.ExamCode === "")

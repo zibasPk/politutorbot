@@ -100,7 +100,7 @@ export default function AddTutor(props)
       {
         if (tutoring.OfaAvailable == "1")
           tutoring.OfaAvailable = true;
-        else
+        else if (tutoring.OfaAvailable == "0")
           tutoring.OfaAvailable = false;
 
         alertMsg = validateTutoring(tutoring);
