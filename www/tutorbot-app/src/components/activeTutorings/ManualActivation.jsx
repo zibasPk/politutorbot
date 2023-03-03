@@ -11,6 +11,8 @@ import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import { makeCall } from '../../MakeCall';
 import UploadForm from '../utils/UploadForm';
+import CheckIcon from '@mui/icons-material/Check';
+import Grow from '@mui/material/Grow';
 import { Spinner } from "react-bootstrap";
 
 
@@ -18,7 +20,8 @@ function ManualActivation(props)
 {
   const [checkBoxState, setCheckBox] = useState(0);
   const [alertText, setAlert] = useState("");
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, setIsPending] = useState(false);
+  const [success, setSuccess] = useState(false);
 
 
   const handleSubmit = () =>
@@ -29,7 +32,10 @@ function ManualActivation(props)
       setAlert("Errore nei dati inseriti: " + alertMsg);
       return;
     }
-    sendTutorings([formData]);
+    let success = sendTutorings([formData]);
+    if (success) {
+      setSuccess(true);
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -39,8 +45,8 @@ function ManualActivation(props)
     ExamCode: null
   });
 
-  const handleFormChange = (e) =>
-  {
+  const handleFormChange = (e) => {
+    setSuccess(false);
     let value = e.target.value.trim();
     if (e.target.name === "IsOFA")
     {
@@ -91,7 +97,7 @@ function ManualActivation(props)
       {
         if (tutoring.IsOFA == "1")
           tutoring.IsOFA = true;
-        else
+        else if (tutoring.IsOFA == "0")
           tutoring.IsOFA = false;
 
         if (tutoring.ExamCode === "")
@@ -123,12 +129,14 @@ function ManualActivation(props)
     if (status.code !== 200)
     {
       setAlert("Errore nella richiesta: " + result);
-      return;
+      return false;
     }
+
     props.onChange();
 
     // Hide alert after a positive response
     setAlert("");
+    return true;
   }
 
   const validateTutoring = (tutoring) =>
@@ -141,7 +149,11 @@ function ManualActivation(props)
 
     if (!tutoring.TutorCode.match(validationConfig.studentCodeRegex))
       return 'Codice matricola Tutor non valido';
-
+    
+    // Check if OFA is null or undefined
+    if (tutoring.IsOFA == null)
+      return 'Campo IsOFA non specificato';
+    
     if (!tutoring.IsOFA && !tutoring.ExamCode)
       return 'Codice esame mancante';
 
@@ -158,6 +170,8 @@ function ManualActivation(props)
   }
 
   const disabled = formData.IsOFA;
+
+  const successIcon = <CheckIcon className='successIcon'/>;
 
   return (
     <>
@@ -187,6 +201,7 @@ function ManualActivation(props)
           >
             Attiva
           </Button>
+          <Grow in={success} timeout={500}>{successIcon}</Grow>
           {isPending && <Spinner animation="border" className={styles.pendingCircle} />}
         </div>
         <div className={styles.AlertText}>{alertText}</div>

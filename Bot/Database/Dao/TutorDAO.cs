@@ -77,7 +77,8 @@ public class TutorDAO : DAO
         Surname = reader.GetString("surname"),
         Course = reader.GetString("course"),
         Ranking = reader.GetInt32("ranking"),
-        OfaAvailable = reader.GetBoolean("OFA_available")
+        OfaAvailable = reader.GetBoolean("OFA_available"),
+        ContractState = reader.GetInt32("contract_state")
       };
 
 

@@ -6,6 +6,8 @@ import Form from 'react-bootstrap/Form';
 
 import InfoIconBis from '../utils/InfoIconBis';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import CheckIcon from '@mui/icons-material/Check';
+import Grow from '@mui/material/Grow';
 import { makeCall } from "../../MakeCall";
 import { Spinner } from "react-bootstrap";
 
@@ -26,10 +28,12 @@ function UploadForm(props)
   const [alertClass, setFileAlertClass] = useState(styles.alertText);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isPending, setIsPending] = useState(false);
+  const [success, setSuccess] = useState(false);
 
 
   const handleFileChange = (e) =>
   {
+    setSuccess(false);
     if (e.target.files.length)
     {
       const inputFile = e.target.files[0]
@@ -74,13 +78,15 @@ function UploadForm(props)
     }
     // Hide alert after a positive response
     setFileAlertClass(styles.successText);
-    setFileAlertText("Caricamento avvenuto con successo");
+    setFileAlertText("");
+    // set success to true to show the success icon
+    setSuccess(true);
     if (props.callBack)
       props.callBack();
   }
 
 
-
+  const successIcon = <CheckIcon className='successIcon' />;
 
   return (
     <>
@@ -92,6 +98,7 @@ function UploadForm(props)
         <div className={styles.inputDiv}>
           <Form.Control type="file" onChange={(e) => handleFileChange(e)} />
           <FileUploadIcon className={styles.actionBox} onClick={() => parseFile(uploadedFile)} />
+          <Grow in={success} timeout={500}>{successIcon}</Grow>
         </div>
       </Form.Group>
 

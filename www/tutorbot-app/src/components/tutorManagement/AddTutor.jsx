@@ -12,6 +12,8 @@ import { Button } from 'react-bootstrap';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import CheckIcon from '@mui/icons-material/Check';
+import Grow from '@mui/material/Grow';
 import UploadForm from '../utils/UploadForm';
 import { makeCall } from '../../MakeCall';
 import { Spinner } from "react-bootstrap";
@@ -37,6 +39,7 @@ export default function AddTutor(props)
   const [expanded, setExpanded] = useState(false);
   const [checkBoxState, setCheckBox] = useState(0);
   const [isPending,setIsPending] =useState(false);
+  const [success, setSuccess] = useState(false);
 
   const refreshData = async () =>
   {
@@ -66,11 +69,12 @@ export default function AddTutor(props)
     if (status.code !== 200)
     {
       setFileAlertText("Errore nella richiesta: " + result);
-      return;
+      return false;
     }
     // Hide alert after a positive response
     setFileAlertText("");
     props.onChange();
+    return true;
   }
 
   const parseTutorFile = (file, alertSetter, sendFile) =>
@@ -100,7 +104,7 @@ export default function AddTutor(props)
       {
         if (tutoring.OfaAvailable == "1")
           tutoring.OfaAvailable = true;
-        else
+        else if (tutoring.OfaAvailable == "0")
           tutoring.OfaAvailable = false;
 
         alertMsg = validateTutoring(tutoring);
@@ -123,7 +127,10 @@ export default function AddTutor(props)
     let alertMsg = validateTutoring(formData);
     if (alertMsg == null)
     {
-      sendTutorings([formData], "add");
+      let result = sendTutorings([formData], "add");
+      if (result) {
+        setSuccess(true);
+      }
       return;
     }
     setFileAlertText(alertMsg);
@@ -131,6 +138,7 @@ export default function AddTutor(props)
 
   const handleFormChange = (e) =>
   {
+    setSuccess(false);
     let value = e.target.value.trim();
     if (e.target.name === "OfaAvailable")
     {
@@ -206,6 +214,8 @@ export default function AddTutor(props)
     className={styles.btnExpand}
   />;
 
+  const successIcon = <CheckIcon className='successIcon'/>;
+
   return (
     <>
       <div className={styles.dropDownContent}>
@@ -269,12 +279,15 @@ export default function AddTutor(props)
                     className={styles.ofaSwitch}
                   />
                 </Form.Group>
+                <div>
                 <Button className={styles.addButton} variant="warning" type="button"
                   onClick={e => handleSubmit(e)}
                 >
                   Aggiungi
                 </Button>
+                <Grow in={success} timeout={500}>{successIcon}</Grow>
                 {isPending && <Spinner animation="border" className={styles.pendingCircle}/>}
+                </div>
                 <div className={styles.tutorFileAlert}>{tutorFileAlert}</div>
               </Form>
             </div>
