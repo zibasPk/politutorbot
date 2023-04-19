@@ -566,8 +566,8 @@ public static class MessageHandlers
     var tutorService = new TutorDAO(DbConnection.GetMySqlConnection());
     var tutors = tutorService.FindAvailableTutors(exam.Code, GlobalConfig.BotConfig!.TutorLockHours);
 
-    tutors = tutors.OrderBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
-      .ThenBy(tutor => tutor.School == conversation.School ? 0 : 1)
+    tutors = tutors.OrderBy(tutor => tutor.School == conversation.School ? 0 : 1)
+      .ThenBy(tutor => tutor.Course == conversation.Course ? 0 : 1)
       .ThenBy(tutor => tutor.Ranking)
       .ToList();
 
