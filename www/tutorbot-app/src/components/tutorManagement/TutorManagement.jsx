@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import configData from "../../config/config.json"
 import styles from './TutorManagement.module.css'
-import { makeCall } from '../../MakeCall';
+import { makeCall } from '../../utils/MakeCall';
 
 import AddTutor from './AddTutor';
 import TutorsList from './TutorsList';

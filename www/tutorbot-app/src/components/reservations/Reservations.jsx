@@ -7,7 +7,7 @@ import RefreshableComponent from "../Interfaces";
 import Table from "../utils/Table";
 import ModalBody from "./ModalBody";
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeCall } from "../../MakeCall";
+import { makeCall } from "../../utils/MakeCall";
 
 const Headers = {
   Id: "Prenotazione",

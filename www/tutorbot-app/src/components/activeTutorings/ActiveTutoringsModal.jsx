@@ -4,7 +4,7 @@ import configData from "../../config/config.json"
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { makeCall } from "../../MakeCall";
+import { makeCall } from "../../utils/MakeCall";
 import { Spinner } from "react-bootstrap";
 
 

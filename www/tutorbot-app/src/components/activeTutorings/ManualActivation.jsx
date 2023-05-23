@@ -9,7 +9,7 @@ import Papa from "papaparse";
 
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
-import { makeCall } from '../../MakeCall';
+import { makeCall } from '../../utils/MakeCall';
 import UploadForm from '../utils/UploadForm';
 import CheckIcon from '@mui/icons-material/Check';
 import Grow from '@mui/material/Grow';

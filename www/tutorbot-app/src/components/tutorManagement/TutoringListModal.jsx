@@ -5,7 +5,7 @@ import styles from "./TutorManagement.module.css";
 import configData from "../../config/config.json";
 
 import { Button } from 'react-bootstrap';
-import { makeCall } from "../../MakeCall";
+import { makeCall } from "../../utils/MakeCall";
 import { Spinner } from "react-bootstrap";
 
 function TutoringListModal(props)

@@ -15,7 +15,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import CheckIcon from '@mui/icons-material/Check';
 import Grow from '@mui/material/Grow';
 import UploadForm from '../utils/UploadForm';
-import { makeCall } from '../../MakeCall';
+import { makeCall } from '../../utils/MakeCall';
 import { Spinner } from "react-bootstrap";
 
 

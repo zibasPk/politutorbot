@@ -3,5 +3,5 @@
   "defaultTableRows": 5,
   "addonTableRows": 5,
   "tdMaxLenForCenter": 3,
-  "botApiUrl": "https://api.polinetwork.org/tutorapp"
+  "botApiUrl": "http://localhost:3003/tutorapp"
 }

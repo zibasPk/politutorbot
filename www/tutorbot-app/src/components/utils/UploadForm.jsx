@@ -8,7 +8,7 @@ import InfoIconBis from '../utils/InfoIconBis';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import CheckIcon from '@mui/icons-material/Check';
 import Grow from '@mui/material/Grow';
-import { makeCall } from "../../MakeCall";
+import { makeCall } from "../../utils/MakeCall";
 import { Spinner } from "react-bootstrap";
 
 export const allowedExtensions = ["csv", "vnd.ms-excel"];

@@ -2,7 +2,7 @@ import styles from "./DeleteButton.module.css";
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { makeCall } from '../../MakeCall';
+import { makeCall } from '../../utils/MakeCall';
 
 /**
  * Generalized JSX Component for calling a mass delete endpoint

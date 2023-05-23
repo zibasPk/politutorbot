@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie';
 import configData from "../config/config.json";
 import authConfig from "../config/microsoft-auth-config.json";
 
-import { makeCall } from "../MakeCall";
+import { makeCall } from "../utils/MakeCall";
 
 export default function (props)
 {

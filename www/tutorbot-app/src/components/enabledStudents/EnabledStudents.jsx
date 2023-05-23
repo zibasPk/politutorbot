@@ -11,7 +11,7 @@ import RefreshableComponent from '../Interfaces';
 import { CircularProgress } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { Spinner } from "react-bootstrap";
-import { makeCall } from '../../MakeCall';
+import { makeCall } from '../../utils/MakeCall';
 import UploadForm from '../utils/UploadForm';
 
 export const allowedExtensions = ["csv", "vnd.ms-excel"];

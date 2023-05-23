@@ -7,7 +7,7 @@ import configData from "../../config/config.json";
 
 import { Form } from "react-bootstrap";
 import { Button } from 'react-bootstrap';
-import { makeCall } from "../../MakeCall";
+import { makeCall } from "../../utils/MakeCall";
 import { Spinner } from "react-bootstrap";
 
 function ContractManagementModal(props)

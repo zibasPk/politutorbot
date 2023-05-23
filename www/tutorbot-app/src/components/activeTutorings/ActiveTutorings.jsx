@@ -10,7 +10,7 @@ import EndedTutoringsModal from './EndedTutoringsModal';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import ManualActivation from './ManualActivation';
-import { makeCall } from '../../MakeCall';
+import { makeCall } from '../../utils/MakeCall';
 
 const ActiveHeaders = {
   TutorCode: "Cod. Matr. Tutor",

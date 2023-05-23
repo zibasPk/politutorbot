@@ -12,7 +12,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import BlockIcon from '@mui/icons-material/Block';
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { Tooltip } from "react-bootstrap";
-import { makeCall } from "../../MakeCall";
+import { makeCall } from "../../utils/MakeCall";
 
 class ModalBody extends React.Component
 {
