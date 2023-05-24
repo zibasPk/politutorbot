@@ -8,9 +8,10 @@ import Table from "../utils/Table";
 import ModalBody from "./ModalBody";
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeCall } from "../../utils/MakeCall";
+import AddReservations from "./AddReservations";
 
 const Headers = {
-  Id: "Prenotazione",
+  Id: "Richiesta",
   Tutor: "Cod. Matr. Tutor",
   TutorSurname: "Cognome Tutor",
   TutorName: "Nome Tutor",
@@ -53,21 +54,23 @@ class Reservations extends RefreshableComponent {
   render() {
     return (
       <div className={styles.content}>
-        <h1>Prenotazioni da Gestire</h1>
+        <AddReservations onChange={() => this.refreshData()}/>
+
+        <h1>Richieste da Gestire</h1>
 
         {this.state.PendingReservations === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
           <div className="contentWithBg">
             <Table headers={Headers} content={this.state.PendingReservations} hasChecks={true}
               modalProps={{
                 modalContent: ModalBody,
-                modalTitle: "Gestisci prenotazioni selezionate",
+                modalTitle: "Gestisci richieste selezionate",
                 onModalEvent: () => this.refreshData()
               }}
               
             />
           </div>
         }
-        <h1>Storico Prenotazioni</h1>
+        <h1>Storico Richieste</h1>
         {this.state.ProcessedReservations === undefined ? <div className='pendingDiv'><CircularProgress /></div> :
         <div className="contentWithBg">
           <Table headers={Headers} content={this.state.ProcessedReservations} hasChecks={false} />

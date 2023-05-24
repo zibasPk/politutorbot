@@ -88,7 +88,8 @@ public static class WebServer
     app.MapPost("/exam/{action}", ExamEndpoints.HandleExamAction);
     app.MapPost("/course/{action}", CourseEndpoints.HandleCourseAction);
     app.MapPost("/students/{action}/{studentCode:int?}", StudentEndpoints.HandleStudentAction);
-
+    app.MapPut("/reservations/{action}", ReservationEndpoints.HandleReservationAction);
+    
     // Delete endpoints
     app.MapDelete("/tutoring/", TutoringEndpoints.RemoveTutoring);
     app.MapDelete("/tutors", TutorEndPoints.DeleteTutors);
